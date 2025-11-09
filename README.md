@@ -1,64 +1,64 @@
-# �T�v
-�uORE68000 ACE�v�́Aint71���Ɓu����71�v( https://www.youtube.com/@int71 )���Ǝ��ɍ쐬���Ă��鉼�z�R���s���[�^�[(Windows�A�v���P�[�V����)�ł��B
-���z�r�f�I�@�\�A���z�����@�\�������܂��B���A�{�̂͂܂����J�i�K�ɖ������߁A�u���Ă���܂���B
+# 概要
+「ORE68000 ACE」は、int71こと「整数71」( https://www.youtube.com/@int71 )が独自に作成している仮想コンピューター(Windowsアプリケーション)です。<br>
+仮想ビデオ機能、仮想音源機能を持ちます。が、本体はまだ公開段階に無いため、置いておりません。<br>
 
-# �o�^����Ă���t�@�C���ɂ���
-�uORE68000 ACE�v�{�̂͂܂��u���Ă��炸�A����A�uMC68000�v�p���s�R�[�h�����Ɏg�p����A�Ǝ��r���h��GCC������̎�ȃt�@�C���ƂȂ�܂��B
-����GCC�́Am68k�^�[�Q�b�g�Aiconv�Ή��Ƃ�������������܂��B
-��̓I�f�B���N�g���\���͉��L�̒ʂ�ł��B
-�ugnu�v�z����GPLv2�Ɋ�Â��Ĕz�z�ƂȂ�܂��B
+# 登録されているファイルについて
+「ORE68000 ACE」本体はまだ置いておらず、現状、「MC68000」用実行コード生成に使用する、独自ビルド版GCCが現状の主なファイルとなります。<br>
+このGCCは、m68kターゲット、iconv対応という特徴があります。<br>
+具体的ディレクトリ構造は下記の通りです。<br>
+「gnu」配下はGPLv2に基づく再配布となります。<br>
 
-��(Document)
-����GCC�r���h����.txt���uMSYS2�v���g�p����GCC�r���h�菇(����)
-����MSYS2�菇.txt���uMSYS2�v�C���X�g�[���菇
-��m68k
-����(Document)
-������GCC�r���h.txt���uMSYS2�v���g�p����GCC�r���h�菇(MC68000����)
-����gnu
-��  ��bin���r���h����
-��  ��include���r���h����
-��  ��lib���r���h����
-��  ��libexec���r���h����
-��  ��m68k-elf���r���h����
-��  ��share���r���h����
-��  ��COPYING��GCC���C�Z���X�e�L�X�g�ʂ�
-��README.md���{�t�@�C��
+┬(Document)<br>
+│├GCCビルド共通.txt←「MSYS2」を使用したGCCビルド手順(共通)<br>
+│└MSYS2手順.txt←「MSYS2」インストール手順<br>
+├m68k<br>
+│├(Document)<br>
+││└GCCビルド.txt←「MSYS2」を使用したGCCビルド手順(MC68000向け)<br>
+│└gnu<br>
+│　├bin←ビルド結果<br>
+│　├include←ビルド結果<br>
+│　├lib←ビルド結果<br>
+│　├libexec←ビルド結果<br>
+│　├m68k-elf←ビルド結果<br>
+│　├share←ビルド結果<br>
+│　└COPYING←GCCライセンステキスト写し<br>
+└README.md←本ファイル<br>
 
-# �C���X�g�[�����@
-�C���X�g�[�����͖����̂ŁA�K�X�R�s�[���Ďg�p���܂��B
-�������A�uMSYS2�v��Łu/usr/local/m68k�v�z���ɒu�������O��ƂȂ��Ă���AWindows�����Ŏg�p����ꍇ�A�ugnu/bin�v�ɑΉ�����p�X��ǉ�����K�v������܂��B
+# インストール方法
+インストーラ等は無いので、適宜コピーして使用します。<br>
+ただし、「MSYS2」上で「/usr/local/m68k」配下に置く事が前提となっており、Windows直下で使用する場合、「gnu/bin」に対応するパスを追加する必要があります。
 
-# ���p�K��
-�u����71�v��GitHub�ɂČ��J���Ă���v���O�����𗘗p�����(�ȉ��u���p�ҁv)�ɁA�{���p�K�񂪓K�p����܂��B
+# 利用規約
+「整数71」がGitHubにて公開しているプログラムを利用する方(以下「利用者」)に、本利用規約が適用されます。
 
-## �����\�t�g�E�F�A
-GitHub�ɂČ��J���Ă���v���O����(�ȉ��u�{�\�t�g�E�F�A�v)�͖����\�t�g�E�F�A�Ƃ��A�l���p�A���p���p���킸�A�����Ŏg�p�ł��܂��B
+## 無償ソフトウェア
+GitHubにて公開しているプログラム(以下「本ソフトウェア」)は無償ソフトウェアとし、個人利用、商用利用を問わず、無料で使用できます。
 
-## ���쌠
-�ugnu�v�f�B���N�g���z����GPLv2�Ɋ�Â��܂��B
-����ȊO�̖{�\�t�g�E�F�A�A�h�L�������g�̒��쌠�́u����71�v�ɋA�����܂��B
+## 著作権
+「gnu」ディレクトリ配下はGPLv2に基づきます。<br>
+それ以外の本ソフトウェア、ドキュメントの著作権は「整数71」に帰属します。
 
-## �v���O�����̉��ρA����
-�ugnu�v�f�B���N�g���z����GPLv2�Ɋ�Â��܂��B
+## プログラムの改変、改良
+「gnu」ディレクトリ配下はGPLv2に基づきます。
 
-## �֎~�s��
-�ugnu�v�f�B���N�g���z����GPLv2�Ɋ�Â��܂��B
-����ȊO�ɂ��ẮA�ȉ��̍s�ׂ��ւ��܂��B
-- �{�\�t�g�E�F�A�̍Ĕz�z
-- �{�\�t�g�E�F�A���g�p���A��O�҂���Ή��𓾂鎖
-- ���̑��u����71�v�ɑ��Q�������炷�s��
+## 禁止行為
+「gnu」ディレクトリ配下はGPLv2に基づきます。<br>
+それ以外については、以下の行為を禁じます。
+- 本ソフトウェアの再配布
+- 本ソフトウェアを使用し、第三者から対価を得る事
+- その他「整数71」に損害をもたらす行為
 
-## ���p��~
-�{�K��ɔ�����s�ׂ�����ꍇ�ɂ́A�{�\�t�g�E�F�A�̗��p���~���Ă��������ꍇ������܂��B
+## 利用停止
+本規約に反する行為がある場合には、本ソフトウェアの利用を停止していただく場合があります。
 
-## �v���O�����̒񋟒�~
-�u����71�v�͖{�\�t�g�E�F�A�̑S���܂��͈ꕔ�̒񋟂�p�~���鎖������܂��B
-�񋟂̔p�~�ɂ���ė��p�҂ɔ����������Q�ɂ��āA�u����71�v�͈�ؐӔC�𕉂��܂���B
+## プログラムの提供停止
+「整数71」は本ソフトウェアの全部または一部の提供を廃止する事があります。<br>
+提供の廃止によって利用者に発生した損害について、「整数71」は一切責任を負いません。
 
-## �Ɛ�
-�{�\�t�g�E�F�A�ɕs����������ꍇ�ł����Ă��A�u����71�v�͏C���̋`���𕉂��܂���B
-�{�\�t�g�E�F�A���g�p���鎖�A�܂��͖{�\�t�g�E�F�A���g�p�ł��Ȃ��������Ɋւ��Ĕ����������݂ɂ��āA�u����71�v�͈�ؐӔC�𕉂��܂���B
+## 免責
+本ソフトウェアに不具合があった場合であっても、「整数71」は修復の義務を負いません。<br>
+本ソフトウェアを使用する事、または本ソフトウェアを使用できなかった事に関して発生した存在について、「整数71」は一切責任を負いません。
 
-## ���p�K��̕ύX
-�{�K��́A�u����71�v�����p�҂Ɏ��O���m�����ύX�������܂��B
-�ύX��̋K��́AGitHub�Ɍf�ڂ��ꂽ�ۂɌ��͂𔭐����܂��B
+## 利用規約の変更
+本規約は、「整数71」が利用者に事前告知無く変更いたします。<br>
+変更後の規約は、GitHubに掲載された際に効力を発生します。
