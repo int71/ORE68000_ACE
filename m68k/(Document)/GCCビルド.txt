@@ -1,0 +1,37 @@
+※「/d/Sync/Package/Cross/m68k/gnu」は各自環境の作業ディレクトリと読み替えてください。
+
+・掃除
+  $ cd /d/Sync/Package/Cross/m68k/gnu
+  $ rm -rf bin lib libexec m68k-elf share include
+  $ mkdir -p /usr/local/m68k
+  $ cd /usr/local/m68k
+  $ rm -rf bin lib libexec m68k-elf share include
+  $ cd ~/cross
+  $ rm -rf binutils-m68k gcc-m68k gdb-m68k
+
+・binutils
+  $ cd ~/cross
+  $ mkdir binutils-m68k
+  $ cd binutils-m68k
+  $ ../binutils/configure --enable-languages=c,c++ --target m68k-elf --prefix /usr/local/m68k --disable-werror --disable-nls --disable-threads --disable-multilib --enable-libssp --enable-lto
+  $ make -j32
+  $ make install-strip
+
+・gcc
+  $ cd ~/cross
+  $ mkdir gcc-m68k
+  $ cd gcc-m68k
+  $ ../gcc/configure --enable-languages=c,c++ --target m68k-elf --prefix /usr/local/m68k --with-cpu=68000 --enable-obsolete --enable-lto --disable-threads --disable-libmudflap --disable-libgomp --disable-nls --disable-werror --disable-libssp --disable-shared --disable-multilib --disable-libgcj --disable-libstdcxx --disable-gcov --without-headers --without-included-gettext
+  $ make -j32
+  $ make install-strip
+
+・gdb
+  $ cd ~/cross
+  $ mkdir gdb-m68k
+  $ cd gdb-m68k
+  $ ../gdb/configure --target m68k-elf --prefix /usr/local/m68k
+  $ make -j32
+  $ make install
+
+・仕上げ
+  $ cp -rp /usr/local/m68k/* /d/Sync/Package/Cross/m68k/gnu/

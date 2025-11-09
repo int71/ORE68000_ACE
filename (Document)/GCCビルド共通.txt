@@ -1,0 +1,94 @@
+※「MSYS2」は各自環境の作業ディレクトリと読み替えてください。
+
+・「MSYS2/msys2_shell.cmd」を管理者で実行
+  なぜなら一般権限だとstatic link作れないから。
+  linkでなくディレクトリコピーになるってんなら、
+  「MSYS2/(Document)/手順.txt」の、
+  「rem set MSYS=winsymlinks:nativestrict」コメント解除できてない疑いあり。
+
+  $ cd
+  $ mkdir cross
+  $ cd cross
+
+・binutils
+  $ w3m https://ftp.gnu.org/gnu/binutils/
+    画面下の方の新しい「binutils-*.*.tar.xz」
+    「Shift+R」で更新しながら100%を待って、q
+  $ tar xfpJ binutils-*.*.tar.xz
+  $ rm binutils-*.*.tar.xz
+  $ ln -s binutils-*.* binutils
+
+・gmp
+  $ w3m https://gmplib.org/
+    新しい「gmp-*.*.*.tar.xz」
+    「Shift+R」で更新しながら100%を待って、q
+  $ tar xfpJ gmp-*.*.*.tar.xz
+  $ rm gmp-*.*.*.tar.xz
+
+・mpfr
+  $ w3m https://www.mpfr.org/mpfr-current
+    新しい「mpfr-*.*.*.tar.xz」
+    「Shift+R」で更新しながら100%を待って、q
+  $ tar xfpJ mpfr-*.*.*.tar.xz
+  $ rm mpfr-*.*.*.tar.xz
+
+・mpc
+  $ w3m https://ftp.gnu.org/gnu/mpc/
+    新しい「mpc-*.*.*.tar.gz」
+    「Shift+R」で更新しながら100%を待って、q
+  $ tar xfpz mpc-*.*.*.tar.gz
+  $ rm mpc-*.*.*.tar.gz
+
+・libiconv
+  $ w3m https://ftp.gnu.org/pub/gnu/libiconv/
+    「libiconv-*.*.tar.gz」
+    「Shift+R」で更新しながら100%を待って、q
+  $ tar xfpz libiconv-*.*.tar.gz
+  $ rm libiconv-*.*.tar.gz
+  $ cd libiconv-*.*
+  $ vi config.h.in
+  (末尾行に追記)
+typedef __WINT_TYPE__	wint_t;
+  $ ./configure --prefix=/usr --disable-shared --enable-static
+  $ make
+  $ make install
+  $ cd ..
+
+・gcc
+  $ w3m https://ftp.gnu.org/gnu/gcc/
+    画面下の方の新しい「gcc-*.*.*」
+    そして「gcc-*.*.*.tar.xz」
+    「Shift+R」で更新しながら100%を待って、q
+  $ tar xfpJ gcc-*.*.*.tar.xz
+  $ rm gcc-*.*.*.tar.xz
+  $ ln -s gcc-*.*.* gcc
+  $ cd gcc
+  $ ln -s ../gmp-*.*.* ./gmp
+  $ ln -s ../mpfr-*.*.* ./mpfr
+  $ ln -s ../mpc-*.*.* ./mpc
+  $ cd ..
+
+・gdb
+  $ ftp sourceware.org
+  Name (sourceware.org:int71): anonymous←マウス右クリックでないと入らない
+  ftp> cd pub/gdb/releases
+  ftp> dir -tr
+  ftp> binary
+  ftp> get gdb-*.*.tar.xz←最新を
+  ftp> bye
+  $ tar xfpJ gdb-*.*.tar.xz
+  $ rm gdb-*.*.tar.xz
+  $ ln -s gdb-*.* gdb
+  $ cd gdb
+  $ ln -s ../gmp-*.*.* ./gmp
+  $ ln -s ../mpfr-*.*.* ./mpfr
+  $ ln -s ../mpc-*.*.* ./mpc
+
+  (恐らく)特定バージョン向けパッチあり。
+  ・MSYS2\home\int71\cross\gdb-16.3\readline\readline
+  ・「tcap.h」を「tcap.org.h」に改名(一応)
+  ・ブラウザで開いた方が捗る。
+    https://github.com/bminor/binutils-gdb/blob/master/readline/readline/tcap.h
+  ・「MSYS2\home\int71\cross\gdb-16.3\readline\readline」にコピー
+
+  $ cd ..
