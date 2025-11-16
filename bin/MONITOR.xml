@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<MONITOR>
+	<APPLICATION>
+		<COLORBACK value="2170911"/>
+		<COLORFORE value="16777215"/>
+		<FONTNAME value="System"/>
+		<FONTSIZE value="16"/>
+		<METRIC value="((32,60),(822,939))"/>
+	</APPLICATION>
+</MONITOR>

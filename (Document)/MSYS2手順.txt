@@ -1,0 +1,74 @@
+「手順.txt」を持つディレクトリを削除したり移動させたりするので、
+この「手順.txt」を新規TEXTインスタンス立ち上げてコピーしておく。
+※「MSYS2」は各自環境の作業ディレクトリと読み替えてください。
+
+<ポータブルバイナリ作成>
+・最新版
+  ・https://www.msys2.org/
+    「msys2-x86_64-YYYYMMDD.exe」を「MSYS2/(Recycle)」配下に置く。
+・インストール
+  ・「MSYS2/(Recycle)/msys2-x86_64-YYYYMMDD.exe」
+    インストール先は「MSYS2.new」で。
+・ポータブル化
+  ・「MSYS2」を「MSYS2.old」にムーブ
+  ・「MSYS2.new」を「MSYS2」でコピー
+  ・「MSYS2.old/(Document)」と「MSYS2.old/(Recycle)」を「MSYS2/」にムーブ
+  ・「アプリと機能」で「MSYS2」をアンインストール
+  ・「MSYS2.old」を削除
+
+<初期設定>
+・「MSYS2/(Document)/.*」を「MSYS2/home/int71/」にコピー
+・「MSYS2/msys2_shell.cmd」をテキストエディタで開く
+  下記を修正(コメント解除)
+  rem set MSYS=winsymlinks:nativestrict
+  ↓
+  set MSYS=winsymlinks:nativestrict
+・Windows Defender許可設定
+  ・「コントロール パネル\システムとセキュリティ\」
+    ・「Windows ファイアウォールによるアプリケーションの許可」
+  ・「コントロール パネル\すべてのコントロール パネル項目\Windows Defender ファイアウォール\許可されたアプリ」
+    ・「設定の変更(N)」
+    ・「別のアプリの許可(R)...」
+      アプリの追加
+      ・参照(B)...
+        MSYS2\usr\bin\ftp.exe
+      ・「追加」
+    ・「OK」
+
+<環境構築>
+・「MSYS2/msys2_shell.cmd」を実行
+・基本パッケージ各種を
+  $ pacman -Syu
+  (たぶんコア更新のために全体終了が強制される)
+・「msys2_shell.cmd」を実行
+  $ pacman -Syu
+  $ pacman -S base-devel
+  $ pacman -S msys2-devel
+  $ pacman -S mingw-w64-x86_64-toolchain
+  $ pacman -S mingw-w64-x86_64-gnutls
+  $ pacman -S mingw-w64-x86_64-gcc
+  $ pacman -S mingw-w64-x86_64-make
+  $ pacman -S mingw-w64-x86_64-python
+  $ pacman -S vim
+  $ pacman -S w3m
+  $ pacman -S git
+  $ pacman -S cmake
+
+<perl Unicode::Japanese>
+  $ cd /usr/src
+  $ w3m http://search.cpan.org/CPAN/authors/id/H/HI/HIO/
+    画面下の方の新しい「Unicode-Japanese-x.xx-tar.gz」
+    「Shift+R」で更新しながら100%を待って、q
+  $ tar xfpz Unicode-Japanese-*.tar.gz
+  $ rm Unicode-Japanese-*.tar.gz
+  $ cd Unicode-Japanese-*
+  $ perl -I./ Makefile.PL PurePerl
+  $ make
+  $ cp -rp lib/Unicode/* /usr/lib/perl5/core_perl/Unicode/
+
+<perl XML::Parser>
+  $ pacman -S perl-XML-Parser
+
+<m68k>
+・ORE68000_ACE/(Document)/GCCビルド共通.txt
+・ORE68000_ACE/m68k/(Document)/GCCビルド.txt
