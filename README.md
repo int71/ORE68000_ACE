@@ -1,5 +1,5 @@
 # 概要
-「ORE68000 ACE」は、int71こと「整数71」(https://www.youtube.com/@int71)が独自に作成している仮想コンピューター(Windowsアプリケーション)です。  
+「ORE68000 ACE」は、int71こと「整数71」( https://www.youtube.com/@int71 )が独自に作成している仮想コンピューター(Windowsアプリケーション)です。  
 目標は「令和ファミリーベーシック」で、仮想ビデオ機能、仮想音源機能を持ちます。
 
 # 登録されているファイルについて
@@ -13,8 +13,7 @@ m68kターゲットiconv対応のGCCと、一部MSYS2プログラム(dll)を使用しております。
 │├MSYS2手順.txt←「MSYS2」インストール手順  
 │└ORE68000 ACE(J).txt←平たく申し上げると「遊び方」  
 ├bin  
-│├MONITOR.exe←シリアル出力表示プログラム  
-│└MONITOR.xml←その設定  
+│└MONITOR.exe←シリアル出力表示プログラム(「MONITOR.xml」は自動生成されるため削除)  
 ├image  
 │├000.bin←ROMイメージ  
 │├020.bin←ROMイメージ  
@@ -48,6 +47,11 @@ m68kターゲットiconv対応のGCCと、一部MSYS2プログラム(dll)を使用しております。
 ││├make_main.sh←メインMC68000用プログラムオブジェクトファイル、ROMイメージ作成用sh  
 ││├make_sub.sh←サブMC68000用プログラムオブジェクトファイル、ROMイメージ作成用sh  
 ││└run.sh←実行用sh  
+│├M68K_MAKEBANKFM.pl←YM2151B FM音源部音色データ作成スクリプト(仮置)  
+│├M68K_MAKEBANKPCM.pl←YM2151B PCM音源部音色データ作成スクリプト(仮置)  
+│├M68K_MAKESEQUENCE.pl←YM2151B用演奏データ作成スクリプト(仮置)  
+│├M68K_SMF2SEQ.pl←MIDIデータテキスト化スクリプト(仮置)  
+│├M68K_TMX2BIN.pl←Tiledファイルデータ化スクリプト(仮置)  
 │├M68K_MAKEBIN.exe←GCC実行用ラッパープログラム  
 │├M68K_MAKEFONT.exe←フォントROM作成用プログラム  
 │├M68K_MAKEPATTERN.exe←スプライト/BGパターン作成用プログラム  
@@ -58,8 +62,8 @@ m68kターゲットiconv対応のGCCと、一部MSYS2プログラム(dll)を使用しております。
 │└keyboard.o68k←スペースキー入力テストサンプルプログラム(ファミベ風)  
 ├README.md←本ファイル  
 ├default.o68k←初期動作プログラム  
-├ORE68000 ACE.xml←「ORE68000 ACE」設定ファイル  
-└ORE68000 ACE.exe←「ORE68000 ACE」プログラム本体  
+├HISTORY.txt←改版履歴  
+└ORE68000 ACE.exe←「ORE68000 ACE」プログラム本体(「ORE68000 ACE.xml」は自動生成されるため削除)  
 
 # インストール方法
 インストーラ等は無いので、「(Document)/ORE68000 ACE(J).txt」をご参照ください。
