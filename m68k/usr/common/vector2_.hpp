@@ -22,10 +22,6 @@
 namespace m68k::i71::common{
 
 	//
-	//		const
-	//
-
-	//
 	//		class
 	//
 

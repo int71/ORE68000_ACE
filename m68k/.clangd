@@ -1,0 +1,24 @@
+If:
+    PathMatch: .*
+CompileFlags:
+    Add:
+        - -Wall
+        - -Wno-ignored-attributes
+        - -Wno-unused-variable
+        - -Wno-unused-const-variable
+        - -Wno-unused-but-set-variable
+        - -Wno-int-to-pointer-cast
+        - -Wno-pointer-to-int-cast
+        - --target=m68k-elf
+        - -xc++
+        - -std=c++2a
+        - --include-directory=/Sync/Package/Cross/ORE68000_ACE/m68k/common/include
+Hover:
+  ShowAKA: No
+InlayHints:
+    Enabled: No         # InlayHintsスイッチ
+    Designators: No     # 位置指定子の表示
+    DeducedTypes: Yes   # 推論された型の表示
+    ParameterNames: Yes # 引数名の表示
+    BlockEnd: Yes       # ブロック単位の終了を表示
+    TypeNameLimit: 24   # 型名長さの限度

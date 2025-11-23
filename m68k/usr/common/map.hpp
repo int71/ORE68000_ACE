@@ -93,6 +93,11 @@ namespace m68k::i71::common{
 			static constexpr AUTO	PATTERN_BG1_stcui32dOffset=						ore68000ace::VRAM_PATTERN_BG1_stcui32dDefaultOffset;
 			static constexpr AUTO	PATTERN_BG2_stcui32dOffset=						ore68000ace::VRAM_PATTERN_BG2_stcui32dDefaultOffset;
 			static constexpr AUTO	PATTERN_BG3_stcui32dOffset=						ore68000ace::VRAM_PATTERN_BG3_stcui32dDefaultOffset;
+			static constexpr AUTO	PATTERNCHR_SPRITE_stcui16iAddress=				UINT16(PATTERN_SPRITE_stcui32dOffset>>5);
+			static constexpr AUTO	PATTERNCHR_BG0_stcui16iAddress=					UINT16(PATTERN_BG0_stcui32dOffset>>5);
+			static constexpr AUTO	PATTERNCHR_BG1_stcui16iAddress=					UINT16(PATTERN_BG1_stcui32dOffset>>5);
+			static constexpr AUTO	PATTERNCHR_BG2_stcui16iAddress=					UINT16(PATTERN_BG2_stcui32dOffset>>5);
+			static constexpr AUTO	PATTERNCHR_BG3_stcui16iAddress=					UINT16(PATTERN_BG3_stcui32dOffset>>5);
 			static constexpr AUTO	ATTRIBUTE_SPRITE_stcui32dOffset=				ore68000ace::VRAM_ATTRIBUTE_SPRITE_stcui32dDefaultOffset;
 			static constexpr AUTO	ATTRIBUTE_BG0_stcui32dOffset=					ore68000ace::VRAM_ATTRIBUTE_BG0_stcui32dDefaultOffset;
 			static constexpr AUTO	ATTRIBUTE_BG1_stcui32dOffset=					ore68000ace::VRAM_ATTRIBUTE_BG1_stcui32dDefaultOffset;

@@ -7,6 +7,11 @@ new BASE::();
 sub main{
 	my($out);
 
+	$out=`./MAKEVIDEOROM.pl "(Resource)/VIDEO" -o ../../image/100.bin -c common/rom_video.hpp -j I71`;
+	if($out ne ''){
+		BASE::Pause($out);
+		return -1;
+	}
 	$out=`./make_main.sh`;
 	BASE::DeleteFile('out');
 	if($out ne ''){

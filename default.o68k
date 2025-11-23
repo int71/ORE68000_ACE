@@ -10,42 +10,22 @@
 //		include
 //
 
-#include				<sub/base.hpp>
+#include				<sub/familybasic.hpp>
 
 //
 //		using
 //
 
-using namespace m68k::i71;
 using namespace m68k::i71::sub;
 
 //
 //		user
 //
 
-constexpr UINT16		USER_stui16cGetColor(CDWORD cdwvalue)noexcept;
-VOID					USER_stSetPalette(CUINT8 cui8ipalette,CUINT8 cui8inescolor0,CUINT8 cui8inescolor1,CUINT8 cui8inescolor2,CUINT8 cui8inescolor3)noexcept;
-
 VOID					USER_stNew(VOID)noexcept{
-	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
-	using					IDLAYER=VIDEO_DRIVER::IDLAYER;
-
-	VIDEO_DRIVER::stWrite(
-		IDREGISTERW::Composite1,
-		(/*表示面7(最前)*/	IDLAYER::Text<<0xc)|
-		(/*表示面6*/		IDLAYER::BG0<<0x8)|
-		(/*表示面5*/		IDLAYER::SpritePriority0<<0x4)|
-		(/*表示面4*/		IDLAYER::BG1<<0x0)
-	);
-	VIDEO_DRIVER::stWrite(
-		IDREGISTERW::Composite0,
-		(/*表示面3*/		IDLAYER::SpritePriority1<<0xc)|
-		(/*表示面2*/		IDLAYER::BG2<<0x8)|
-		(/*表示面1*/		IDLAYER::SpritePriority2<<0x4)|
-		(/*表示面0(最奥)*/	IDLAYER::BG3<<0x0)
-	);
-	USER_stSetPalette(0,0x3f,0x30,0x16,0x01);
-	VIDEO_DRIVER::VRAM_TEXT_stWrite(15,14,"ようこそORE68000 ACEへ。\r「*.xml」または「*.o68k」をD&Dしてください。",1);
+	FAMILYBASIC::stNew();
+	FAMILYBASIC::stSetPalette(0,0x3f,0x30,0x16,0x01);
+	FAMILYBASIC::stWriteBG({0,0},0x0,"WELCOME TO ORE68000 ACE.\n2025 INT71 ALL RIGHTS RESERVED.\nDROP ME \"*.XML\" OR \"*.O68K\".");
 	return;
 }
 
@@ -54,35 +34,5 @@ VOID					USER_stDelete(VOID)noexcept{
 }
 
 VOID					USER_stMain(VOID)noexcept{
-	return;
-}
-
-constexpr UINT16		USER_stui16cGetColor(
-	CDWORD					cdwvalue
-)noexcept{
-	return common::ui16cGetColor(cdwvalue);
-}
-
-VOID					USER_stSetPalette(
-	CUINT8					cui8ipalette,
-	CUINT8					cui8inescolor0,
-	CUINT8					cui8inescolor1,
-	CUINT8					cui8inescolor2,
-	CUINT8					cui8inescolor3
-)noexcept{
-	static constexpr UINT16	stacui16ccolornes[]={
-		USER_stui16cGetColor(0x696969),USER_stui16cGetColor(0x00148f),USER_stui16cGetColor(0x1e029b),USER_stui16cGetColor(0x3f008a),USER_stui16cGetColor(0x600060),USER_stui16cGetColor(0x660017),USER_stui16cGetColor(0x570d00),USER_stui16cGetColor(0x451b00),USER_stui16cGetColor(0x243400),USER_stui16cGetColor(0x004200),USER_stui16cGetColor(0x004500),USER_stui16cGetColor(0x003c1f),USER_stui16cGetColor(0x00315c),USER_stui16cGetColor(0x000000),USER_stui16cGetColor(0x000000),USER_stui16cGetColor(0x000000),
-		USER_stui16cGetColor(0xafafaf),USER_stui16cGetColor(0x0f51dd),USER_stui16cGetColor(0x442ff3),USER_stui16cGetColor(0x7220e2),USER_stui16cGetColor(0xa319b3),USER_stui16cGetColor(0xae1c51),USER_stui16cGetColor(0xa43400),USER_stui16cGetColor(0x884d00),USER_stui16cGetColor(0x676d00),USER_stui16cGetColor(0x208000),USER_stui16cGetColor(0x008b00),USER_stui16cGetColor(0x007f42),USER_stui16cGetColor(0x006c97),USER_stui16cGetColor(0x010101),USER_stui16cGetColor(0x000000),USER_stui16cGetColor(0x000000),
-		USER_stui16cGetColor(0xffffff),USER_stui16cGetColor(0x65aaff),USER_stui16cGetColor(0x8c96ff),USER_stui16cGetColor(0xb983ff),USER_stui16cGetColor(0xdd6fff),USER_stui16cGetColor(0xea6fbd),USER_stui16cGetColor(0xeb8466),USER_stui16cGetColor(0xdca21f),USER_stui16cGetColor(0xbab403),USER_stui16cGetColor(0x7ecb07),USER_stui16cGetColor(0x54d33e),USER_stui16cGetColor(0x3cd284),USER_stui16cGetColor(0x3ec7cc),USER_stui16cGetColor(0x4b4b4b),USER_stui16cGetColor(0x000000),USER_stui16cGetColor(0x000000),
-		USER_stui16cGetColor(0xffffff),USER_stui16cGetColor(0xbde2ff),USER_stui16cGetColor(0xcecfff),USER_stui16cGetColor(0xe6c2ff),USER_stui16cGetColor(0xf6bcff),USER_stui16cGetColor(0xf9c2ed),USER_stui16cGetColor(0xfacfc6),USER_stui16cGetColor(0xf8deac),USER_stui16cGetColor(0xeee9a1),USER_stui16cGetColor(0xd0f59f),USER_stui16cGetColor(0xbbf5af),USER_stui16cGetColor(0xb3f5cd),USER_stui16cGetColor(0xb9edf0),USER_stui16cGetColor(0xb9b9b9),USER_stui16cGetColor(0x000000),USER_stui16cGetColor(0x000000)
-	};
-	CUINT16					acui16ccolor[]={
-		stacui16ccolornes[cui8inescolor0],
-		stacui16ccolornes[cui8inescolor1],
-		stacui16ccolornes[cui8inescolor2],
-		stacui16ccolornes[cui8inescolor3]
-	};
-
-	VIDEO_DRIVER::PALETTE_stWrite(cui8ipalette<<4,acui16ccolor,4);
 	return;
 }

@@ -12,6 +12,7 @@
 
 #include				"os.hpp"
 #include				"interrupter.hpp"
+#include				"pattern.hpp"
 
 //
 //		using
@@ -117,6 +118,7 @@ VOID					OS::stNew(VOID)noexcept{
 	VIDEO_DRIVER::stNew();
 	DEBUG::stNew();
 	INTERRUPTER::stNew();
+	PATTERN::stNew();
 	LFSR_stSetSeed(0);
 	OFW::stEnableInterrupt();
 	return;
@@ -125,6 +127,7 @@ VOID					OS::stNew(VOID)noexcept{
 VOID					OS::stDelete(VOID)noexcept{
 	OFW::stDisableInterrupt();
 	st.Delete();
+	PATTERN::stDelete();
 	INTERRUPTER::stDelete();
 	DEBUG::stDelete();
 	VIDEO_DRIVER::stDelete();

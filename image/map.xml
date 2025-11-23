@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <MAP>
 	<ROM_MAIN>
+		<M68K source="000.bin"/>
 		<ATAN source="*ATAN"/>
 		<TRIG source="*TRIG"/>
-		<M68K source="000.bin"/>
 	</ROM_MAIN>
 	<ROM_SUB>
+		<M68K source="*M68K"/>
+		<VIDEO source="100.bin"/>
+		<FONT source="020.bin"/>
 		<ATAN source="*ATAN"/>
 		<TRIG source="*TRIG"/>
-		<M68K source="*M68K"/>
-		<FONT source="020.bin"/>
 	</ROM_SUB>
 </MAP>

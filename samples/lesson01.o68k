@@ -1,0 +1,51 @@
+/****************************************************************************
+**																			**
+**																			**
+**									m68k									**
+**																			**
+**	'lesson01.o68k'									2025 written by int71	**
+ ****************************************************************************/
+
+//
+//		include
+//
+
+#include				<sub/familybasic.hpp>
+
+//
+//		using
+//
+
+using namespace m68k::i71::sub;
+
+//
+//		user
+//
+
+UINT16					ui16iX=120;
+UINT16					ui16iY=98;
+
+VOID					USER_stNew(VOID)noexcept{
+	FAMILYBASIC::stNew();
+	FAMILYBASIC::stSetPalette(0,0x3f,0x30,0x16,0x01);
+	FAMILYBASIC::stSetPalette(8,0x3f,0x30,0x21,0x02);
+	FAMILYBASIC::stWriteBG({0,0},0x8,"LESSON 01:SPRITE(1)");
+	return;
+}
+
+VOID					USER_stDelete(VOID)noexcept{
+	FAMILYBASIC::stDelete();
+	return;
+}
+
+VOID					USER_stMain(VOID)noexcept{
+	using					IDBUTTON=FAMILYBASIC::IDBUTTON;
+	CAUTO					cui8cjoystick=FAMILYBASIC::stui8cReadJoystick(0);
+
+	FAMILYBASIC::stWriteSprite(0,ui16iX&0xff,ui16iY&0xff,0x0000|172,0x5100);
+	if(cui8cjoystick&(1<<IDBUTTON::Right))++ui16iX;
+	if(cui8cjoystick&(1<<IDBUTTON::Left))--ui16iX;
+	if(cui8cjoystick&(1<<IDBUTTON::Down))++ui16iY;
+	if(cui8cjoystick&(1<<IDBUTTON::Up))--ui16iY;
+	return;
+}

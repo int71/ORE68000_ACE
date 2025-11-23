@@ -31,10 +31,14 @@ $BASE_CPP="$User/base.cpp";
 $BASE_OBJ="$Object/base.o";
 $BOOT_CPP="$User/boot.cpp";
 $BOOT_OBJ="$Object/boot.o";
+$FAMILYBASIC_CPP="$User/familybasic.cpp";
+$FAMILYBASIC_OBJ="$Object/familybasic.o";
 $INTERRUPTER_CPP="$User/interrupter.cpp";
 $INTERRUPTER_OBJ="$Object/interrupter.o";
 $OS_CPP="$User/os.cpp";
 $OS_OBJ="$Object/os.o";
+$PATTERN_CPP="$User/pattern.cpp";
+$PATTERN_OBJ="$Object/pattern.o";
 $SERIAL_CPP="$User/serial.cpp";
 $SERIAL_OBJ="$Object/serial.o";
 $VECTOR2_CPP="$User/vector2.cpp";
@@ -57,8 +61,10 @@ $FONT='/c/Windows/Fonts//c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
 			$COMMON_VECTOR2__OBJ,
 			$BASE_OBJ,
 			$BOOT_OBJ,
+			$FAMILYBASIC_OBJ,
 			$INTERRUPTER_OBJ,
 			$OS_OBJ,
+			$PATTERN_OBJ,
 			$SERIAL_OBJ,
 			$VECTOR2_OBJ,
 			$ROM_FONT
@@ -139,6 +145,12 @@ $FONT='/c/Windows/Fonts//c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
 		],
 		exec=>["$C2OBJ \"$BOOT_CPP\" -o \"$BOOT_OBJ\""]
 	},
+	$FAMILYBASIC_OBJ=>{
+		depend_c=>[
+			$FAMILYBASIC_CPP
+		],
+		exec=>["$C2OBJ \"$FAMILYBASIC_CPP\" -o \"$FAMILYBASIC_OBJ\""]
+	},
 	$INTERRUPTER_OBJ=>{
 		depend_c=>[
 			$INTERRUPTER_CPP
@@ -150,6 +162,12 @@ $FONT='/c/Windows/Fonts//c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
 			$OS_CPP
 		],
 		exec=>["$C2OBJ \"$OS_CPP\" -o \"$OS_OBJ\""]
+	},
+	$PATTERN_OBJ=>{
+		depend_c=>[
+			$PATTERN_CPP
+		],
+		exec=>["$C2OBJ \"$PATTERN_CPP\" -o \"$PATTERN_OBJ\""]
 	},
 	$SERIAL_OBJ=>{
 		depend_c=>[
