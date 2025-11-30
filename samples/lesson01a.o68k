@@ -29,7 +29,7 @@ VOID					USER_stNew(VOID)noexcept{
 	FAMILYBASIC::stNew();
 	FAMILYBASIC::stSetPalette(0,0x3f,0x30,0x16,0x01);
 	FAMILYBASIC::stSetPalette(8,0x3f,0x30,0x21,0x02);
-	FAMILYBASIC::stWriteBG({0,0},0x8,"LESSON 01:SPRITE(1)");
+	FAMILYBASIC::stWriteBG0({0,0},0x8,"LESSON 01:SPRITE(1)");
 	return;
 }
 

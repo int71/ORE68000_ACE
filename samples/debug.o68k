@@ -40,7 +40,7 @@ VOID					USER_stNew(VOID)noexcept{
 	FAMILYBASIC::stSetPalette(3,0x3f,0x30,0x27,0x16);
 	FAMILYBASIC::stSetPalette(8,0x3f,0x30,0x21,0x02);
 	FAMILYBASIC::stSetPalette(9,0x3f,0x30,0x27,0x18);
-	FAMILYBASIC::stWriteBG({0,8},stcui16csource,UINT16(SIZEOF(stcui16csource)));
+	FAMILYBASIC::stWriteBG0({0,8},stcui16csource,UINT16(SIZEOF(stcui16csource)));
 	VIDEO_DRIVER::VRAM_TEXT_stWrite(0,0,"グラフィック画面でのテキスト表示",1);
 	DEBUG::stWriteLine("仮想シリアル出力");
 	return;

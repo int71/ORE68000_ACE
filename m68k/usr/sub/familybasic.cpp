@@ -46,13 +46,14 @@ VOID					FAMILYBASIC::stNew(VOID)noexcept{
 		(/*ï\é¶ñ 0(ç≈âú)*/	IDLAYER::BG3<<0x0)
 	);
 	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_SPRITE_stcui16iAddress,PATTERN::IDPATTERN::SPRITE_SYSTEM);
+	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG0_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
 	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG1_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
-	{
-		AUTO					pui16destination=&MEMORY::VRAM_stui16DelegateThis(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset);
-		CAUTO					cpui16destination_end=pui16destination+128*128;
-
-		for(;pui16destination<cpui16destination_end;++pui16destination)*pui16destination=0x8020;
-	}
+	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG2_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
+	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG3_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
+	stFillBG0({0,0},{128,128},0x8020);
+	stFillBG1({0,0},{128,128},0x8020);
+	stFillBG2({0,0},{128,128},0x8020);
+	stFillBG3({0,0},{128,128},0x8020);
 	return;
 }
 
@@ -84,13 +85,48 @@ VOID					FAMILYBASIC::stSetPalette(
 	return;
 }
 
+//	private
+
+VOID					FAMILYBASIC::stFillBG(
+	CUINT32					cui32doffset,
+	CVECTOR2&				cv2idestination,
+	CVECTOR2&				cv2ndestination,
+	CUINT16					cui16nsource
+)noexcept{
+	AUTO					pui16destination=
+		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
+		(cv2idestination.i16iY()<<7)+
+		cv2idestination.i16iX();
+	CAUTO					cpui16destination_end=
+		pui16destination+
+		(cv2ndestination.i16nHeight()<<7);
+	AUTO					pui16destination_line_end=pui16destination+cv2ndestination.i16nWidth();
+
+	for(
+		;
+		pui16destination<cpui16destination_end;
+		pui16destination+=128,pui16destination_line_end+=128
+	)for(
+		AUTO					pui16destination_line=pui16destination;
+		pui16destination_line<pui16destination_line_end;
+		++pui16destination_line
+	)*pui16destination_line=cui16nsource;
+	return;
+}
+
 VOID					FAMILYBASIC::stWriteBG(
-	CVECTOR2&				cv2iposition,
+	CUINT32					cui32doffset,
+	CVECTOR2&				cv2idestination,
 	const PCUINT16			cpcui16csource,
 	CUINT16					cui16nsource
 )noexcept{
-	AUTO					pui16destination=&MEMORY::VRAM_stui16DelegateThis(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset)+cv2iposition.i16iX()+(cv2iposition.i16iY()<<7);
-	CAUTO					cpui16attribute_end=pui16destination+cui16nsource;
+	AUTO					pui16destination=
+		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
+		(cv2idestination.i16iY()<<7)+
+		cv2idestination.i16iX();
+	CAUTO					cpui16attribute_end=
+		pui16destination+
+		cui16nsource;
 
 	for(AUTO pcui16csource=cpcui16csource;pui16destination<cpui16attribute_end;++pui16destination){
 		*pui16destination=*pcui16csource;
@@ -100,21 +136,25 @@ VOID					FAMILYBASIC::stWriteBG(
 }
 
 VOID					FAMILYBASIC::stWriteBG(
-	CVECTOR2&				cv2iposition,
+	CUINT32					cui32doffset,
+	CVECTOR2&				cv2idestination,
 	CUINT8					cui8ipalette,
 	const PCUSTR			cpcustrsource
 )noexcept{
 	CAUTO					cui16cbase=UINT16(UINT16(cui8ipalette)<<12);
-	VECTOR2					v2iposition=cv2iposition;
-	AUTO					pui16destination=&MEMORY::VRAM_stui16DelegateThis(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset)+v2iposition.i16iX()+(v2iposition.i16iY()<<7);
+	AUTO					pui16destination_base=
+		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
+		(cv2idestination.i16iY()<<7)+
+		cv2idestination.i16iX();
+	AUTO					pui16destination=pui16destination_base;
 
 	for(AUTO pcustrsource=cpcustrsource;*pcustrsource;++pcustrsource){
 		if(*pcustrsource!='\n'){
 			*pui16destination=cui16cbase|UINT16(*pcustrsource);
 			++pui16destination;
 		}else{
-			++v2iposition.i16iY();
-			pui16destination=&MEMORY::VRAM_stui16DelegateThis(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset)+v2iposition.i16iX()+(v2iposition.i16iY()<<7);
+			pui16destination_base+=128;
+			pui16destination=pui16destination_base;
 		}
 	}
 	return;

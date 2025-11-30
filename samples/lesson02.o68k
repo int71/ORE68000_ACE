@@ -1,0 +1,116 @@
+/****************************************************************************
+**																			**
+**																			**
+**									m68k									**
+**																			**
+**	'lesson02.o68k'									2025 written by int71	**
+ ****************************************************************************/
+
+//
+//		include
+//
+
+#include				<sub/familybasic.hpp>
+
+//
+//		using
+//
+
+using namespace m68k::i71::sub;
+
+//
+//		user
+//
+
+VECTOR2					v2iPosition={0,0};
+UINT8					ui8iDirection=0;
+UINT8					ui8iAnimation=0;
+
+VOID					USER_stNew(VOID)noexcept{
+	FAMILYBASIC::stNew();
+	FAMILYBASIC::stSetPalette(0,0x3f,0x30,0x16,0x01);
+	FAMILYBASIC::stSetPalette(8,0x3f,0x30,0x21,0x02);
+	FAMILYBASIC::stSetPalette(9,0x3f,0x30,0x27,0x18);
+	FAMILYBASIC::stWriteBG0({0,0},0x8,"LESSON 02:BG(1)");
+	FAMILYBASIC::stWriteBG0({24,0},0x8,"HI\n00000000\n\n1P\n00000000");
+	FAMILYBASIC::stFillBG1({24,0},{8,27},0x80ff);
+	FAMILYBASIC::stFillBG1({25,16},{6,10},0x80fe);
+	for(INT16 i16y=0;i16y<128;i16y+=16)for(INT16 i16x=0;i16x<128;i16x+=16)FAMILYBASIC::stFillBG2(
+		{INT16(i16x+2),INT16(i16y+2)},
+		{12,12},
+		0x90c0
+	);
+	return;
+}
+
+VOID					USER_stDelete(VOID)noexcept{
+	FAMILYBASIC::stDelete();
+	return;
+}
+
+VOID					USER_stMain(VOID)noexcept{
+	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
+	using					IDBUTTON=FAMILYBASIC::IDBUTTON;
+	//	7	0	1
+	//		|
+	//	6---+---2
+	//		|
+	//	5	4	3
+	static constexpr UINT16	stacui16cpattern[]={
+		0x0000|136,
+		0x0400|128,
+		0x0400|120,
+		0x0c00|128,
+		0x0800|136,
+		0x0800|128,
+		0x0000|120,
+		0x0000|128
+	};
+	constexpr INT16			ci16nspeed=2;
+	static constexpr VECTOR2	stacv2nspeed[]={
+		{0,				-ci16nspeed},
+		{+ci16nspeed,	-ci16nspeed},
+		{+ci16nspeed, 	0},
+		{+ci16nspeed,	+ci16nspeed},
+		{0,				+ci16nspeed},
+		{-ci16nspeed,	+ci16nspeed},
+		{-ci16nspeed,	0},
+		{-ci16nspeed,	-ci16nspeed}
+	};
+	static constexpr UINT8	stacui8idirection[]={
+				//	UDLR
+		0xff,	//	0000
+		2,		//	0001
+		6,		//	0010
+		0xff,	//	0011
+		4,		//	0100
+		3,		//	0101
+		5,		//	0110
+		4,		//	0111
+		0,		//	1000
+		1,		//	1001
+		7,		//	1010
+		0,		//	1011
+		0xff,	//	1100
+		2,		//	1101
+		6,		//	1110
+		0xff	//	1111
+	};
+	CAUTO					cui8cjoystick=FAMILYBASIC::stui8cReadJoystick(0);
+
+	if(
+		CAUTO					cui8idirection=stacui8idirection[cui8cjoystick&0xf];
+		cui8idirection!=0xff
+	)ui8iDirection=cui8idirection;
+	v2iPosition+=stacv2nspeed[ui8iDirection];
+	++ui8iAnimation;
+	FAMILYBASIC::stWriteSprite(0,96,98,stacui16cpattern[ui8iDirection]+(ui8iAnimation&4),0x5100);
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG2OffsetX,(v2iPosition.i16iX()-8-96)&0x3ff);
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG2OffsetY,(v2iPosition.i16iY()-8-98)&0x3ff);
+	if(cui8cjoystick&(1<<IDBUTTON::A))MEMORY::VRAM_stui16DelegateThis(
+		MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset+
+		(((v2iPosition.i16iY()&0x3ff)>>3)<<8)+
+		(((v2iPosition.i16iX()&0x3ff)>>3)<<1)
+	)=0x80db;
+	return;
+}

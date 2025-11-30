@@ -25,7 +25,7 @@ using namespace m68k::i71::sub;
 VOID					USER_stNew(VOID)noexcept{
 	FAMILYBASIC::stNew();
 	FAMILYBASIC::stSetPalette(0,0x3f,0x30,0x16,0x01);
-	FAMILYBASIC::stWriteBG({0,0},0x0,"WELCOME TO ORE68000 ACE.\n2025 INT71 ALL RIGHTS RESERVED.\nDROP ME \"*.XML\" OR \"*.O68K\".");
+	FAMILYBASIC::stWriteBG0({0,0},0x0,"WELCOME TO ORE68000 ACE.\n2025 INT71 ALL RIGHTS RESERVED.\nDROP ME \"*.XML\" OR \"*.O68K\".");
 	return;
 }
 

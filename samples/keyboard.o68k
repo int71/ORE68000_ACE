@@ -40,7 +40,7 @@ VOID					USER_stNew(VOID)noexcept{
 	FAMILYBASIC::stSetPalette(3,0x3f,0x30,0x27,0x16);
 	FAMILYBASIC::stSetPalette(8,0x3f,0x30,0x21,0x02);
 	FAMILYBASIC::stSetPalette(9,0x3f,0x30,0x27,0x18);
-	FAMILYBASIC::stWriteBG({0,8},stcui16csource,UINT16(SIZEOF(stcui16csource)));
+	FAMILYBASIC::stWriteBG0({0,8},stcui16csource,UINT16(SIZEOF(stcui16csource)));
 	return;
 }
 
@@ -61,7 +61,7 @@ VOID					USER_stMain(VOID)noexcept{
 	ui16iPattern1+=2;
 	if(ui16iPattern1==0x10)ui16iPattern1=0;
 	VIDEO_DRIVER::stWrite(
-		IDREGISTERW::BG1OffsetX,
+		IDREGISTERW::BG0OffsetX,
 		0x2000+(ui16iX&0xff)
 	);
 	return;

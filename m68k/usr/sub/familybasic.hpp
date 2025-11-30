@@ -94,14 +94,60 @@ namespace m68k::i71::sub{
 			MEMORY::VRAM_stui32DelegateThis(cui32doffset+0x1c)=cui32cpattern7;
 			return;
 		}
-		static VOID				stWriteBG(CVECTOR2& cv2iposition,const PCUINT16 cpcui16csource,CUINT16 cui16nsource)noexcept;
-		static VOID				stWriteBG(CVECTOR2& cv2iposition,CUINT8 cui8ipalette,const PCUSTR cpcustrsource)noexcept;
+		static _INLINE_ VOID	stFillBG0(CVECTOR2& cv2idestination,CVECTOR2& cv2ndestination,CUINT16 cui16nsource)noexcept{
+			stFillBG(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,cv2idestination,cv2ndestination,cui16nsource);
+			return;
+		}
+		static _INLINE_ VOID	stWriteBG0(CVECTOR2& cv2idestination,const PCUINT16 cpcui16csource,CUINT16 cui16nsource)noexcept{
+			stWriteBG(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,cv2idestination,cpcui16csource,cui16nsource);
+			return;
+		}
+		static _INLINE_ VOID	stWriteBG0(CVECTOR2& cv2idestination,CUINT8 cui8ipalette,const PCUSTR cpcustrsource)noexcept{
+			stWriteBG(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,cv2idestination,cui8ipalette,cpcustrsource);
+		}
+		static _INLINE_ VOID	stFillBG1(CVECTOR2& cv2idestination,CVECTOR2& cv2ndestination,CUINT16 cui16nsource)noexcept{
+			stFillBG(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,cv2idestination,cv2ndestination,cui16nsource);
+			return;
+		}
+		static _INLINE_ VOID	stWriteBG1(CVECTOR2& cv2idestination,const PCUINT16 cpcui16csource,CUINT16 cui16nsource)noexcept{
+			stWriteBG(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,cv2idestination,cpcui16csource,cui16nsource);
+			return;
+		}
+		static _INLINE_ VOID	stWriteBG1(CVECTOR2& cv2idestination,CUINT8 cui8ipalette,const PCUSTR cpcustrsource)noexcept{
+			stWriteBG(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,cv2idestination,cui8ipalette,cpcustrsource);
+		}
+		static _INLINE_ VOID	stFillBG2(CVECTOR2& cv2idestination,CVECTOR2& cv2ndestination,CUINT16 cui16nsource)noexcept{
+			stFillBG(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,cv2idestination,cv2ndestination,cui16nsource);
+			return;
+		}
+		static _INLINE_ VOID	stWriteBG2(CVECTOR2& cv2idestination,const PCUINT16 cpcui16csource,CUINT16 cui16nsource)noexcept{
+			stWriteBG(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,cv2idestination,cpcui16csource,cui16nsource);
+			return;
+		}
+		static _INLINE_ VOID	stWriteBG2(CVECTOR2& cv2idestination,CUINT8 cui8ipalette,const PCUSTR cpcustrsource)noexcept{
+			stWriteBG(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,cv2idestination,cui8ipalette,cpcustrsource);
+		}
+		static _INLINE_ VOID	stFillBG3(CVECTOR2& cv2idestination,CVECTOR2& cv2ndestination,CUINT16 cui16nsource)noexcept{
+			stFillBG(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,cv2idestination,cv2ndestination,cui16nsource);
+			return;
+		}
+		static _INLINE_ VOID	stWriteBG3(CVECTOR2& cv2idestination,const PCUINT16 cpcui16csource,CUINT16 cui16nsource)noexcept{
+			stWriteBG(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,cv2idestination,cpcui16csource,cui16nsource);
+			return;
+		}
+		static _INLINE_ VOID	stWriteBG3(CVECTOR2& cv2idestination,CUINT8 cui8ipalette,const PCUSTR cpcustrsource)noexcept{
+			stWriteBG(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,cv2idestination,cui8ipalette,cpcustrsource);
+		}
 		static OFWBOOL			steIsKeyDown(const IDKEY cidkey)noexcept{
 			return OS::DEVICE_KEYBOARD_stui16Read(cidkey>>4)&(1<<(cidkey&0xf));
 		}
 		static UINT8			stui8cReadJoystick(CUINT8 cui8ibank)noexcept{
 			return OS::DEVICE_JOYSTICK_stui8Read(cui8ibank);
 		}
+	private:
+		static VOID				stFillBG(CUINT32 cui32doffset,CVECTOR2& cv2idestination,CVECTOR2& cv2ndestination,CUINT16 cui16nsource)noexcept;
+		static VOID				stWriteBG(CUINT32 cui32doffset,CVECTOR2& cv2idestination,const PCUINT16 cpcui16csource,CUINT16 cui16nsource)noexcept;
+		static VOID				stWriteBG(CUINT32 cui32doffset,CVECTOR2& cv2idestination,CUINT8 cui8ipalette,const PCUSTR cpcustrsource)noexcept;
 	};
 }
 
