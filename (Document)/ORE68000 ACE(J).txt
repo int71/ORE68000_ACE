@@ -166,6 +166,12 @@
 			　フルスクリーン表示時のディスプレイリフレッシュレートを保持します。
 			<FullScreenResolution value="(1920,1080)"/>
 			　フルスクリーン表示時のディスプレイ解像度を保持します。
+			<GPUAttaching value="Auto"/>
+			　Auto:
+			　　ディスプレイに紐づいているGPUを自動選択します。
+			　Forced0～Forced7:
+			　　使用GPUを強制します。
+			　　何番がどのGPUに対応するかは、「CHECK_GPU10.exe」、もしくは「CHECK_GPU11.exe」で確認できます。
 			<MouseState value="CapturableReleased"/>
 			　マウスキャプチャ(非表示)状態を保持します。
 			<OnScreenDisplay value="TRUE"/>
