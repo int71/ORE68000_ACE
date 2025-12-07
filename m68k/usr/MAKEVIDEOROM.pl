@@ -4,12 +4,12 @@
 ##																			##
 ##								ORE68000 ACE								##
 ##																			##
-##	'ORE68000ACE_MAKEVIDEOROM.pl'					2025 written by int71	##
+##	'MAKEVIDEOROM.pl'								2025 written by int71	##
 ##############################################################################
 use strict;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'base.pl';
-my($sVersion,$sDate)=('1.00','2025/11/23');
+my($sVersion,$sDate)=('1.01','2025/12/06');
 my($COM_sDirectory)=('/d/Sync/Package/Cross/ORE68000_ACE/m68k');
 
 new BASE::();
@@ -274,7 +274,7 @@ END
 //		include
 //
 
-#include				<ore68000ace/map.hpp>
+#include				"map.hpp"
 
 //
 //		namespace:m68k::${snamespace}::common

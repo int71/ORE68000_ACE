@@ -18,6 +18,12 @@
 #include				"os.hpp"
 
 //
+//		macro
+//
+
+#define __O68K_MAKESEQUENCE(cpsustrsource)	{0xff}
+
+//
 //		namespace:m68k::i71::sub
 //
 
@@ -137,6 +143,18 @@ namespace m68k::i71::sub{
 		}
 		static _INLINE_ VOID	stWriteBG3(CVECTOR2& cv2idestination,CUINT8 cui8ipalette,const PCUSTR cpcustrsource)noexcept{
 			stWriteBG(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,cv2idestination,cui8ipalette,cpcustrsource);
+		}
+		static _INLINE_ VOID	BGM_stPlay(const PCUINT8 cpcui8csource)noexcept{
+			OS::BGM_stPlay(cpcui8csource);
+			return;
+		}
+		static _INLINE_ VOID	SE0_stPlay(const PCUINT8 cpcui8csource)noexcept{
+			OS::SE0_stPlay(cpcui8csource);
+			return;
+		}
+		static _INLINE_ VOID	SE1_stPlay(const PCUINT8 cpcui8csource)noexcept{
+			OS::SE1_stPlay(cpcui8csource);
+			return;
 		}
 		static OFWBOOL			steIsKeyDown(const IDKEY cidkey)noexcept{
 			return OS::DEVICE_KEYBOARD_stui16Read(cidkey>>4)&(1<<(cidkey&0xf));

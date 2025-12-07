@@ -57,6 +57,10 @@ namespace m68k::i71::sub{
 		class ST{
 		public:
 			_UNDISCARDABLE_ OFWBOOL	eVBlank;
+			SOUND_DRIVER			BGM_drvThis;
+			SOUND_DRIVER			SE0_drvThis;
+			SOUND_DRIVER			SE1_drvThis;
+			SOUND_DRIVER			VOICE_drvThis;
 		public:
 			VOID					Delete(VOID)noexcept;
 		};
@@ -71,6 +75,37 @@ namespace m68k::i71::sub{
 		static VOID				stNew(VOID)noexcept;
 		static VOID				stDelete(VOID)noexcept;
 		static VOID				stMain(VOID)noexcept;
+		static _INLINE_ VOID	BGM_stSetMask(CUINT16 cui16cchannelmask)noexcept{
+			st.BGM_drvThis.Delete();
+			st.BGM_drvThis.New(cui16cchannelmask);
+			return;
+		}
+		static _INLINE_ VOID	BGM_stPlay(const PCUINT8 cpcui8csource)noexcept{
+			st.BGM_drvThis.Play(cpcui8csource);
+			return;
+		}
+		static _INLINE_ VOID	SE0_stSetMask(CUINT16 cui16cchannelmask)noexcept{
+			st.SE0_drvThis.Delete();
+			st.SE0_drvThis.New(cui16cchannelmask);
+			return;
+		}
+		static _INLINE_ VOID	SE0_stPlay(const PCUINT8 cpcui8csource)noexcept{
+			st.SE0_drvThis.PlayDynamic(cpcui8csource);
+			return;
+		}
+		static _INLINE_ VOID	SE1_stSetMask(CUINT16 cui16cchannelmask)noexcept{
+			st.SE1_drvThis.Delete();
+			st.SE1_drvThis.New(cui16cchannelmask);
+			return;
+		}
+		static _INLINE_ VOID	SE1_stPlay(const PCUINT8 cpcui8csource)noexcept{
+			st.SE1_drvThis.PlayDynamic(cpcui8csource);
+			return;
+		}
+		static _INLINE_ VOID	VOICE_stPlay(const PCUINT8 cpcui8csource,CUINT16 cui16nblock)noexcept{
+			st.VOICE_drvThis.PlayVoice(cpcui8csource,cui16nblock);
+			return;
+		}
 		static _INLINE_ VOID	HPC_stReset(VOID)noexcept{
 			DEVICE_HPC_stui16Delegate()=0;
 			return;

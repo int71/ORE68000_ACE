@@ -9,7 +9,7 @@
 use strict;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'base.pl';
-my($Version,$Date)=('2.71','2025/11/08');
+my($Version,$Date)=('2.72','2025/12/04');
 new BASE::();
 
 sub main{
@@ -23,23 +23,30 @@ sub main{
 		&USR_help();
 		return 0;
 	}else{
-		if($$argument[0] ne ''){
-			$source=$$argument[0];
-		}else{
-			&USR_help();
-			return 0;
-		}
+		$source=$$argument[0];
 		if($$option{'o'} ne ''){
 			$destination=$$option{'o'};
 			if(substr($destination,-4) eq '.bin'){
 				$destination=substr($destination,0,length($destination)-4);
 			}
 		}else{
-			$destination=$source;
+			if($source ne ''){
+				$destination=$source;
+			}else{
+				$destination='out';
+			}
+		}
+		if($source ne ''){
+			$source=require $source;
+		}else{
+			while(<STDIN>){
+				$source.=$_;
+			}
+			$source=eval($source);
 		}
 	}
 	{
-		my($image,$error)=&USR_MAKESEQUENCE(require $source);
+		my($image,$error)=&USR_MAKESEQUENCE($source);
 
 		if(scalar(@$error)){
 			foreach(@$error){
@@ -69,6 +76,19 @@ sub main{
 				if(0<($idata&0xf)){
 					BASE::Print("\n");
 				}
+			}elsif(defined $$option{'dx'}){
+				my($ndata)=$image->GetSize();
+
+				if($ndata){
+					my($idata);
+
+					$image->SetCurrent(0);
+					BASE::Print(sprintf("0x%02x",$image->GetBYTE()));
+					for($idata=1;$idata<$ndata;++$idata){
+						BASE::Print(sprintf(",0x%02x",$image->GetBYTE()));
+					}
+					BASE::Print("\n");
+				}
 			}else{
 				$image->Save("$destination.bin");
 			}
@@ -88,16 +108,18 @@ sub USR_help{
   演奏記述テキストファイルをORE68000(ACE)演奏データに変換します。
 
 <書式>
-$BASE::Self (入力) [-v] [-h] [-o (出力).bin] [-d]
+$BASE::Self [(入力)] [-v] [-h] [-o (出力).bin] [-d]
 
 <オプション>
 -v: バージョンを表示します。
 -h: このメッセージを表示します。
 -o: 出力ファイル名を指定します。デフォルト値は「(入力).bin」です。
 -d: 演奏データの内容を表示します。
+-dx: 演奏データの内容を1行のC配列形式「0xnn[,...]」で表示します。
 
 <「(入力)」について>
   「(入力)」はPerlスクリプトで、演奏指示を文字列配列参照として記述します。
+  省略時は、標準入力から受け取ります。
   Perlスクリプトであるので、変数、コメントの記述方法もPerlのそれに準じます。
 
     --------サンプルここから--------

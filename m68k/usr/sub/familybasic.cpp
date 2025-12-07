@@ -54,6 +54,17 @@ VOID					FAMILYBASIC::stNew(VOID)noexcept{
 	stFillBG1({0,0},{128,128},0x8020);
 	stFillBG2({0,0},{128,128},0x8020);
 	stFillBG3({0,0},{128,128},0x8020);
+	OS::BGM_stSetMask(
+		SOUND_DRIVER::stcui16cChannelMaskPCM0|
+		SOUND_DRIVER::stcui16cChannelMaskPCM1|
+		SOUND_DRIVER::stcui16cChannelMaskPCM2
+	);
+	OS::SE0_stSetMask(
+		SOUND_DRIVER::stcui16cChannelMaskPCM3
+	);
+	OS::SE1_stSetMask(
+		SOUND_DRIVER::stcui16cChannelMaskPCM4
+	);
 	return;
 }
 

@@ -1,0 +1,238 @@
+/****************************************************************************
+**																			**
+**																			**
+**									m68k									**
+**																			**
+**	'lesson03.o68k'									2025 written by int71	**
+ ****************************************************************************/
+
+//
+//		include
+//
+
+#include				<sub/familybasic.hpp>
+
+//
+//		using
+//
+
+using namespace m68k::i71::sub;
+
+//
+//		user
+//
+
+static constexpr UINT8	stacui8cBGM00[]=__O68K_MAKESEQUENCE(R"(
+my($_INIT)='  C ,PG=127';
+
+[
+	"#CHANNEL=PCM0/PCM1/PCM2,TRANSPOSE=0,PMSPEED=204",
+	#=======================================	   0
+	"#SPEED=1",
+	"$_INIT      /$_INIT      /$_INIT      ",
+	"     PG=1,PN=0,PM=0,VL=127,VM=255/            /            ",
+	"            /     PG=1,PN=0,PM=0,VL=127,VM=255/            ",
+	"            /            /     PG=48,PN=0,PM=0,VL=255,VM=255",
+	"            /            /            ",
+	"#SPEED=5",
+	"#LABEL=LoopStart",
+	"            /            / 3C ,VL=255 ",
+	"            /            /-           ",
+	"            /            /  C         ",
+	"            /            /-           ",
+	"            /            /            ",
+	"            /            /            ",
+	"            /            / <G         ",
+	"            /            /-           ",
+	"            /            / >C         ",
+	"            /            /-           ",
+	"            /            /  C         ",
+	"            /            /-           ",
+	"            /            /            ",
+	"            /            /            ",
+	"            /            / <G         ",
+	"            /            /-           ",
+	#=======================================	   1
+	"            /            / >C         ",
+	"            /            /-           ",
+	"            /            /  C         ",
+	"            /            /-           ",
+	"            /            /            ",
+	"            /            /            ",
+	"            /            / <E         ",
+	"            /            /-           ",
+	"            /            /            ",
+	"            /            /            ",
+	"            /            /  F         ",
+	"            /            /-           ",
+	"            /            /  F#        ",
+	"            /            /-           ",
+	"            /            /  G         ",
+	"            /            /-           ",
+	#=======================================	   2
+	"            /            / >D         ",
+	"            /            /-           ",
+	"            /            /  D         ",
+	"            /            /-           ",
+	"            /            /            ",
+	"            /            /            ",
+	"            /            / <G         ",
+	"            /            /-           ",
+	"            /            / >D         ",
+	"            /            /-           ",
+	"            /            /  D         ",
+	"            /            /-           ",
+	"            /            /            ",
+	"            /            /            ",
+	"            /            / <G         ",
+	"            /            /-           ",
+	#=======================================	   3
+	"            /            / >D         ",
+	"            /            /-           ",
+	"            /            /  D         ",
+	"            /            /-           ",
+	"            /            /            ",
+	"            /            /            ",
+	"            /            / <F#        ",
+	"            /            /-           ",
+	"            /            /            ",
+	"            /            /            ",
+	"            /            /  G         ",
+	"            /            /-           ",
+	"            /            /  G#        ",
+	"            /            /-           ",
+	"            /            /  A         ",
+	"            /            /-           ",
+	#=======================================	   4
+	"            /            /  G         ",
+	"            /            /-           ",
+	"            /            /  G         ",
+	"            /            /-           ",
+	"            /            /            ",
+	"            /            /            ",
+	"            /            /  D         ",
+	"            /            /-           ",
+	"            /            /  G         ",
+	"            /            /-           ",
+	"            /            /  G         ",
+	"            /            /-           ",
+	"            /            /            ",
+	"            /            /            ",
+	"            /            /  D         ",
+	"            /            /-           ",
+	#=======================================	   5
+	"            /            /  G         ",
+	"            /            /-           ",
+	"            /            /  G         ",
+	"            /            /-           ",
+	"            /            /            ",
+	"            /            /            ",
+	"            /            / <B         ",
+	"            /            /-           ",
+	"            /            /            ",
+	"            /            /            ",
+	"            /            / >C         ",
+	"            /            /-           ",
+	"            /            /  C#        ",
+	"            /            /-           ",
+	"            /            /  D         ",
+	"            /            /-           ",
+	#=======================================	   6
+	"            /            / >C         ",
+	"            /            /-           ",
+	"            /            /  C         ",
+	"            /            /-           ",
+	"            /            /            ",
+	"            /            /            ",
+	"            /            / <G         ",
+	"            /            /-           ",
+	"            /            / >C         ",
+	"            /            /-           ",
+	"            /            /  C         ",
+	"            /            /-           ",
+	"            /            /            ",
+	"            /            /            ",
+	"            /            / <G         ",
+	"            /            /-           ",
+	#=======================================	   7
+	"            /            / >C         ",
+	"            /            /-           ",
+	"            /            /  C         ",
+	"            /            /-           ",
+	"            /            /            ",
+	"            /            /            ",
+	"            /            / <E         ",
+	"            /            /-           ",
+	"            /            /            ",
+	"            /            /            ",
+	"            /            /  F         ",
+	"            /            /-           ",
+	"            /            /  F#        ",
+	"            /            /-           ",
+	"            /            /  G         ",
+	"            /            /-           ",
+	#=======================================	   8
+	"#SPEED=1",
+	"#JUMP=LoopStart",
+];
+)");
+static constexpr UINT8	stacui8cSE00[]=__O68K_MAKESEQUENCE(R"(
+[
+	"#CHANNEL=PCM3",
+	#=============	   0
+	"#SPEED=4",
+	" 5B ,PG=1,PN=0,PM=0,VL=255,VM=255",
+	"  G         ",
+	"#SPEED=1",
+	"-           ",
+];
+)");
+
+UINT16					ui16iX=0;
+UINT16					ui16iY=48;
+UINT16					ui16iPattern=0;
+OFWBOOL					eKeyDownPrevious=FALSE;
+
+VOID					USER_stNew(VOID)noexcept{
+	FAMILYBASIC::stNew();
+	FAMILYBASIC::stSetPalette(0,0x3f,0x36,0x16,0x02);
+	FAMILYBASIC::stSetPalette(1,0x3f,0x27,0x30,0x19);
+	FAMILYBASIC::stSetPalette(2,0x3f,0x35,0x25,0x17);
+	FAMILYBASIC::stSetPalette(3,0x3f,0x30,0x27,0x16);
+	FAMILYBASIC::stSetPalette(8,0x3f,0x30,0x21,0x02);
+	FAMILYBASIC::stSetPalette(9,0x3f,0x30,0x27,0x18);
+	FAMILYBASIC::stWriteBG0({0,0},0x8,"LESSON 03:SOUND(1)");
+	FAMILYBASIC::stFillBG1({0,8},{128,4},0x90c3);
+	FAMILYBASIC::stFillBG1({0,0},{1,8},0x90d2);
+	FAMILYBASIC::BGM_stPlay(stacui8cBGM00);
+	return;
+}
+
+VOID					USER_stDelete(VOID)noexcept{
+	FAMILYBASIC::stDelete();
+	return;
+}
+
+VOID					USER_stMain(VOID)noexcept{
+	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
+	CAUTO					cekeydown=FAMILYBASIC::steIsKeyDown(FAMILYBASIC::IDKEY::Space);
+
+	FAMILYBASIC::stWriteSprite(0,128,ui16iY+ 0,0x0000|((ui16iPattern>>1)+0x00),0x5100);
+	--ui16iX;
+	++ui16iPattern;
+	if(ui16iPattern==0x18)ui16iPattern=0;
+	VIDEO_DRIVER::stWrite(
+		IDREGISTERW::BG1OffsetX,
+		0x2000+(ui16iX&0xff)
+	);
+	if(cekeydown!=eKeyDownPrevious){
+		eKeyDownPrevious=cekeydown;
+		if(cekeydown){
+			FAMILYBASIC::SE0_stPlay(stacui8cSE00);
+			FAMILYBASIC::stSetPalette(0,0x30,0x36,0x16,0x02);
+			return;
+		}
+	}
+	FAMILYBASIC::stSetPalette(0,0x3f,0x36,0x16,0x02);
+	return;
+}

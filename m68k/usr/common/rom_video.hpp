@@ -12,7 +12,7 @@
 //		include
 //
 
-#include				<ore68000ace/map.hpp>
+#include				"map.hpp"
 
 //
 //		namespace:m68k::i71::common

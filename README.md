@@ -4,7 +4,7 @@
 
 # 登録されているファイルについて
 「ORE68000 ACE」実行に必要なファイル、としてサンプルプログラムが置かれています。  
-m68kターゲットiconv対応のGCCと、一部MSYS2プログラム(dll)を使用しております。  
+m68kターゲットiconv対応のGCCと、Perl、一部MSYS2プログラム(dll)を使用しております。  
 具体的ディレクトリ構造は下記の通りです。  
 「gnu」配下はGPLv2に基づく再配布となります。  
 
@@ -13,11 +13,15 @@ m68kターゲットiconv対応のGCCと、一部MSYS2プログラム(dll)を使用しております。
 │├MSYS2手順.txt←「MSYS2」インストール手順  
 │└ORE68000 ACE(J).txt←平たく申し上げると「遊び方」  
 ├bin/  
+│├CHECK_GPU10.exe←Windows10向けDirectX12テストプログラム  
+│├CHECK_GPU11.exe←Windows11向けDirectX12テストプログラム  
+│├CHECK_PERL.exe←ポータブル化Perl動作テストプログラム  
 │└MONITOR.exe←シリアル出力表示プログラム(「MONITOR.xml」は自動生成されるため削除)  
 ├image/  
 │├000.bin←ROMイメージ(メインMC68000プログラム)  
 │├020.bin←ROMイメージ(フォントデータ)  
 │├100.bin←ROMイメージ(グラフィックデータ)  
+│├200.bin←ROMイメージ(サウンドデータ)  
 │└map.xml←ROMイメージ定義ファイル  
 ├m68k/  
 │├(Document)/  
@@ -28,16 +32,18 @@ m68kターゲットiconv対応のGCCと、一部MSYS2プログラム(dll)を使用しております。
 ││├include/←「整数71」作成ヘッダファイル群  
 ││└src/←「整数71」作成プログラムファイル群  
 │├gnu/  
-││├bin/←ビルド結果  
+││├bin/←ビルド結果+ポータブル化Perl関連  
 │││※サイズの大きい「m68k-elf-gdb.exe」は「m68k-elf-gdb.7z」に圧縮  
 │││※MSYS2ファイル「msys-2.0.dll」も配置  
 ││├include/←ビルド結果  
-││├lib/←ビルド結果  
+││├lib/←ビルド結果+ポータブル化Perl関連  
 ││├libexec/←ビルド結果  
 ││├m68k-elf/←ビルド結果  
 │││※MSYS2ファイル「bin/msys-gcc_s-seh-1.dll」も配置  
-││├share/←ビルド結果  
+││├share/←ビルド結果+ポータブル化Perl関連  
 ││└COPYING←GCCライセンステキスト写し  
+│├lib/  
+││└perl/←自作Perlライブラリ  
 │├usr/  
 ││├(Resource)/←画像、音声データ元情報  
 ││├common/←メインMC68000/サブMC68000共通プログラム  
@@ -45,7 +51,8 @@ m68kターゲットiconv対応のGCCと、一部MSYS2プログラム(dll)を使用しております。
 ││├main.o/←メインMC68000用プログラムオブジェクトファイル  
 ││├sub/←サブMC68000用プログラム  
 ││├sub.o/←サブMC68000用プログラムオブジェクトファイル  
-││├MAKEVIDEOROM.pl←画像データ作成用sh(仮置)  
+││├MAKESOUNDROM.pl←サウンドデータ作成用sh(仮置)  
+││├MAKEVIDEOROM.pl←グラフィックデータ作成用sh(仮置)  
 ││├build.sh←ROMイメージ、オブジェクトファイル作成用sh  
 ││├clean.sh←リビルド用掃除sh  
 ││├generate_make.sh←「make_*.sh」作成用sh  
@@ -64,7 +71,10 @@ m68kターゲットiconv対応のGCCと、一部MSYS2プログラム(dll)を使用しております。
 │├M68K_MAKEPATTERN.exe←スプライト/BGパターン作成用プログラム  
 │└M68K_MAKEVOICE.exe←PCMデータ作成用プログラム  
 ├samples/  
+│├.vscode/  
 │├OREDIUS68k/←「整数71」作成ゲームプログラムROMイメージ  
+│├.clangd←「clangd」設定ファイル  
+│├samples.code-workspace←「Visual Studio Code」用プロジェクトファイル  
 │├debug.o68k←グラフィック、シリアル文字表示サンプルプログラム(ファミベ風)  
 │├keyboard.o68k←スペースキー入力テストサンプルプログラム(ファミベ風)  
 │└lesson*.o68k←レッスン用プログラム(ファミベ風)  
@@ -72,7 +82,7 @@ m68kターゲットiconv対応のGCCと、一部MSYS2プログラム(dll)を使用しております。
 ├README.md←本ファイル  
 ├default.o68k←初期動作プログラム  
 ├HISTORY.txt←改版履歴  
-└ORE68000 ACE.exe←「ORE68000 ACE」プログラム本体(「ORE68000 ACE.xml」は自動生成されるため削除)  
+└ORE68000 ACE.exe←「ORE68000 ACE」プログラム本体  
 
 # インストール方法
 インストーラ等は無いので、「(Document)/ORE68000 ACE(J).txt」をご参照ください。

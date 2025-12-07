@@ -12,6 +12,11 @@ sub main{
 		BASE::Pause($out);
 		return -1;
 	}
+	$out=`./MAKESOUNDROM.pl "(Resource)/SOUND" -o ../../image/200.bin -c common/rom_sound.hpp -j I71`;
+	if($out ne ''){
+		BASE::Pause($out);
+		return -1;
+	}
 	$out=`./make_main.sh`;
 	BASE::DeleteFile('out');
 	if($out ne ''){

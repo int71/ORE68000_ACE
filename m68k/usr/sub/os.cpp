@@ -116,6 +116,34 @@ VOID					OS::stNew(VOID)noexcept{
 	OFW::stDisableInterrupt();
 	BASE::stNew();
 	VIDEO_DRIVER::stNew();
+	SOUND_DRIVER::stNew();
+	st.BGM_drvThis.New(
+		SOUND_DRIVER::stcui16cChannelMaskFM0|
+		SOUND_DRIVER::stcui16cChannelMaskFM1|
+		SOUND_DRIVER::stcui16cChannelMaskFM2|
+		SOUND_DRIVER::stcui16cChannelMaskFM3|
+		SOUND_DRIVER::stcui16cChannelMaskFM4|
+		SOUND_DRIVER::stcui16cChannelMaskFM5|
+		SOUND_DRIVER::stcui16cChannelMaskPCM0|
+		SOUND_DRIVER::stcui16cChannelMaskPCM1|
+		SOUND_DRIVER::stcui16cChannelMaskPCM2|
+		SOUND_DRIVER::stcui16cChannelMaskPCM3|
+		SOUND_DRIVER::stcui16cChannelMaskPCM4|
+		SOUND_DRIVER::stcui16cChannelMaskPCM5|
+		SOUND_DRIVER::stcui16cChannelMaskPCM6
+	);
+	st.SE0_drvThis.New(
+		SOUND_DRIVER::stcui16cChannelMaskFM6
+	);
+	st.SE1_drvThis.New(
+		SOUND_DRIVER::stcui16cChannelMaskFM7
+	);
+	st.VOICE_drvThis.New(
+		SOUND_DRIVER::stcui16cChannelMaskPCM7
+	);
+	st.SE0_drvThis.SetMasterVolume(255);
+	st.SE1_drvThis.SetMasterVolume(255);
+	st.VOICE_drvThis.SetMasterVolume(255);
 	DEBUG::stNew();
 	INTERRUPTER::stNew();
 	PATTERN::stNew();
@@ -130,6 +158,7 @@ VOID					OS::stDelete(VOID)noexcept{
 	PATTERN::stDelete();
 	INTERRUPTER::stDelete();
 	DEBUG::stDelete();
+	SOUND_DRIVER::stDelete();
 	VIDEO_DRIVER::stDelete();
 	BASE::stDelete();
 	return;
@@ -141,6 +170,10 @@ VOID					OS::stMain(VOID)noexcept{
 		st.eVBlank=FALSE;
 		while(!st.eVBlank);
 		USER_stMain();
+		st.BGM_drvThis.Progress();
+		st.SE0_drvThis.Progress();
+		st.SE1_drvThis.Progress();
+		SOUND_DRIVER::stProgress();
 	}
 	USER_stDelete();
 	return;

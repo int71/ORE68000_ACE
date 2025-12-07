@@ -1,8 +1,8 @@
 #!/usr/local/ofw/bin/ofwmake
 $MAKEBIN='../M68K_MAKEBIN.exe';
 $User='main';
-$Source='../common/src';
-$Include='../common/include';
+$Source='/d/Sync/Package/Cross/ORE68000_ACE/m68k/common/src';
+$Include='/d/Sync/Package/Cross/ORE68000_ACE/m68k/common/include';
 $Object='main.o';
 $Release='../../image';
 $C2OBJ="$MAKEBIN -m c2obj -I $Include";
@@ -18,6 +18,10 @@ $COMMON_BASE__CPP="common/base_.cpp";
 $COMMON_BASE__OBJ="$Object/common_base_.o";
 $COMMON_MAP_CPP="common/map.cpp";
 $COMMON_MAP_OBJ="$Object/common_map.o";
+$COMMON_ROM_SOUND_CPP="common/rom_sound.cpp";
+$COMMON_ROM_SOUND_OBJ="$Object/common_rom_sound.o";
+$COMMON_ROM_VIDEO_CPP="common/rom_video.cpp";
+$COMMON_ROM_VIDEO_OBJ="$Object/common_rom_video.o";
 $COMMON_SERIAL__CPP="common/serial_.cpp";
 $COMMON_SERIAL__OBJ="$Object/common_serial_.o";
 $COMMON_VECTOR2__CPP="common/vector2_.cpp";
@@ -55,6 +59,8 @@ $VECTOR2_OBJ="$Object/vector2.o";
 			$ORE68000ACE_MEMORY_OBJ,
 			$COMMON_BASE__OBJ,
 			$COMMON_MAP_OBJ,
+			$COMMON_ROM_SOUND_OBJ,
+			$COMMON_ROM_VIDEO_OBJ,
 			$COMMON_SERIAL__OBJ,
 			$COMMON_VECTOR2__OBJ,
 			$BASE_OBJ,
@@ -64,7 +70,7 @@ $VECTOR2_OBJ="$Object/vector2.o";
 			$SERIAL_OBJ,
 			$VECTOR2_OBJ
 		],
-		exec=>["$OBJ2BIN \"$OFW_OFW_OBJ\" \"$OFW_STD_STD_OBJ\" \"$ORE68000ACE_MEMORY_OBJ\" \"$COMMON_BASE__OBJ\" \"$COMMON_MAP_OBJ\" \"$COMMON_SERIAL__OBJ\" \"$COMMON_VECTOR2__OBJ\" \"$BASE_OBJ\" \"$BOOT_OBJ\" \"$INTERRUPTER_OBJ\" \"$OS_OBJ\" \"$SERIAL_OBJ\" \"$VECTOR2_OBJ\" -o \"$ROM_PROGRAM\" -ca 000400 -cs 7efc00 -da 800000 -ds 200000"]
+		exec=>["$OBJ2BIN \"$OFW_OFW_OBJ\" \"$OFW_STD_STD_OBJ\" \"$ORE68000ACE_MEMORY_OBJ\" \"$COMMON_BASE__OBJ\" \"$COMMON_MAP_OBJ\" \"$COMMON_ROM_SOUND_OBJ\" \"$COMMON_ROM_VIDEO_OBJ\" \"$COMMON_SERIAL__OBJ\" \"$COMMON_VECTOR2__OBJ\" \"$BASE_OBJ\" \"$BOOT_OBJ\" \"$INTERRUPTER_OBJ\" \"$OS_OBJ\" \"$SERIAL_OBJ\" \"$VECTOR2_OBJ\" -o \"$ROM_PROGRAM\" -ca 000400 -cs 7efc00 -da 800000 -ds 200000"]
 	},
 	$OFW_OFW_OBJ=>{
 		depend_c=>[
@@ -95,6 +101,18 @@ $VECTOR2_OBJ="$Object/vector2.o";
 			$COMMON_MAP_CPP
 		],
 		exec=>["$C2OBJ \"$COMMON_MAP_CPP\" -o \"$COMMON_MAP_OBJ\""]
+	},
+	$COMMON_ROM_SOUND_OBJ=>{
+		depend_c=>[
+			$COMMON_ROM_SOUND_CPP
+		],
+		exec=>["$C2OBJ \"$COMMON_ROM_SOUND_CPP\" -o \"$COMMON_ROM_SOUND_OBJ\""]
+	},
+	$COMMON_ROM_VIDEO_OBJ=>{
+		depend_c=>[
+			$COMMON_ROM_VIDEO_CPP
+		],
+		exec=>["$C2OBJ \"$COMMON_ROM_VIDEO_CPP\" -o \"$COMMON_ROM_VIDEO_OBJ\""]
 	},
 	$COMMON_SERIAL__OBJ=>{
 		depend_c=>[

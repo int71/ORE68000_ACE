@@ -8,15 +8,16 @@ new BASE::();
 
 sub main{
 	my($ref_array_argument,$ref_hash_option)=@_;
+	my($sdirectorybase)=BASE::STRING_RemoveRelative(BASE::GetCurrentDirectory().'/..');
 	my($img_main)=&USR_generate_make(
-		'main','000','',0x7efc00,[
+		$sdirectorybase,'main','000','',0x7efc00,[
 			'ofw/ofw',
 			'ofw/std/std',
 			'ore68000ace/memory'
 		]
 	);
 	my($img_sub)=&USR_generate_make(
-		'sub','','020',0x3ffc00,[
+		$sdirectorybase,'sub','','020',0x3ffc00,[
 			'ofw/ofw',
 			'ofw/std/std',
 			'ore68000ace/memory',
@@ -59,7 +60,7 @@ END
 }
 
 sub USR_generate_make{
-	my($suser,$sromprogram,$sromfont,$icodesize,$ref_array_add)=@_;
+	my($sdirectorybase,$suser,$sromprogram,$sromfont,$icodesize,$ref_array_add)=@_;
 	my($img_destination);
 	my(@array_sname);
 
@@ -82,8 +83,8 @@ END
 	}
 	$img_destination->AddTEXT(<<END
 \$User='$suser';
-\$Source='../common/src';
-\$Include='../common/include';
+\$Source='$sdirectorybase/common/src';
+\$Include='$sdirectorybase/common/include';
 \$Object='$suser.o';
 \$Release='../../image';
 \$C2OBJ="\$MAKEBIN -m c2obj -I \$Include";
