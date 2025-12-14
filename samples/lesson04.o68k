@@ -1,0 +1,54 @@
+/****************************************************************************
+**																			**
+**																			**
+**									m68k									**
+**																			**
+**	'lesson04.o68k'									2025 written by int71	**
+ ****************************************************************************/
+
+//
+//		include
+//
+
+#include				<sub/familybasic.hpp>
+
+//
+//		using
+//
+
+using namespace m68k::i71::sub;
+
+//
+//		user
+//
+
+VOID					USER_stNew(VOID)noexcept{
+	FAMILYBASIC::stNew();
+	FAMILYBASIC::stSetPalette(8,0x3f,0x30,0x21,0x02);
+	FAMILYBASIC::stWriteBG0({0,0},0x8,"LESSON 04:INPUT(1)");
+	FAMILYBASIC::stWriteBG0({4,4},0x8,
+		" U\n"
+		"L R     B A\n"
+		" D\n"
+	);
+	return;
+}
+
+VOID					USER_stDelete(VOID)noexcept{
+	FAMILYBASIC::stDelete();
+	return;
+}
+
+VOID					USER_stMain(VOID)noexcept{
+	static constexpr USTR	stacustron[]="\xfe";
+	static constexpr USTR	stacustroff[]="\xff";
+	CAUTO					cekeydown=FAMILYBASIC::stui8cReadJoystick(0);
+
+	FAMILYBASIC::stWriteBG1({5,4},0x8,((cekeydown&(1<<FAMILYBASIC::IDBUTTON::Up))!=0)?stacustron:stacustroff);
+	FAMILYBASIC::stWriteBG1({4,5},0x8,((cekeydown&(1<<FAMILYBASIC::IDBUTTON::Left))!=0)?stacustron:stacustroff);
+	FAMILYBASIC::stWriteBG1({6,5},0x8,((cekeydown&(1<<FAMILYBASIC::IDBUTTON::Right))!=0)?stacustron:stacustroff);
+	FAMILYBASIC::stWriteBG1({12,5},0x8,((cekeydown&(1<<FAMILYBASIC::IDBUTTON::B))!=0)?stacustron:stacustroff);
+	FAMILYBASIC::stWriteBG1({14,5},0x8,((cekeydown&(1<<FAMILYBASIC::IDBUTTON::A))!=0)?stacustron:stacustroff);
+	FAMILYBASIC::stWriteBG1({5,6},0x8,((cekeydown&(1<<FAMILYBASIC::IDBUTTON::Down))!=0)?stacustron:stacustroff);
+	return;
+}

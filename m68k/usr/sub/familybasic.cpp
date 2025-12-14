@@ -161,7 +161,7 @@ VOID					FAMILYBASIC::stWriteBG(
 
 	for(AUTO pcustrsource=cpcustrsource;*pcustrsource;++pcustrsource){
 		if(*pcustrsource!='\n'){
-			*pui16destination=cui16cbase|UINT16(*pcustrsource);
+			*pui16destination=cui16cbase|UINT16(UINT8(*pcustrsource));
 			++pui16destination;
 		}else{
 			pui16destination_base+=128;
