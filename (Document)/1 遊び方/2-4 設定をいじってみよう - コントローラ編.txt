@@ -1,0 +1,187 @@
+・概要
+  アプリケーション「ORE68000 ACE.exe」操作のためのショートカット、そして仮想コン
+  ピュータ「ORE68000 ACE」が使用する「仮想ジョイスティック」への割り当てを行いま
+  す。
+  「ORE68000 ACE」は「キーボード、ジョイスティックが使えるコンピュータ」という設
+  定なので、「Altを除く」物理キーボードの入力はそのまま拾う事ができます。「Alt」
+  を除いているのはアプリケーション「ORE68000 ACE.exe」操作用に棲み分けしたいから
+  で、デフォルトショートカットは全て「Altを押しながら」という設定になっていま
+  す。
+  以下、凡例です。
+
+	<HID>
+		<CAPTUREMOUSE value="((Keyboard,255,Space,TRUE,FALSE,0,(Keyboard,255,Alt,FALSE,FALSE,0,,4096,0),4096,0))"/>
+		<FULLSCREEN value="((Keyboard,255,Enter,TRUE,FALSE,0,(Keyboard,255,Alt,FALSE,FALSE,0,,4096,0),4096,0))"/>
+		<IgnoreSuspiciousDevice value="FALSE"/>
+		<JOYSTICK-A value="((XInput,0,DigitalB,FALSE,FALSE,0,,4096,0),(XInput,0,DigitalA,FALSE,FALSE,0,,4096,0))"/>
+		<JOYSTICK-B value="((XInput,0,DigitalY,FALSE,FALSE,0,,4096,0),(XInput,0,DigitalX,FALSE,FALSE,0,,4096,0))"/>
+		<JOYSTICK-D value="((XInput,0,DigitalDown,FALSE,FALSE,0,,4096,0),(XInput,0,SignedThumbLYP,FALSE,FALSE,0,,4096,24576))"/>
+		<JOYSTICK-L value="((XInput,0,DigitalLeft,FALSE,FALSE,0,,4096,0),(XInput,0,SignedThumbLXM,FALSE,FALSE,0,,4096,24576))"/>
+		<JOYSTICK-R value="((XInput,0,DigitalRight,FALSE,FALSE,0,,4096,0),(XInput,0,SignedThumbLXP,FALSE,FALSE,0,,4096,24576))"/>
+		<JOYSTICK-U value="((XInput,0,DigitalUp,FALSE,FALSE,0,,4096,0),(XInput,0,SignedThumbLYM,FALSE,FALSE,0,,4096,24576))"/>
+		<RESET value="((Keyboard,255,R,TRUE,FALSE,0,(Keyboard,255,Alt,FALSE,FALSE,0,,4096,0),4096,0))"/>
+		<RESTART value="((Keyboard,255,R,TRUE,FALSE,0,(Keyboard,255,Alt,FALSE,FALSE,0,(Keyboard,255,Ctrl,FALSE,FALSE,0,,4096,0),4096,0),4096,0))"/>
+		<SHUTDOWN value="((Keyboard,255,F4,TRUE,FALSE,0,(Keyboard,255,Alt,FALSE,FALSE,0,,4096,0),4096,0))"/>
+	</HID>
+
+・使用可能なジョイスティック
+  USB接続の汎用ゲームコントローラ、もしくはXBOX互換コントローラ(手元に無いので確
+  認できていませんが恐らくBlueTooth接続もOK)が使用可能です。
+  キーボード、例えばカーソルキーを「仮想ジョイスティック」の上下左右に割り当て
+  る、等も可能ですが、もちろんその場合、仮想コンピュータ「ORE68000 ACE」からは常
+  にジョイスティックとカーソルキーが同時入力されるように見える事になります。
+
+・キーボード
+  値は下記のように並びます。
+
+    ①Keyboard,②255,③Space,④FALSE,⑤FALSE,⑥0,⑦,⑧4096,⑨0
+
+    ①:入力種別「キーボード」を意味します。
+    ②:「0始まりのキーボード通し番号」で、「255」は特別に「全接続キーボードの重ね
+      合わせ」の意味になります。
+    ③:入力キーを意味します。使用可能なのは下記文字列です。「左右xx」とあるのは、
+      「左xx」もしくは「右xx」のいづれかの押下で「ON」判定となります。
+
+        Esc                     F1                      F2
+        F3                      F4                      F5
+        F6                      F7                      F8
+        F9                      F10                     F11
+        F12
+        Zenkaku(全角)           1                       2
+        3                       4                       5
+        6                       7                       8
+        9                       0                       Minus(-)
+        Hat(^)                  Yen(\)                  BackSpace
+        Tab                     Q                       W
+        E                       R                       T
+        Y                       U                       I
+        O                       P                       At(@)
+        BracketL([)             Enter
+        CapsLock                A                       S
+        D                       F                       G
+        H                       J                       K
+        L                       Semicolon(;)            Colon(:)
+        BracketR(])
+        ShiftL(左Shift)         Z                       X
+        C                       V                       B
+        N                       M                       Comma(,)
+        Period(.)               Slash(/)                BackSlash(\)
+        ShiftR(右Shift)         Shift(左右Shift)        Ctrl(左右Ctrl)
+        CtrlL(左Ctrl)           WinL(左Windows)         AltL(左Alt)
+        Muhenkan(無変換)        Space                   Henkan(変換)
+        Hiragana                AltR(右Alt)             WinR(右Windows)
+        App(アプリケーション)   CtrlR(右Ctrl)           Win(左右Windows)
+        Alt(左右Alt)
+        PrintScreen             ScrollLock              Pause
+        Insert                  Home                    PageUp
+        Delete                  End                     PageDown
+        Up(↑)                  Left(←)                Down(↓)
+        Right(→)               NumLock
+        SlashTK(テンキー/)      AsteriskTK(テンキー*)   MinusTK(テンキー-)
+        7TK(テンキー7)          8TK(テンキー8)          9TK(テンキー9)
+        PlusTK(テンキー+)       4TK(テンキー4)          5TK(テンキー5)
+        6TK(テンキー6)          1TK(テンキー1)          2TK(テンキー2)
+        3TK(テンキー3)          EnterTK(テンキーEnter)  0TK(テンキー0)
+        PeriodTK(テンキー.)
+
+    ④:「制限条件」存在時に「制限順」を示し、「TRUE」時は、「制限条件」が成立し
+      た後に③が入力された場合のみ、ON判定となります。「FALSE」であると「制限条
+      件」の前後は関係無くなり、両条件が成立しさえすれば、どちらが先であってもON
+      判定となります。
+    ⑤:事実上「FALSE」固定(実装都合により動的状態が出力されている)。
+    ⑥:機器絞り込み条件としてのUSB規格「デバイスID」を示しますが、キーボードの場
+      合は「絞り込み無し」を意味する「0」以外は設定しません。
+    ⑦:キー単体入力でON判定にせず、「xxを押しながら」という条件を付与したい場合
+      に向けた、「制限条件」を指定します。カッコ「()」囲みで「入れ子」的に①～⑨
+      を記載します。
+    ⑧:入力値に乗する「スケール」を意味しますが、キーボードの場合「4096」固定です。
+    ⑨:ON判定閾値を加減する「遊び幅」を意味しますが、キーボードの場合「0」固定です。
+
+・USB接続の汎用ゲームコントローラ
+  値は下記のように並びます。
+
+    ①External,②0,③Digital01,④FALSE,⑤FALSE,⑥0,⑦,⑧4096,⑨0
+
+    ①:入力種別「USB汎用ゲームコントローラ」を意味します。
+    ②:「0始まりのゲームコントローラ通し番号」で、どのような順で番号が付与される
+      かは環境によって異なります。「255」は特別に「全USB汎用ゲームコントローラの
+      重ね合わせ」の意味になります。
+    ③:入力種別を意味します。使用可能なのは下記文字列です。
+
+        Digital00～Digital1F:「デジタルボタン0～31(16進表記)」に対応します。
+        Analog0～AnalogF:今のところ未使用
+        SignedXP/SignedXM/SignedYP/SignedYM/SignedZP/SignedZM:X、Y、Z軸のプラス
+          マイナスに対応します。X軸プラスは右、マイナスは左、Y軸プラスは下、マイ
+          ナスは上です。
+          「マイナス」は方向が逆なだけで、得られる値としては「正」であり、後述の
+          「遊び幅」も「正」の値になります。
+        SignedRXP/SignedRXM/SignedRYP/SignedRYM/SignedRZP/SignedRZM:RX、RY、RZ軸
+          のプラスマイナスに対応します。
+        SignedDialP/SignedDialM/SignedSliderP/SignedSliderM:ダイアル?スライダー?
+          のプラスマイナスに対応します。見たことありませんが。
+        HatSwitchXP/HatSwitchXM/HatSwitchYP/HatSwitchYM:ハットスイッチ右、左、
+          下、上に対応します。
+
+    ④:「キーボード」同様、「制限順」。
+    ⑤:「キーボード」同様、事実上「FALSE」固定。
+    ⑥:機器絞り込み条件としてのUSB規格「デバイスID」で、現状「絞り込み無し」を意
+      味する「0」以外は設定しません。
+    ⑦:「キーボード」同様、「制限条件」。
+    ⑧:入力値に乗する「スケール」を意味し、デジタル、ハットスイッチといった0/1系
+      は「4096」固定、「Signed」系は「感度」に影響します。
+      「4096」が「x1.0」相当で、「2048」で「x0.5」、「8192」で「x2.0」の意味にな
+      ります。
+    ⑨:ON判定閾値を加減する「遊び幅」を意味し、デジタル、ハットスイッチといった
+      0/1系は「0」固定、「Signed」系は「遊び」に影響します。
+      設定値は最大値「32767」に対する「不感帯」に対応し、例えば「24576」だと可動
+      範囲3/4を無視する、という意味になります。
+
+・XBOX互換コントローラ
+  値は下記のように並びます。
+
+    ①XInput,②0,③DigitalB,④FALSE,⑤FALSE,⑥0,⑦,⑧4096,⑨0
+
+    ①:入力種別「XBOX互換コントローラ」を意味します。
+    ②:「0始まりのゲームコントローラ通し番号」で、どのような順で番号が付与される
+      かはWindows的に「非公開」です。「255」は特別に「全XBOX互換コントローラの重
+      ね合わせ」の意味に──なるはずですが、未テストです。
+    ③:入力種別を意味します。使用可能なのは下記文字列です。
+
+        DigitalUp/DigitalDown/DigitalLeft/DigitalRight:十字ボタン上下左右に対応
+          します。
+        DigitalStart/DigitalBack:スタート、バックボタンに対応します。
+        DigitalThumbL/DigitalThumbR:左右アナログ軸押下に対応します。
+        DigitalShoulderL/DigitalShoulderR:人差し指デジタルトリガボタン左右に対応
+          します。
+        DigitalA/DigitalB/DigitalX/DigitalY:A、B、X、Yボタンに対応します。
+        AnalogTriggerL/AnalogTriggerR:中指アナログトリガ左右に対応します。
+        SignedThumbLXP/SignedThumbLXM/SignedThumbLYP/SignedThumbLYM:左アナログ
+          X、Y軸のプラスマイナスに対応します。プラスマイナスの扱いは「USB汎用
+          ゲームコントローラ」同様です。
+        SignedThumbRXP/SignedThumbRXM/SignedThumbRYP/SignedThumbRYM:右アナログ
+          X、Y軸のプラスマイナスに対応します。
+
+    ④:「キーボード」同様、「制限順」。
+    ⑤:「キーボード」同様、事実上「FALSE」固定。
+    ⑥:機器絞り込み条件としてのUSB規格「デバイスID」で、現状「絞り込み無し」を意
+      味する「0」以外は設定しません。
+    ⑦:「キーボード」同様、「制限条件」。
+    ⑧:「USB汎用ゲームコントローラ」同様、入力値に乗する「スケール」。
+    ⑨:「USB汎用ゲームコントローラ」同様、ON判定閾値を加減する「遊び幅」。
+
+・「xxを押しながらxx」の設定
+  例えば「value」に
+
+    "((Keyboard,255,Space,TRUE,FALSE,0,(Keyboard,255,Alt,FALSE,FALSE,0,,4096,0),
+    4096,0))"
+
+  と指定すると、「Altを押しながらSpace」という意味になります。ポイントは上記40カ
+  ラム目の「(」で始まる箇所で、「(Keyboard,255,Alt,FALSE,FALSE,0,,4096,0)」部分
+  が「入力成立の条件」を意味しています。
+  「入力成立の条件」は「入れ子」的であり、「キーボード」に限る必要もありません。
+  なお、「Space」の後ろの「TRUE」は前述の通り「制限順」を意味し、「Spaceを押しな
+  がらAlt」でもON判定としたければ、「FALSE」にします。
+
+・CHECK_HID.exe
+  アプリケーション「ORE68000 ACE.exe」と別プログラムではありますが、入力処理は同
+  一であり、「ORE68000 ACE」から見えているかの判別に使用できます。
