@@ -10,18 +10,29 @@
   以下、凡例です。
 
 	<HID>
-		<CAPTUREMOUSE value="((Keyboard,255,Space,TRUE,FALSE,0,(Keyboard,255,Alt,FALSE,FALSE,0,,4096,0),4096,0))"/>
-		<FULLSCREEN value="((Keyboard,255,Enter,TRUE,FALSE,0,(Keyboard,255,Alt,FALSE,FALSE,0,,4096,0),4096,0))"/>
+		<CAPTUREMOUSE value="((Keyboard,255,Space,TRUE,00000000,(Keyboard,255,
+		Alt,FALSE,00000000,,4096,0),4096,0))"/>
+		<FULLSCREEN value="((Keyboard,255,Enter,TRUE,00000000,(Keyboard,255,Alt,
+		FALSE,00000000,,4096,0),4096,0))"/>
 		<IgnoreSuspiciousDevice value="FALSE"/>
-		<JOYSTICK-A value="((XInput,0,DigitalB,FALSE,FALSE,0,,4096,0),(XInput,0,DigitalA,FALSE,FALSE,0,,4096,0))"/>
-		<JOYSTICK-B value="((XInput,0,DigitalY,FALSE,FALSE,0,,4096,0),(XInput,0,DigitalX,FALSE,FALSE,0,,4096,0))"/>
-		<JOYSTICK-D value="((XInput,0,DigitalDown,FALSE,FALSE,0,,4096,0),(XInput,0,SignedThumbLYP,FALSE,FALSE,0,,4096,24576))"/>
-		<JOYSTICK-L value="((XInput,0,DigitalLeft,FALSE,FALSE,0,,4096,0),(XInput,0,SignedThumbLXM,FALSE,FALSE,0,,4096,24576))"/>
-		<JOYSTICK-R value="((XInput,0,DigitalRight,FALSE,FALSE,0,,4096,0),(XInput,0,SignedThumbLXP,FALSE,FALSE,0,,4096,24576))"/>
-		<JOYSTICK-U value="((XInput,0,DigitalUp,FALSE,FALSE,0,,4096,0),(XInput,0,SignedThumbLYM,FALSE,FALSE,0,,4096,24576))"/>
-		<RESET value="((Keyboard,255,R,TRUE,FALSE,0,(Keyboard,255,Alt,FALSE,FALSE,0,,4096,0),4096,0))"/>
-		<RESTART value="((Keyboard,255,R,TRUE,FALSE,0,(Keyboard,255,Alt,FALSE,FALSE,0,(Keyboard,255,Ctrl,FALSE,FALSE,0,,4096,0),4096,0),4096,0))"/>
-		<SHUTDOWN value="((Keyboard,255,F4,TRUE,FALSE,0,(Keyboard,255,Alt,FALSE,FALSE,0,,4096,0),4096,0))"/>
+		<JOYSTICK-A value="((XInput,0,DigitalB,FALSE,00000000,,4096,0),(XInput,
+		0,DigitalA,FALSE,00000000,,4096,0))"/>
+		<JOYSTICK-B value="((XInput,0,DigitalY,FALSE,00000000,,4096,0),(XInput,
+		0,DigitalX,FALSE,00000000,,4096,0))"/>
+		<JOYSTICK-D value="((XInput,0,DigitalDown,FALSE,00000000,,4096,0),(
+		XInput,0,SignedThumbLYP,FALSE,00000000,,4096,24576))"/>
+		<JOYSTICK-L value="((XInput,0,DigitalLeft,FALSE,00000000,,4096,0),(
+		XInput,0,SignedThumbLXM,FALSE,00000000,,4096,24576))"/>
+		<JOYSTICK-R value="((XInput,0,DigitalRight,FALSE,00000000,,4096,0),(
+		XInput,0,SignedThumbLXP,FALSE,00000000,,4096,24576))"/>
+		<JOYSTICK-U value="((XInput,0,DigitalUp,FALSE,00000000,,4096,0),(XInput,
+		0,SignedThumbLYM,FALSE,00000000,,4096,24576))"/>
+		<RESET value="((Keyboard,255,R,TRUE,00000000,(Keyboard,255,Alt,FALSE,
+		00000000,,4096,0),4096,0))"/>
+		<RESTART value="((Keyboard,255,R,TRUE,00000000,(Keyboard,255,Alt,FALSE,
+		00000000,(Keyboard,255,Ctrl,FALSE,00000000,,4096,0),4096,0),4096,0))"/>
+		<SHUTDOWN value="((Keyboard,255,F4,TRUE,00000000,(Keyboard,255,Alt,
+		FALSE,00000000,,4096,0),4096,0))"/>
 	</HID>
 
 ・使用可能なジョイスティック
@@ -34,7 +45,7 @@
 ・キーボード
   値は下記のように並びます。
 
-    ①Keyboard,②255,③Space,④FALSE,⑤FALSE,⑥0,⑦,⑧4096,⑨0
+    ①Keyboard,②255,③Space,④FALSE,⑤00000000,⑥,⑦4096,⑧0
 
     ①:入力種別「キーボード」を意味します。
     ②:「0始まりのキーボード通し番号」で、「255」は特別に「全接続キーボードの重ね
@@ -88,19 +99,21 @@
       た後に③が入力された場合のみ、ON判定となります。「FALSE」であると「制限条
       件」の前後は関係無くなり、両条件が成立しさえすれば、どちらが先であってもON
       判定となります。
-    ⑤:事実上「FALSE」固定(実装都合により動的状態が出力されている)。
-    ⑥:機器絞り込み条件としてのUSB規格「デバイスID」を示しますが、キーボードの場
-      合は「絞り込み無し」を意味する「0」以外は設定しません。
-    ⑦:キー単体入力でON判定にせず、「xxを押しながら」という条件を付与したい場合
+    ⑤:機器絞り込み条件としてのUSB規格「デバイスID」を示します。
+      通常「絞り込み無し」を意味する「00000000」を設定しますが、機器抜き差しが頻
+      繁で、②の通し番号が変化しやすい状況であるなら、通し番号固定化のため明示指
+      定する、という使い方が出来ます。
+      「デバイスID」の調べ方については「CHECK_HID.exe」の項を参照ください。
+    ⑥:キー単体入力でON判定にせず、「xxを押しながら」という条件を付与したい場合
       に向けた、「制限条件」を指定します。カッコ「()」囲みで「入れ子」的に①～⑨
       を記載します。
-    ⑧:入力値に乗する「スケール」を意味しますが、キーボードの場合「4096」固定です。
-    ⑨:ON判定閾値を加減する「遊び幅」を意味しますが、キーボードの場合「0」固定です。
+    ⑦:入力値に乗する「スケール」を意味しますが、キーボードの場合「4096」固定です。
+    ⑧:ON判定閾値を加減する「遊び幅」を意味しますが、キーボードの場合「0」固定です。
 
 ・USB接続の汎用ゲームコントローラ
   値は下記のように並びます。
 
-    ①External,②0,③Digital01,④FALSE,⑤FALSE,⑥0,⑦,⑧4096,⑨0
+    ①External,②0,③Digital01,④FALSE,⑤00000000,⑥,⑦4096,⑧0
 
     ①:入力種別「USB汎用ゲームコントローラ」を意味します。
     ②:「0始まりのゲームコントローラ通し番号」で、どのような順で番号が付与される
@@ -123,15 +136,13 @@
           下、上に対応します。
 
     ④:「キーボード」同様、「制限順」。
-    ⑤:「キーボード」同様、事実上「FALSE」固定。
-    ⑥:機器絞り込み条件としてのUSB規格「デバイスID」で、現状「絞り込み無し」を意
-      味する「0」以外は設定しません。
-    ⑦:「キーボード」同様、「制限条件」。
-    ⑧:入力値に乗する「スケール」を意味し、デジタル、ハットスイッチといった0/1系
+    ⑤:「キーボード」同様、「デバイスID」。
+    ⑥:「キーボード」同様、「制限条件」。
+    ⑦:入力値に乗する「スケール」を意味し、デジタル、ハットスイッチといった0/1系
       は「4096」固定、「Signed」系は「感度」に影響します。
       「4096」が「x1.0」相当で、「2048」で「x0.5」、「8192」で「x2.0」の意味にな
       ります。
-    ⑨:ON判定閾値を加減する「遊び幅」を意味し、デジタル、ハットスイッチといった
+    ⑧:ON判定閾値を加減する「遊び幅」を意味し、デジタル、ハットスイッチといった
       0/1系は「0」固定、「Signed」系は「遊び」に影響します。
       設定値は最大値「32767」に対する「不感帯」に対応し、例えば「24576」だと可動
       範囲3/4を無視する、という意味になります。
@@ -139,7 +150,7 @@
 ・XBOX互換コントローラ
   値は下記のように並びます。
 
-    ①XInput,②0,③DigitalB,④FALSE,⑤FALSE,⑥0,⑦,⑧4096,⑨0
+    ①XInput,②0,③DigitalB,④FALSE,⑤00000000,⑥,⑦4096,⑧0
 
     ①:入力種別「XBOX互換コントローラ」を意味します。
     ②:「0始まりのゲームコントローラ通し番号」で、どのような順で番号が付与される
@@ -162,26 +173,43 @@
           X、Y軸のプラスマイナスに対応します。
 
     ④:「キーボード」同様、「制限順」。
-    ⑤:「キーボード」同様、事実上「FALSE」固定。
-    ⑥:機器絞り込み条件としてのUSB規格「デバイスID」で、現状「絞り込み無し」を意
-      味する「0」以外は設定しません。
-    ⑦:「キーボード」同様、「制限条件」。
-    ⑧:「USB汎用ゲームコントローラ」同様、入力値に乗する「スケール」。
-    ⑨:「USB汎用ゲームコントローラ」同様、ON判定閾値を加減する「遊び幅」。
+    ⑤:「キーボード」同様、「デバイスID」。
+    ⑥:「キーボード」同様、「制限条件」。
+    ⑦:「USB汎用ゲームコントローラ」同様、入力値に乗する「スケール」。
+    ⑧:「USB汎用ゲームコントローラ」同様、ON判定閾値を加減する「遊び幅」。
 
 ・「xxを押しながらxx」の設定
   例えば「value」に
 
-    "((Keyboard,255,Space,TRUE,FALSE,0,(Keyboard,255,Alt,FALSE,FALSE,0,,4096,0),
-    4096,0))"
+    "((Keyboard,255,Space,TRUE,00000000,(Keyboard,255,Alt,FALSE,00000000,,4096,0
+    ),4096,0))"
 
-  と指定すると、「Altを押しながらSpace」という意味になります。ポイントは上記40カ
-  ラム目の「(」で始まる箇所で、「(Keyboard,255,Alt,FALSE,FALSE,0,,4096,0)」部分
-  が「入力成立の条件」を意味しています。
-  「入力成立の条件」は「入れ子」的であり、「キーボード」に限る必要もありません。
-  なお、「Space」の後ろの「TRUE」は前述の通り「制限順」を意味し、「Spaceを押しな
-  がらAlt」でもON判定としたければ、「FALSE」にします。
+  と指定すると、「Altを押しながらSpace」という意味になります。ポイントは上記41カ
+  ラム目の「(」で始まる箇所で、「(Keyboard,255,Alt,FALSE,00000000,,4096,0)」部分
+  が「入力成立の条件」を意味しています。「Space」後ろの「TRUE」は前述の通り「制
+  限順」を意味し、「Spaceを押しながらAlt」でもON判定としたければ、つまり押下順を
+  気にしたくなければ「FALSE」にします。
+  なお、「入力成立の条件」は「入れ子」的であり、「キーボード」に限る必要はありま
+  せんし、下記のように更に「条件付き入力」を置く事もできます。
+
+    "((Keyboard,255,R,TRUE,00000000,(Keyboard,255,Alt,FALSE,00000000,(Keyboard,
+    255,Ctrl,FALSE,00000000,,4096,0),4096,0),4096,0))"
+
+  これは「AltとCtrlを押しながらR」でON判定、となります。1行目55カラム目に
+  「FALSE」とある事に注意ください。これは「AltとCtrlの押し順は気にしない」事を意
+  味します。
 
 ・CHECK_HID.exe
   アプリケーション「ORE68000 ACE.exe」と別プログラムではありますが、入力処理は同
   一であり、「ORE68000 ACE」から見えているかの判別に使用できます。
+  「CHECK_HID.exe」を実行すると、下記のような項目が複数表示されます。
+
+    デバイス種別: デバイス名
+      デバイスパス
+      UsagePage:xxxx Usage:xxxx
+      :(入力状況)
+
+  うち、「デバイスパス」には「VID_nnnn&PID_mmmm」といった文字列が含まれる場合が
+  あり、「nnnn」と「mmmm」を連結した8ケタ16進数値「nnnnmmmm」が、USB規格「デバイ
+  スID」に相当します。この値は、設定値「機器絞り込み条件としてのUSB規格『デバイ
+  スID』」として使用できます。

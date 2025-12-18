@@ -22,7 +22,7 @@ using namespace m68k::i71::sub;
 //		user
 //
 
-VOID					USER_stNew(VOID)noexcept{
+VOID					USER_New(VOID)noexcept{
 	FAMILYBASIC::stNew();
 	FAMILYBASIC::stSetPalette(8,0x3f,0x30,0x21,0x02);
 	FAMILYBASIC::stWriteBG0({0,0},0x8,"LESSON 04:INPUT(1)");
@@ -34,12 +34,12 @@ VOID					USER_stNew(VOID)noexcept{
 	return;
 }
 
-VOID					USER_stDelete(VOID)noexcept{
+VOID					USER_Delete(VOID)noexcept{
 	FAMILYBASIC::stDelete();
 	return;
 }
 
-VOID					USER_stMain(VOID)noexcept{
+VOID					USER_Main(VOID)noexcept{
 	static constexpr USTR	stacustron[]="\xfe";
 	static constexpr USTR	stacustroff[]="\xff";
 	CAUTO					cekeydown=FAMILYBASIC::stui8cReadJoystick(0);

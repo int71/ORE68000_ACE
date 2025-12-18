@@ -193,7 +193,7 @@ UINT16					ui16iY=48;
 UINT16					ui16iPattern=0;
 OFWBOOL					eKeyDownPrevious=FALSE;
 
-VOID					USER_stNew(VOID)noexcept{
+VOID					USER_New(VOID)noexcept{
 	FAMILYBASIC::stNew();
 	FAMILYBASIC::stSetPalette(0,0x3f,0x36,0x16,0x02);
 	FAMILYBASIC::stSetPalette(1,0x3f,0x27,0x30,0x19);
@@ -208,12 +208,12 @@ VOID					USER_stNew(VOID)noexcept{
 	return;
 }
 
-VOID					USER_stDelete(VOID)noexcept{
+VOID					USER_Delete(VOID)noexcept{
 	FAMILYBASIC::stDelete();
 	return;
 }
 
-VOID					USER_stMain(VOID)noexcept{
+VOID					USER_Main(VOID)noexcept{
 	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
 	CAUTO					cekeydown=FAMILYBASIC::steIsKeyDown(FAMILYBASIC::IDKEY::Space);
 

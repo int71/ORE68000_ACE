@@ -27,7 +27,7 @@ UINT16					ui16iY=48;
 UINT16					ui16iPattern0=0;
 UINT16					ui16iPattern1=0;
 
-VOID					USER_stNew(VOID)noexcept{
+VOID					USER_New(VOID)noexcept{
 	static constexpr UINT16	stcui16csource[]={
 		0x80c0,0x80c0,0x80c0,0x80c0,0x90c1,0x90c1,0x90c1,0x90c1,0x80c2,0x80c2,0x80c2,0x80c2,0x90c3,0x90c3,0x90c3,0x90c3,
 		0x80c4,0x80c5,0x80c5,0x80c5,0x80c5,0x80c5,0x80c5,0x80c6,0x90c4,0x90c5,0x90c5,0x90c5,0x90c5,0x90c5,0x90c5,0x90c6
@@ -46,12 +46,12 @@ VOID					USER_stNew(VOID)noexcept{
 	return;
 }
 
-VOID					USER_stDelete(VOID)noexcept{
+VOID					USER_Delete(VOID)noexcept{
 	FAMILYBASIC::stDelete();
 	return;
 }
 
-VOID					USER_stMain(VOID)noexcept{
+VOID					USER_Main(VOID)noexcept{
 	FAMILYBASIC::stWriteSprite(0,((ui16iX>>1)+ 0)&0xff,ui16iY+ 0,0x2000|((ui16iPattern0>>1)+0x1c),0x5100);
 	FAMILYBASIC::stWriteSprite(1,((ui16iX>>1)+32)&0xff,ui16iY+ 0,0x3000|((ui16iPattern1>>1)+0x70),0x5100);
 	--ui16iX;

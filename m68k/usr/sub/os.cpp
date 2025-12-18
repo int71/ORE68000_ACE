@@ -24,9 +24,9 @@ using namespace m68k::i71::sub;
 //		user
 //
 
-VOID					USER_stNew(VOID)noexcept;
-VOID					USER_stDelete(VOID)noexcept;
-VOID					USER_stMain(VOID)noexcept;
+VOID					USER_New(VOID)noexcept;
+VOID					USER_Delete(VOID)noexcept;
+VOID					USER_Main(VOID)noexcept;
 
 //
 //		class:OS::ST
@@ -165,17 +165,17 @@ VOID					OS::stDelete(VOID)noexcept{
 }
 
 VOID					OS::stMain(VOID)noexcept{
-	USER_stNew();
+	USER_New();
 	while(TRUE){
 		st.eVBlank=FALSE;
 		while(!st.eVBlank);
-		USER_stMain();
+		USER_Main();
 		st.BGM_drvThis.Progress();
 		st.SE0_drvThis.Progress();
 		st.SE1_drvThis.Progress();
 		SOUND_DRIVER::stProgress();
 	}
-	USER_stDelete();
+	USER_Delete();
 	return;
 }
 

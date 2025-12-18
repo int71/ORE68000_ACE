@@ -1,11 +1,20 @@
+・設定変更の方法(お詫び)
+  申し訳無い事に、まだGUIの準備が出来ていません。よって次項の通り、テキストエ
+  ディタ等で編集する必要があります。
+
 ・ORE68000 ACE.xml
   設定ファイル「ORE68000 ACE.xml」は、アプリケーションプログラム
   「ORE68000 ACE.exe」と同一のディレクトリに置かれます。起動時に
   「ORE68000 ACE.xml」が見つからない場合は、「デフォルト値」を使用して動作開始
   し、プログラム終了時に「ORE68000 ACE.xml」を新規作成します。
-  ファイルは普通の「XML」なので、テキストエディタ等で編集できます。
+  ファイルは普通の「XML」なので、テキストエディタ等で編集できます(と言うよりGUI
+  作成が追い付いていないので「しなければなりません」)。
   実際の設定については「2-2 設定をいじってみよう - ビデオ編」以降をご覧いただき
   たいですが、本項「俯瞰」にも簡単な説明を入れておきますのでご参照ください。
+  なお、「1 動かしてみよう」にも記載しておりますが、「ORE68000 ACE」は常に進化、
+  変化しており、しばしば仕様変更されるので、この事で設定値が異常扱いされ、正常動
+  作しなくなる事があります。その場合は「ORE68000 ACE.xml」を別名に変える、もしく
+  は削除してデフォルト設定に戻してやってください。
 
 ・俯瞰
 	<?xml version="1.0" encoding="UTF-8"?>
@@ -134,16 +143,17 @@
 		</APPLICATION>
 		<GPU/>
 		<HID>
-			<CAPTUREMOUSE value="((Keyboard,255,Space,TRUE,FALSE,0,(Keyboard,
-			255,Alt,FALSE,FALSE,0,,4096,0),4096,0))"/>
+			<CAPTUREMOUSE value="((Keyboard,255,Space,TRUE,00000000,(Keyboard,
+			255,Alt,FALSE,00000000,,4096,0),4096,0))"/>
 			  マウスキャプチャ(非表示)切り替えキー割り当てです。
-			  「Keyboard,255,Space,TRUE,FALSE,0」がトリガを、「(Keyboard,255,Alt
-			  ,FALSE,FALSE,0,,4096,0)」が条件を示しており、この場合「Alt+Space」
-			  が割り当てとなります。
-			<FULLSCREEN value="((Keyboard,255,Enter,TRUE,FALSE,0,(Keyboard,255,
-			Alt,FALSE,FALSE,0,,4096,0),4096,0))"/>
+			  「Keyboard,255,Space,TRUE,00000000」がトリガを、「(Keyboard,255,
+			  Alt,FALSE,00000000,,4096,0)」が条件を示しており、この場合「Alt+
+			  Space」が割り当てとなります。
+			<FULLSCREEN value="((Keyboard,255,Enter,TRUE,00000000,(Keyboard,255,
+			Alt,FALSE,00000000,,4096,0),4096,0))"/>
 			  フルスクリーン切り替えキー割り当てです。
-			<JOYSTICK-A value="((External,0,Digital00,FALSE,FALSE,0,,4096,0))"/>
+			<JOYSTICK-A value="((External,0,Digital00,FALSE,00000000,,4096,0))"/
+			>
 			  「ORE68000 ACE」仮想ジョイスティック「Aボタン」への割り当てです。
 			  「CAPTUREMOUSE」同様の記述でキーボード割り当ても出来ますが、この例
 			  ではゲームコントローラを割り当てています。
@@ -153,36 +163,37 @@
 			  で表示されるボタン番号に対応します。
 			  また、通し番号は16進数表記であるので、通し番号「14」は
 			  「Digital0E」になります。
-			<JOYSTICK-B value="((External,0,Digital01,FALSE,FALSE,0,,4096,0))"/>
+			<JOYSTICK-B value="((External,0,Digital01,FALSE,00000000,,4096,0))"/
+			>
 			  「ORE68000 ACE」仮想ジョイスティック「Bボタン」への割り当てです。
-			<JOYSTICK-D value="((External,0,AnalogS01P,FALSE,FALSE,0,,4096,24576
-			))"/>
+			<JOYSTICK-D value="((External,0,AnalogS01P,FALSE,00000000,,4096,
+			24576))"/>
 			  「ORE68000 ACE」仮想ジョイスティック「下」への割り当てです。
 			  「24576」は「ON」判定の閾値で、下げると敏感になる代わり、物理ジョ
 			  イスティック精度によっては「勝手にON」が起き得ます。
-			<JOYSTICK-L value="((External,0,AnalogS00M,FALSE,FALSE,0,,4096,24576
-			))"/>
+			<JOYSTICK-L value="((External,0,AnalogS00M,FALSE,00000000,,4096,
+			24576))"/>
 			  「ORE68000 ACE」仮想ジョイスティック「左」への割り当てです。
-			<JOYSTICK-R value="((External,0,AnalogS00P,FALSE,FALSE,0,,4096,24576
-			))"/>
+			<JOYSTICK-R value="((External,0,AnalogS00P,FALSE,00000000,,4096,
+			24576))"/>
 			  「ORE68000 ACE」仮想ジョイスティック「右」への割り当てです。
-			<JOYSTICK-U value="((External,0,AnalogS01M,FALSE,FALSE,0,,4096,24576
-			))"/>
+			<JOYSTICK-U value="((External,0,AnalogS01M,FALSE,00000000,,4096,
+			24576))"/>
 			  「ORE68000 ACE」仮想ジョイスティック「上」への割り当てです。
-			<RESET value="((Keyboard,255,R,TRUE,FALSE,0,(Keyboard,255,Alt,FALSE,
-			FALSE,0,,4096,0),4096,0))"/>
+			<RESET value="((Keyboard,255,R,TRUE,00000000,(Keyboard,255,Alt,
+			FALSE,00000000,,4096,0),4096,0))"/>
 			  リセットキー割り当てです。
 			  リセットは飽くまで仮想コンピューター「ORE68000 ACE」のリセットなの
 			  で、アプリケーション設定「ORE68000 ACE.xml」再読み込みを行いたい場
 			  合は「アプリケーション再起動」を使用してください。
-			<RESTART value="((Keyboard,255,R,TRUE,FALSE,0,(Keyboard,255,Alt,
-			FALSE,FALSE,0,(Keyboard,255,Ctrl,FALSE,FALSE,0,,4096,0),4096,0),
+			<RESTART value="((Keyboard,255,R,TRUE,00000000,(Keyboard,255,Alt,
+			FALSE,00000000,(Keyboard,255,Ctrl,FALSE,00000000,,4096,0),4096,0),
 			4096,0))"/>
 			  アプリケーション再起動キー割り当てです。
 			  アプリケーション再起動はアプリケーション設定「ORE68000 ACE.xml」再
 			  読み込みを行います。
-			<SHUTDOWN value="((Keyboard,255,F4,TRUE,FALSE,0,(Keyboard,255,Alt,
-			FALSE,FALSE,0,,4096,0),4096,0))"/>
+			<SHUTDOWN value="((Keyboard,255,F4,TRUE,00000000,(Keyboard,255,Alt,
+			FALSE,00000000,,4096,0),4096,0))"/>
 			  アプリケーション終了キー割り当てです。
 		</HID>
 		<PARAMETER>

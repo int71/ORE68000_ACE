@@ -26,7 +26,7 @@ VECTOR2					v2iPosition={0,0};
 UINT8					ui8iDirection=0;
 UINT8					ui8iAnimation=0;
 
-VOID					USER_stNew(VOID)noexcept{
+VOID					USER_New(VOID)noexcept{
 	FAMILYBASIC::stNew();
 	FAMILYBASIC::stSetPalette(0,0x3f,0x30,0x16,0x01);
 	FAMILYBASIC::stSetPalette(8,0x3f,0x30,0x21,0x02);
@@ -43,12 +43,12 @@ VOID					USER_stNew(VOID)noexcept{
 	return;
 }
 
-VOID					USER_stDelete(VOID)noexcept{
+VOID					USER_Delete(VOID)noexcept{
 	FAMILYBASIC::stDelete();
 	return;
 }
 
-VOID					USER_stMain(VOID)noexcept{
+VOID					USER_Main(VOID)noexcept{
 	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
 	using					IDBUTTON=FAMILYBASIC::IDBUTTON;
 	//	7	0	1
