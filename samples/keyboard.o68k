@@ -28,19 +28,14 @@ UINT16					ui16iPattern0=0;
 UINT16					ui16iPattern1=0;
 
 VOID					USER_New(VOID)noexcept{
-	static constexpr UINT16	stcui16csource[]={
+	static constexpr UINT16	stcui16cattribute[]={
 		0x80c0,0x80c0,0x80c0,0x80c0,0x90c1,0x90c1,0x90c1,0x90c1,0x80c2,0x80c2,0x80c2,0x80c2,0x90c3,0x90c3,0x90c3,0x90c3,
 		0x80c4,0x80c5,0x80c5,0x80c5,0x80c5,0x80c5,0x80c5,0x80c6,0x90c4,0x90c5,0x90c5,0x90c5,0x90c5,0x90c5,0x90c5,0x90c6
 	};
 
 	FAMILYBASIC::stNew();
-	FAMILYBASIC::stSetPalette(0,0x3f,0x36,0x16,0x02);
-	FAMILYBASIC::stSetPalette(1,0x3f,0x27,0x30,0x19);
-	FAMILYBASIC::stSetPalette(2,0x3f,0x35,0x25,0x17);
-	FAMILYBASIC::stSetPalette(3,0x3f,0x30,0x27,0x16);
-	FAMILYBASIC::stSetPalette(8,0x3f,0x30,0x21,0x02);
-	FAMILYBASIC::stSetPalette(9,0x3f,0x30,0x27,0x18);
-	FAMILYBASIC::stWriteBG0({0,8},stcui16csource,UINT16(SIZEOF(stcui16csource)));
+	FAMILYBASIC::PALETTE_stWriteSet(0,1);
+	FAMILYBASIC::BG0_stWriteAttribute({0,8},stcui16cattribute,UINT16(SIZEOF(stcui16cattribute)));
 	return;
 }
 
@@ -52,9 +47,9 @@ VOID					USER_Delete(VOID)noexcept{
 VOID					USER_Main(VOID)noexcept{
 	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
 
-	FAMILYBASIC::stWriteSprite(0,128,ui16iY+ 0,0x0000|((ui16iPattern0>>1)+0x00),0x5100);
-	FAMILYBASIC::stWriteSprite(1,160,ui16iY+ 0,0x2000|((ui16iPattern0>>1)+0x1c),0x5100);
-	if(FAMILYBASIC::steIsKeyDown(FAMILYBASIC::IDKEY::Space))++ui16iX;
+	FAMILYBASIC::SPRITE_stWrite16(0,VECTOR2(128,ui16iY+ 0),(ui16iPattern0>>1)+0x00,0);
+	FAMILYBASIC::SPRITE_stWrite16(1,VECTOR2(160,ui16iY+ 0),(ui16iPattern0>>1)+0x1c,2);
+	if(FAMILYBASIC::KEY_steIsDown(FAMILYBASIC::IDKEY::Space))++ui16iX;
 	else --ui16iX;
 	++ui16iPattern0;
 	if(ui16iPattern0==0x18)ui16iPattern0=0;

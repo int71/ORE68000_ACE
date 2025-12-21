@@ -1,7 +1,7 @@
 /****************************************************************************
 **																			**
 **																			**
-**									m68k									**
+**						É}ÉCÉRÉì ORE68000 ACE Magazine						**
 **																			**
 **	'lesson04.o68k'									2025 written by int71	**
  ****************************************************************************/
@@ -24,12 +24,13 @@ using namespace m68k::i71::sub;
 
 VOID					USER_New(VOID)noexcept{
 	FAMILYBASIC::stNew();
-	FAMILYBASIC::stSetPalette(8,0x3f,0x30,0x21,0x02);
-	FAMILYBASIC::stWriteBG0({0,0},0x8,"LESSON 04:INPUT(1)");
-	FAMILYBASIC::stWriteBG0({4,4},0x8,
+	FAMILYBASIC::PALETTE_stWriteSet(0,1);
+	FAMILYBASIC::BG0_stPrint({0,0},"LESSON 04:INPUT(1)",0);
+	FAMILYBASIC::BG0_stPrint({4,4},
 		" U\n"
 		"L R     B A\n"
-		" D\n"
+		" D\n",
+		0
 	);
 	return;
 }
@@ -42,13 +43,13 @@ VOID					USER_Delete(VOID)noexcept{
 VOID					USER_Main(VOID)noexcept{
 	static constexpr USTR	stacustron[]="\xfe";
 	static constexpr USTR	stacustroff[]="\xff";
-	CAUTO					cekeydown=FAMILYBASIC::stui8cReadJoystick(0);
+	CAUTO					cui8ccurrent=FAMILYBASIC::CONTROLLER_stui8cRead(0);
 
-	FAMILYBASIC::stWriteBG1({5,4},0x8,((cekeydown&(1<<FAMILYBASIC::IDBUTTON::Up))!=0)?stacustron:stacustroff);
-	FAMILYBASIC::stWriteBG1({4,5},0x8,((cekeydown&(1<<FAMILYBASIC::IDBUTTON::Left))!=0)?stacustron:stacustroff);
-	FAMILYBASIC::stWriteBG1({6,5},0x8,((cekeydown&(1<<FAMILYBASIC::IDBUTTON::Right))!=0)?stacustron:stacustroff);
-	FAMILYBASIC::stWriteBG1({12,5},0x8,((cekeydown&(1<<FAMILYBASIC::IDBUTTON::B))!=0)?stacustron:stacustroff);
-	FAMILYBASIC::stWriteBG1({14,5},0x8,((cekeydown&(1<<FAMILYBASIC::IDBUTTON::A))!=0)?stacustron:stacustroff);
-	FAMILYBASIC::stWriteBG1({5,6},0x8,((cekeydown&(1<<FAMILYBASIC::IDBUTTON::Down))!=0)?stacustron:stacustroff);
+	FAMILYBASIC::BG1_stPrint({5,4},((cui8ccurrent&(1<<FAMILYBASIC::IDBUTTON::Up))!=0)?stacustron:stacustroff,0);
+	FAMILYBASIC::BG1_stPrint({4,5},((cui8ccurrent&(1<<FAMILYBASIC::IDBUTTON::Left))!=0)?stacustron:stacustroff,0);
+	FAMILYBASIC::BG1_stPrint({6,5},((cui8ccurrent&(1<<FAMILYBASIC::IDBUTTON::Right))!=0)?stacustron:stacustroff,0);
+	FAMILYBASIC::BG1_stPrint({12,5},((cui8ccurrent&(1<<FAMILYBASIC::IDBUTTON::B))!=0)?stacustron:stacustroff,0);
+	FAMILYBASIC::BG1_stPrint({14,5},((cui8ccurrent&(1<<FAMILYBASIC::IDBUTTON::A))!=0)?stacustron:stacustroff,0);
+	FAMILYBASIC::BG1_stPrint({5,6},((cui8ccurrent&(1<<FAMILYBASIC::IDBUTTON::Down))!=0)?stacustron:stacustroff,0);
 	return;
 }

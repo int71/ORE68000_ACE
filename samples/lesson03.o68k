@@ -1,7 +1,7 @@
 /****************************************************************************
 **																			**
 **																			**
-**									m68k									**
+**						ƒ}ƒCƒRƒ“ ORE68000 ACE Magazine						**
 **																			**
 **	'lesson03.o68k'									2025 written by int71	**
  ****************************************************************************/
@@ -195,15 +195,11 @@ OFWBOOL					eKeyDownPrevious=FALSE;
 
 VOID					USER_New(VOID)noexcept{
 	FAMILYBASIC::stNew();
-	FAMILYBASIC::stSetPalette(0,0x3f,0x36,0x16,0x02);
-	FAMILYBASIC::stSetPalette(1,0x3f,0x27,0x30,0x19);
-	FAMILYBASIC::stSetPalette(2,0x3f,0x35,0x25,0x17);
-	FAMILYBASIC::stSetPalette(3,0x3f,0x30,0x27,0x16);
-	FAMILYBASIC::stSetPalette(8,0x3f,0x30,0x21,0x02);
-	FAMILYBASIC::stSetPalette(9,0x3f,0x30,0x27,0x18);
-	FAMILYBASIC::stWriteBG0({0,0},0x8,"LESSON 03:SOUND(1)");
-	FAMILYBASIC::stFillBG1({0,8},{128,4},0x90c3);
-	FAMILYBASIC::stFillBG1({0,0},{1,8},0x90d2);
+
+	FAMILYBASIC::PALETTE_stWriteSet(0,1);
+	FAMILYBASIC::BG0_stPrint({0,0},"LESSON 03:SOUND(1)",0);
+	FAMILYBASIC::BG1_stFill({0,8},{128,4},0xc3,1);
+	FAMILYBASIC::BG1_stFill({0,0},{1,8},0xd2,1);
 	FAMILYBASIC::BGM_stPlay(stacui8cBGM00);
 	return;
 }
@@ -215,9 +211,9 @@ VOID					USER_Delete(VOID)noexcept{
 
 VOID					USER_Main(VOID)noexcept{
 	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
-	CAUTO					cekeydown=FAMILYBASIC::steIsKeyDown(FAMILYBASIC::IDKEY::Space);
+	CAUTO					cekeydown=FAMILYBASIC::KEY_steIsDown(FAMILYBASIC::IDKEY::Space);
 
-	FAMILYBASIC::stWriteSprite(0,128,ui16iY+ 0,0x0000|((ui16iPattern>>1)+0x00),0x5100);
+	FAMILYBASIC::SPRITE_stWrite16(0,VECTOR2(128,ui16iY+ 0),(ui16iPattern>>1)+0x00,0);
 	--ui16iX;
 	++ui16iPattern;
 	if(ui16iPattern==0x18)ui16iPattern=0;
@@ -229,10 +225,10 @@ VOID					USER_Main(VOID)noexcept{
 		eKeyDownPrevious=cekeydown;
 		if(cekeydown){
 			FAMILYBASIC::SE0_stPlay(stacui8cSE00);
-			FAMILYBASIC::stSetPalette(0,0x30,0x36,0x16,0x02);
+			FAMILYBASIC::PALETTE_stWrite(0,0x30,0x36,0x16,0x02);
 			return;
 		}
 	}
-	FAMILYBASIC::stSetPalette(0,0x3f,0x36,0x16,0x02);
+	FAMILYBASIC::PALETTE_stWrite(0,0x3f,0x36,0x16,0x02);
 	return;
 }

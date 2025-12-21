@@ -9,31 +9,31 @@
   す。
   以下、凡例です。
 
-	<HID>
-		<CAPTUREMOUSE value="((Keyboard,255,Space,TRUE,00000000,(Keyboard,255,
-		Alt,FALSE,00000000,,4096,0),4096,0))"/>
-		<FULLSCREEN value="((Keyboard,255,Enter,TRUE,00000000,(Keyboard,255,Alt,
-		FALSE,00000000,,4096,0),4096,0))"/>
-		<IgnoreSuspiciousDevice value="FALSE"/>
-		<JOYSTICK-A value="((XInput,0,DigitalB,FALSE,00000000,,4096,0),(XInput,
-		0,DigitalA,FALSE,00000000,,4096,0))"/>
-		<JOYSTICK-B value="((XInput,0,DigitalY,FALSE,00000000,,4096,0),(XInput,
-		0,DigitalX,FALSE,00000000,,4096,0))"/>
-		<JOYSTICK-D value="((XInput,0,DigitalDown,FALSE,00000000,,4096,0),(
-		XInput,0,SignedThumbLYP,FALSE,00000000,,4096,24576))"/>
-		<JOYSTICK-L value="((XInput,0,DigitalLeft,FALSE,00000000,,4096,0),(
-		XInput,0,SignedThumbLXM,FALSE,00000000,,4096,24576))"/>
-		<JOYSTICK-R value="((XInput,0,DigitalRight,FALSE,00000000,,4096,0),(
-		XInput,0,SignedThumbLXP,FALSE,00000000,,4096,24576))"/>
-		<JOYSTICK-U value="((XInput,0,DigitalUp,FALSE,00000000,,4096,0),(XInput,
-		0,SignedThumbLYM,FALSE,00000000,,4096,24576))"/>
-		<RESET value="((Keyboard,255,R,TRUE,00000000,(Keyboard,255,Alt,FALSE,
-		00000000,,4096,0),4096,0))"/>
-		<RESTART value="((Keyboard,255,R,TRUE,00000000,(Keyboard,255,Alt,FALSE,
-		00000000,(Keyboard,255,Ctrl,FALSE,00000000,,4096,0),4096,0),4096,0))"/>
-		<SHUTDOWN value="((Keyboard,255,F4,TRUE,00000000,(Keyboard,255,Alt,
-		FALSE,00000000,,4096,0),4096,0))"/>
-	</HID>
+    <HID>
+        <CAPTUREMOUSE value="((Keyboard,255,Space,TRUE,00000000,(Keyboard,255,
+        Alt,FALSE,00000000,,4096,0),4096,0))"/>
+        <FULLSCREEN value="((Keyboard,255,Enter,TRUE,00000000,(Keyboard,255,Alt,
+        FALSE,00000000,,4096,0),4096,0))"/>
+        <IgnoreSuspiciousDevice value="FALSE"/>
+        <JOYSTICK-A value="((XInput,0,DigitalB,FALSE,00000000,,4096,0),(XInput,
+        0,DigitalA,FALSE,00000000,,4096,0))"/>
+        <JOYSTICK-B value="((XInput,0,DigitalY,FALSE,00000000,,4096,0),(XInput,
+        0,DigitalX,FALSE,00000000,,4096,0))"/>
+        <JOYSTICK-D value="((XInput,0,DigitalDown,FALSE,00000000,,4096,0),(
+        XInput,0,SignedThumbLYP,FALSE,00000000,,4096,24576))"/>
+        <JOYSTICK-L value="((XInput,0,DigitalLeft,FALSE,00000000,,4096,0),(
+        XInput,0,SignedThumbLXM,FALSE,00000000,,4096,24576))"/>
+        <JOYSTICK-R value="((XInput,0,DigitalRight,FALSE,00000000,,4096,0),(
+        XInput,0,SignedThumbLXP,FALSE,00000000,,4096,24576))"/>
+        <JOYSTICK-U value="((XInput,0,DigitalUp,FALSE,00000000,,4096,0),(XInput,
+        0,SignedThumbLYM,FALSE,00000000,,4096,24576))"/>
+        <RESET value="((Keyboard,255,R,TRUE,00000000,(Keyboard,255,Alt,FALSE,
+        00000000,,4096,0),4096,0))"/>
+        <RESTART value="((Keyboard,255,R,TRUE,00000000,(Keyboard,255,Alt,FALSE,
+        00000000,(Keyboard,255,Ctrl,FALSE,00000000,,4096,0),4096,0),4096,0))"/>
+        <SHUTDOWN value="((Keyboard,255,F4,TRUE,00000000,(Keyboard,255,Alt,
+        FALSE,00000000,,4096,0),4096,0))"/>
+    </HID>
 
 ・使用可能なジョイスティック
   USB接続の汎用ゲームコントローラ、もしくはXBOX互換コントローラ(手元に無いので確

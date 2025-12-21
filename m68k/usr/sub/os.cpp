@@ -170,6 +170,15 @@ VOID					OS::stMain(VOID)noexcept{
 		st.eVBlank=FALSE;
 		while(!st.eVBlank);
 		USER_Main();
+		if(st.BGM_ui16nVolumeFadeSpeedMain){
+			if(st.BGM_ui16nVolumeFadeSpeedMain<st.BGM_ui16nVolumeFadeMain){
+				st.BGM_ui16nVolumeFadeMain-=st.BGM_ui16nVolumeFadeSpeedMain;
+				st.BGM_drvThis.SetMasterVolume(UINT8(st.BGM_ui16nVolumeFadeMain>>8));
+			}else{
+				st.BGM_drvThis.Play(0);
+				st.BGM_ui16nVolumeFadeSpeedMain=0;
+			}
+		}
 		st.BGM_drvThis.Progress();
 		st.SE0_drvThis.Progress();
 		st.SE1_drvThis.Progress();

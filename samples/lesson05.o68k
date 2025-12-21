@@ -1,0 +1,689 @@
+/****************************************************************************
+**																			**
+**																			**
+**						マイコン ORE68000 ACE Magazine						**
+**																			**
+**	'lesson05.o68k'									2025 written by int71	**
+ ****************************************************************************/
+
+//
+//		include
+//
+
+#include				<sub/familybasic.hpp>
+
+//
+//		using
+//
+
+using namespace m68k::i71::sub;
+
+//
+//		class
+//
+
+//	GAME
+class GAME;
+using					CGAME=const GAME;
+using					PGAME=GAME*;
+using					PCGAME=CGAME*;
+
+//
+//		class:GAME
+//
+
+class GAME{
+public:
+
+	//
+	//		const
+	//
+
+	enum class IDMODE{
+		Start,
+		Normal,
+		GameOver
+	};
+	//	static constexpr UINT8	stcui8nDiscardBit
+	//		16bit中、6bitを「小数点値」扱いにします。
+	static constexpr UINT8	stcui8nDiscardBit=6;
+	//	static constexpr INT16	stci16iXMinimum
+	//		画面左端を示す「X軸最小値」です。
+	//		スプライトは座標値から左上に8ドットずらした位置に表示する、
+	//		つまり座標値をスプライトの「中心」にしているので、
+	//		左端の座標が「8」になるのです。
+	//		この値は6bit小数点値の「固定小数点値」です。
+	static constexpr INT16	stci16iXMinimum=INT16(8)<<stcui8nDiscardBit;
+	//	static constexpr INT16	stci16iXMaximum
+	//		画面右端を示す「X軸最大値」です。
+	//		スプライトは座標値から左上に8ドットずらした位置に表示する、
+	//		つまり座標値をスプライトの「中心」にしているので、
+	//		右端の座標が「256-8=248」になるのです。
+	//		この値は6bit小数点値の「固定小数点値」です。
+	static constexpr INT16	stci16iXMaximum=INT16(248)<<stcui8nDiscardBit;
+	//	static constexpr INT16	stci16iYMaximum
+	//		画面下端(地面直上)を示す「Y軸最大値」です。
+	//		スプライトは座標値から左上に8ドットずらした位置に表示する、
+	//		つまり座標値をスプライトの「中心」にしているので、
+	//		下端の座標が「192-8(地面分)-8(中心補正分)」になるのです。
+	//		この値は6bit小数点値の「固定小数点値」です。
+	static constexpr INT16	stci16iYMaximum=INT16(192-16)<<stcui8nDiscardBit;
+	//	static constexpr VECTOR2	stv2nHitHalf_Upper
+	//		「ニタニタ当たり判定(12ドット)+ハエ当たり判定(12ドット)」の半分です。
+	//		当たり判定は整数で行うため、この値は「固定小数点値」ではありません。
+	//		その気持ちを「_Upper」に込めています。
+	static constexpr VECTOR2	stv2nHitHalf_Upper={12,12};
+	//	static constexpr INT16	PLAYER_stci16nXSpeed
+	//		「ニタニタ横移動速度」です。
+	//		この値は6bit小数点値の「固定小数点値」です。
+	static constexpr INT16	PLAYER_stci16nXSpeed=INT16(2)<<stcui8nDiscardBit;
+	//	static constexpr UINT8	ENEMY_stcui8nInstanceMaximum
+	//		「ハエ出現最大数」です。
+	static constexpr UINT8	ENEMY_stcui8nInstanceMaximum=16;
+	//	static constexpr UINT8	stacui8cBGM
+	//		「ゲーム中BGM」の演奏データです。ドドッチドドッチ。
+	static constexpr UINT8	stacui8cBGM[]=__O68K_MAKESEQUENCE(R"(
+		my($_INIT)='  C ,PG=127';
+
+		[
+			"#CHANNEL=PCM0/PCM1/PCM2,TRANSPOSE=0,PMSPEED=204",
+			#=======================================	   0
+			"#SPEED=1",
+			"$_INIT      /$_INIT      /$_INIT      ",
+			"     PG=1,PN=0,PM=0,VL=127,VM=255/            /            ",
+			"            /     PG=1,PN=0,PM=0,VL=127,VM=255/            ",
+			"            /            /     PG=48,PN=0,PM=0,VL=255,VM=255",
+			"            /            /            ",
+			"#SPEED=5",
+			"#LABEL=LoopStart",
+			"            /            / 3C ,VL=255 ",
+			"            /            /-           ",
+			"            /            /  C         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <G         ",
+			"            /            /-           ",
+			"            /            / >C         ",
+			"            /            /-           ",
+			"            /            /  C         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <G         ",
+			"            /            /-           ",
+			#=======================================	   1
+			"            /            / >C         ",
+			"            /            /-           ",
+			"            /            /  C         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <E         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            /  F         ",
+			"            /            /-           ",
+			"            /            /  F#        ",
+			"            /            /-           ",
+			"            /            /  G         ",
+			"            /            /-           ",
+			#=======================================	   2
+			"            /            / >D         ",
+			"            /            /-           ",
+			"            /            /  D         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <G         ",
+			"            /            /-           ",
+			"            /            / >D         ",
+			"            /            /-           ",
+			"            /            /  D         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <G         ",
+			"            /            /-           ",
+			#=======================================	   3
+			"            /            / >D         ",
+			"            /            /-           ",
+			"            /            /  D         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <F#        ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            /  G         ",
+			"            /            /-           ",
+			"            /            /  G#        ",
+			"            /            /-           ",
+			"            /            /  A         ",
+			"            /            /-           ",
+			#=======================================	   4
+			"            /            /  G         ",
+			"            /            /-           ",
+			"            /            /  G         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            /  D         ",
+			"            /            /-           ",
+			"            /            /  G         ",
+			"            /            /-           ",
+			"            /            /  G         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            /  D         ",
+			"            /            /-           ",
+			#=======================================	   5
+			"            /            /  G         ",
+			"            /            /-           ",
+			"            /            /  G         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <B         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / >C         ",
+			"            /            /-           ",
+			"            /            /  C#        ",
+			"            /            /-           ",
+			"            /            /  D         ",
+			"            /            /-           ",
+			#=======================================	   6
+			"            /            / >C         ",
+			"            /            /-           ",
+			"            /            /  C         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <G         ",
+			"            /            /-           ",
+			"            /            / >C         ",
+			"            /            /-           ",
+			"            /            /  C         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <G         ",
+			"            /            /-           ",
+			#=======================================	   7
+			"            /            / >C         ",
+			"            /            /-           ",
+			"            /            /  C         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <E         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            /  F         ",
+			"            /            /-           ",
+			"            /            /  F#        ",
+			"            /            /-           ",
+			"            /            /  G         ",
+			"            /            /-           ",
+			#=======================================	   8
+			"#SPEED=1",
+			"#JUMP=LoopStart",
+		];
+	)");
+	//	static constexpr UINT8	stacui8cSE_Jump
+	//		「ニタニタジャンプ音」の演奏データです。
+	//		「PT=+1」は連続的音程変化、つまりポルタメントです。
+	static constexpr UINT8	stacui8cSE_Jump[]=__O68K_MAKESEQUENCE(R"(
+		[
+			"#CHANNEL=PCM3",
+			#=============	   0
+			"#SPEED=1",
+			" 3C ,PT=+1,PG=33,PN=0,PM=0,VL=255,VM=255",
+			"-C# ,PT=+1   ",
+		];
+	)");
+	//	static constexpr UINT8	stacui8cSE_Get
+	//		「ハエゲット音」の演奏データです。
+	static constexpr UINT8	stacui8cSE_Get[]=__O68K_MAKESEQUENCE(R"(
+		[
+			"#CHANNEL=PCM4",
+			#=============	   0
+			"#SPEED=4",
+			" 3G ,PG=17,PN=0,PM=0,VL=255,VM=255",
+			" 4D         ",
+			"#SPEED=1",
+			"-           ",
+		];
+	)");
+
+	//
+	//		class
+	//
+
+	//	ENEMY
+	class ENEMY;
+	using					CENEMY=const ENEMY;
+	using					PENEMY=ENEMY*;
+	using					PCENEMY=CENEMY*;
+
+	//
+	//		class:ENEMY
+	//
+
+	class ENEMY{
+	private:
+		//	VECTOR2					v2iPosition
+		//		「ハエの位置」です。
+		//		この値は6bit小数点値の「固定小数点値」です。
+		VECTOR2					v2iPosition;
+		//	VECTOR2					v2dVelocity
+		//		「ハエの移動速度」です。
+		//		この値は6bit小数点値の「固定小数点値」です。
+		VECTOR2					v2dVelocity;
+		//	UINT16					ui16iPattern
+		//		「ハエのアニメーションカウンター」です。
+		//		虫の羽なんでテンポ早い方が「らしく」見えましょう。
+		UINT16					ui16iPattern;
+		//	UINT8					ui8iInstance
+		//		「ハエの通し番号」です。
+		//		「何番目のスプライトとして表示するか」の手がかりにします。
+		UINT8					ui8iInstance;
+		//	UINT8					ui8iVanish
+		//		「ハエのやられ状態」です。
+		//		「0」以外だと点滅中で、動きもしなければ当たり判定も取られません。
+		//		ある程度の時間経過の後、「Start」で使い回されます。
+		UINT8					ui8iVanish;
+		//	OFWBOOL					eActive
+		//		「ハエの活性」です。「TRUE」だと表示対象になり、敵として機能します。
+		OFWBOOL					eActive;
+	public:
+		/*VOID*/				ENEMY(VOID)noexcept{}
+		/*VOID*/				~ENEMY(VOID)noexcept{
+			Delete();
+		}
+		//	VOID					New(CUINT8 cui8iinstance)
+		//		「ハエの通し番号」を設定して初期化します。
+		//		プログラム開始後一度だけの実行で十分です。
+		VOID					New(CUINT8 cui8iinstance)noexcept{
+			ui8iInstance=cui8iinstance;
+			return;
+		}
+		//	VOID					Delete(VOID)
+		//		「ハエの終了処理」ですが、現状何もする事はありません。
+		VOID					Delete(VOID)noexcept{
+			return;
+		}
+		//	VOID					Activate(COFWBOOL ceactive)
+		//		「ハエの活性」処理です。「TRUE」指定で表示対象になり、敵として機能しだします。
+		//		「ハエ出現数」が増えるタイミングに一度だけ呼び出されます。
+		VOID					Activate(COFWBOOL ceactive)noexcept{
+			if(eActive!=ceactive){
+				eActive=ceactive;
+				if(eActive){
+					Start();
+				}else{
+					FAMILYBASIC::SPRITE_stErase(ui8iInstance+1);
+				}
+			}
+			return;
+		}
+		//	VOID					Start(VOID)
+		//		「ハエのリセット」処理です。
+		//		座標を画面上端に戻し、乱数を使って速度、移動方向を適当に決めます。
+		VOID					Start(VOID)noexcept{
+			CAUTO					cui16random=FAMILYBASIC::stui16GetRandom();
+
+			v2iPosition={
+				INT16(cui16random&0xffc0),
+				INT16(-8)<<stcui8nDiscardBit
+			};
+			v2dVelocity={
+				INT16((INT16((cui16random&0x07)<<1)-7)<<1),
+				INT16(INT16((cui16random&0x38)+32)>>1)
+			};
+			ui16iPattern=0;
+			ui8iVanish=0;
+			return;
+		}
+		//	VOID					Show(VOID)
+		//		「ハエの表示」処理です。
+		//		「ハエの移動」と分けているのは、「表示を垂直帰線期間中に確実に完了させる」ためです。
+		VOID					Show(VOID)const noexcept{
+			if(eActive){
+				if(ui8iVanish==0){
+					FAMILYBASIC::SPRITE_stWrite16(ui8iInstance+1,(v2iPosition>>stcui8nDiscardBit)-VECTOR2(8,8),(ui16iPattern&4)+56,1);
+				}else{
+					if(ui8iVanish&2)FAMILYBASIC::SPRITE_stWrite16(ui8iInstance+1,(v2iPosition>>stcui8nDiscardBit)-VECTOR2(8,8),(ui16iPattern&4)+56,1);
+					else FAMILYBASIC::SPRITE_stErase(ui8iInstance+1);
+				}
+			}
+			return;
+		}
+		//	OFWBOOL					eMove(VOID)
+		//		「ハエの移動」処理です。
+		//		地面に到達すると返り値が「TRUE」になります。
+		OFWBOOL					eMove(VOID)noexcept{
+			if(eActive){
+				if(ui8iVanish==0){
+					//	座標更新
+					v2iPosition+=v2dVelocity;
+					ui16iPattern+=2;
+					//	地面着地判定
+					if(stci16iYMaximum<v2iPosition.i16iY()){
+						v2iPosition.i16iY()=stci16iYMaximum;
+						v2dVelocity=VECTOR2::stv2ImmediateZero();
+						return TRUE;
+					}
+				}else{
+					++ui8iVanish;
+					if(ui8iVanish==32)Start();
+				}
+			}
+			return FALSE;
+		}
+		//	OFWBOOL					eIsHit(CVECTOR2& cv2iposition_upper)
+		//		当たり判定です。
+		//		整数値「cv2iposition_upper」と比較して、当たっていれば「TRUE」を返します。
+		OFWBOOL					eIsHit(CVECTOR2& cv2iposition_upper)noexcept{
+			if(eActive&&(ui8iVanish==0)){
+				if((v2iPosition>>stcui8nDiscardBit).eIsHit256(cv2iposition_upper,stv2nHitHalf_Upper)){
+					ui8iVanish=1;
+					return TRUE;
+				}
+			}
+			return FALSE;
+		}
+	};
+
+	//
+	//		body:GAME
+	//
+
+private:
+	//	IDMODE					idMode
+	//		ゲームの「状態」を保持します。
+	//		今回は、プログラム中の「処理の場所」でなく、
+	//		「入口一つで毎回枝分かれする」という方法を採っています。
+	IDMODE					idMode;
+	//	UINT16					ui16nScore
+	//		点数です。「9999」まで表示できるようにしています。
+	UINT16					ui16nScore;
+	//	UINT8					CONTROLLER_ui8cCurrent
+	//		コントローラ入力値そのものです。
+	//		押下で当該bitが1になります。
+	UINT8					CONTROLLER_ui8cCurrent;
+	//	UINT8					CONTROLLER_ui8cSingle
+	//		コントローラ入力値ですが、
+	//		「CONTROLLER_ui8cCurrent」と異なり、押下の「瞬間」でだけ、当該bitが1になります。
+	//		ジャンプ操作はこちらを見ているため、「ボタン押しっぱなし」で連続ジャンプになりません。
+	UINT8					CONTROLLER_ui8cSingle;
+	//	VECTOR2					PLAYER_v2iPosition
+	//		「ニタニタの位置」です。
+	//		この値は6bit小数点値の「固定小数点値」です。
+	VECTOR2					PLAYER_v2iPosition;
+	//	VECTOR2					PLAYER_v2dVelocity
+	//		「ニタニタの移動速度」です。
+	//		この値は6bit小数点値の「固定小数点値」です。
+	VECTOR2					PLAYER_v2dVelocity;
+	//	INT16					PLAYER_i16dAccelY
+	//		「ニタニタの縦方向加速度」です。
+	//		ジャンプ中、プラスの値になります。
+	//		この値は6bit小数点値の「固定小数点値」です。
+	INT16					PLAYER_i16dAccelY;
+	//	UINT16					PLAYER_ui16iPattern
+	//		「ニタニタのアニメーションカウンター」です。
+	//		ニタニタ。
+	UINT16					PLAYER_ui16iPattern;
+	//	UINT8					ENEMY_ui8nInstance
+	//		現時点の「ハエ出現数」です。
+	UINT8					ENEMY_ui8nInstance;
+	//	ENEMY					ENEMY_aenmyThis[]
+	//		「ハエの状態」を保持する構造体の配列です。
+	ENEMY					ENEMY_aenmyThis[ENEMY_stcui8nInstanceMaximum];
+public:
+	/*VOID*/				GAME(VOID)noexcept{}
+	/*VOID*/				~GAME(VOID)noexcept{
+		Delete();
+	}
+	//	VOID					New(VOID)
+	//		ゲームとしての初期化処理です。
+	//		ゲームオーバーが挟まろうが、実行は一度きりです。
+	VOID					New(VOID)noexcept{
+		idMode=IDMODE::Start;
+		CONTROLLER_ui8cCurrent=0;
+		for(UINT8 i=0;i<ENEMY_stcui8nInstanceMaximum;++i)ENEMY_aenmyThis[i].New(i);
+		return;
+	}
+	//	VOID					Delete(VOID)
+	//		ゲームとしての終了処理ですが、現状呼び出される事はありません。
+	VOID					Delete(VOID)noexcept{
+		for(AUTO& enmycurrent:ENEMY_aenmyThis)enmycurrent.Delete();
+		return;
+	}
+	//	VOID					Main(VOID)
+	//		ゲームとしてのメイン処理です。
+	//		1/60秒毎の垂直帰線期間突入都度、「USER_Main」から呼び出されます。
+	_INLINE_ VOID			Main(VOID)noexcept{
+		switch(idMode){
+		case IDMODE::Start:
+			Start();
+			break;
+		case IDMODE::Normal:
+			Normal();
+			break;
+		case IDMODE::GameOver:
+			GameOver();
+			break;
+		}
+		return;
+	}
+	//	VOID					Start(VOID)
+	//		ゲーム開始処理です。
+	//		初期化処理の後の他、ゲームオーバーになった後にも実行されます。
+	VOID					Start(VOID)noexcept{
+		idMode=IDMODE::Normal;
+		ui16nScore=0;
+		PLAYER_v2iPosition={INT16(128)<<stcui8nDiscardBit,stci16iYMaximum};
+		PLAYER_v2dVelocity={PLAYER_stci16nXSpeed,0};
+		PLAYER_i16dAccelY=0;
+		PLAYER_ui16iPattern=0;
+		ENEMY_ui8nInstance=1;
+		for(AUTO& enmycurrent:ENEMY_aenmyThis)enmycurrent.Activate(FALSE);
+		ENEMY_aenmyThis[0].Activate(TRUE);
+		FAMILYBASIC::BG0_stPrint({11,12},"          ",0);
+		ShowScore();
+		FAMILYBASIC::BGM_stPlay(stacui8cBGM);
+		Normal();
+		return;
+	}
+	//	VOID					Normal(VOID)
+	//		ゲーム通常処理です。
+	//		1/60毎の実行で丁度良くなるよう、
+	//		「登場人物全てを満遍なくちょっとずつ動かす事」がポイントです。
+	VOID					Normal(VOID)noexcept{
+		OFWBOOL					emiss=FALSE;
+
+		CONTROLLER_Update();
+		//	表示(垂直帰線期間中に完了できるよう冒頭に持ってくる)
+		FAMILYBASIC::SPRITE_stWrite16(0,(PLAYER_v2iPosition>>stcui8nDiscardBit)-VECTOR2(8,8),((PLAYER_ui16iPattern>>2)&4)+88,2);
+		for(CAUTO& cenmycurrent:ENEMY_aenmyThis)cenmycurrent.Show();
+		//	ニタニタ移動
+		{
+			//	コントローラ操作
+			if(CONTROLLER_ui8cCurrent&(1<<FAMILYBASIC::IDBUTTON::Right))PLAYER_v2dVelocity.i16iX()=PLAYER_stci16nXSpeed;
+			else if(CONTROLLER_ui8cCurrent&(1<<FAMILYBASIC::IDBUTTON::Left))PLAYER_v2dVelocity.i16iX()=-PLAYER_stci16nXSpeed;
+			if((CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::IDBUTTON::A))&&(PLAYER_i16dAccelY==0)){
+				PLAYER_v2dVelocity.i16iY()=INT16(-12)<<stcui8nDiscardBit;
+				PLAYER_i16dAccelY=28;
+				//	ジャンプ音
+				FAMILYBASIC::SE0_stPlay(stacui8cSE_Jump);
+			}
+			//	座標更新
+			PLAYER_v2dVelocity.i16iY()+=PLAYER_i16dAccelY;
+			PLAYER_v2iPosition+=PLAYER_v2dVelocity;
+			++PLAYER_ui16iPattern;
+			//	X座標の面倒見
+			if(PLAYER_v2iPosition.i16iX()<stci16iXMinimum){
+				PLAYER_v2iPosition.i16iX()=stci16iXMinimum;
+				PLAYER_v2dVelocity.i16iX()=PLAYER_stci16nXSpeed;
+			}else if(stci16iXMaximum<PLAYER_v2iPosition.i16iX()){
+				PLAYER_v2iPosition.i16iX()=stci16iXMaximum;
+				PLAYER_v2dVelocity.i16iX()=-PLAYER_stci16nXSpeed;
+			}
+			//	Y座標の面倒見
+			if(stci16iYMaximum<PLAYER_v2iPosition.i16iY()){
+				PLAYER_v2iPosition.i16iY()=stci16iYMaximum;
+				PLAYER_v2dVelocity.i16iY()=0;
+				PLAYER_i16dAccelY=0;
+			}
+		}
+		//	ハエ移動&当たり判定
+		{
+			//	VECTOR2					cv2iposition_upper
+			//		「ニタニタの位置」です。
+			//		当たり判定は整数で行うため、この値は「固定小数点値」ではありません。
+			//		その気持ちを「_upper」に込めています。
+			CAUTO					cv2iposition_upper=PLAYER_v2iPosition>>stcui8nDiscardBit;
+
+			for(AUTO& enmycurrent:ENEMY_aenmyThis){
+				//	「eMove」は、ハエが地面に到達すると「TRUE」を返すので、
+				//	それを頼りにゲームオーバー判定フラグを制御します。
+				emiss=emiss||enmycurrent.eMove();
+				if(enmycurrent.eIsHit(cv2iposition_upper)){
+					//	ニタニタとハエが当たっていると「TRUE」が返されます。
+					//	ハエの状態変化は「eIsHit」処理内で良きようにするので、
+					//	ここの処理的には点数、効果音だけ気にします。
+					++ui16nScore;
+					if((ui16nScore&7)==0){
+						//	8点毎に敵増加させます。
+						if(ENEMY_ui8nInstance<ENEMY_stcui8nInstanceMaximum){
+							ENEMY_aenmyThis[ENEMY_ui8nInstance].Activate(TRUE);
+							++ENEMY_ui8nInstance;
+						}
+					}
+					ShowScore();
+					//	敵ゲット音
+					FAMILYBASIC::SE1_stPlay(stacui8cSE_Get);
+				}
+			}
+		}
+		//	ゲームオーバー判定
+		if(emiss){
+			//	ハエが1匹でも地面に到達したらゲームオーバー
+			FAMILYBASIC::BG0_stPrint({11,12},"GAME  OVER",0);
+			idMode=IDMODE::GameOver;
+			FAMILYBASIC::BGM_stSetMasterVolumeFade(255,4);
+		}
+		return;
+	}
+	//	VOID					GameOver(VOID)
+	//		ゲームオーバー処理です。
+	//		無くても構わないのですが、一応表示処理だけ実行しています。
+	//		リスタート判定は「CONTROLLER_ui8cSingle」で行っているので、
+	//		Aボタン押しっぱでゲームオーバーになったとしても、「即座に再開」とはなりません。
+	VOID					GameOver(VOID)noexcept{
+		CONTROLLER_Update();
+		//	表示(垂直帰線期間中に完了できるよう冒頭に持ってくる)
+		FAMILYBASIC::SPRITE_stWrite16(0,(PLAYER_v2iPosition>>stcui8nDiscardBit)-VECTOR2(8,8),((PLAYER_ui16iPattern>>2)&4)+88,2);
+		for(CAUTO& cenmycurrent:ENEMY_aenmyThis)cenmycurrent.Show();
+		//	リスタート判定
+		if(CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::IDBUTTON::A))idMode=IDMODE::Start;
+		return;
+	}
+private:
+	//	VOID					ShowScore(VOID)
+	//		点数表示処理です。最大「9999」まで表示できます。
+	//		通常「ui16nScore%1000」等と書くところですが、
+	//		割り算は遅いので引き算の繰り返しを行っています。
+	VOID					ShowScore(VOID)noexcept{
+		USTR					austrscore[]="0000";
+		AUTO					ui16nscore=ui16nScore;
+		USTR					ustrzero=' ';
+		USTR					ustrdigit;
+
+		for(ustrdigit='0';1000<=ui16nscore;++ustrdigit,ui16nscore-=1000);
+		if(ustrdigit=='0'){
+			austrscore[0]=ustrzero;
+		}else{
+			ustrzero='0';
+			austrscore[0]=ustrdigit;
+		}
+		for(ustrdigit='0';100<=ui16nscore;++ustrdigit,ui16nscore-=100);
+		if(ustrdigit=='0'){
+			austrscore[1]=ustrzero;
+		}else{
+			ustrzero='0';
+			austrscore[1]=ustrdigit;
+		}
+		for(ustrdigit='0';10<=ui16nscore;++ustrdigit,ui16nscore-=10);
+		if(ustrdigit=='0'){
+			austrscore[2]=ustrzero;
+		}else{
+			ustrzero='0';
+			austrscore[2]=ustrdigit;
+		}
+		austrscore[3]='0'+ui16nscore;
+		FAMILYBASIC::BG0_stPrint({6,1},austrscore,0);
+	}
+	//	VOID					CONTROLLER_Update(VOID)
+	//		コントローラから状態をゲットして、
+	//		「CONTROLLER_ui8cCurrent」と「CONTROLLER_ui8cSingle」を設定します。
+	_INLINE_ VOID			CONTROLLER_Update(VOID)noexcept{
+		CAUTO					cui8cprevious=CONTROLLER_ui8cCurrent;
+
+		CONTROLLER_ui8cCurrent=FAMILYBASIC::CONTROLLER_stui8cRead(0);
+		CONTROLLER_ui8cSingle=CONTROLLER_ui8cCurrent&(CONTROLLER_ui8cCurrent^cui8cprevious);
+		return;
+	}
+};
+
+//
+//		user
+//
+
+static GAME				stgameThis;
+
+//
+//		entry
+//
+
+VOID					USER_New(VOID)noexcept{
+	FAMILYBASIC::stNew();
+	FAMILYBASIC::PALETTE_stWriteSet(2,1);
+	FAMILYBASIC::BG0_stPrint({0,0},"LESSON 05:GAME(1)",0);
+	FAMILYBASIC::BG0_stPrint({0,1},"SCORE",0);
+	//	地面描画
+	FAMILYBASIC::BG1_stWrite({0,23},0xc4,1);
+	FAMILYBASIC::BG1_stFill({1,23},{30,1},0xc5,1);
+	FAMILYBASIC::BG1_stWrite({31,23},0xc6,1);
+	//	星描画
+	for(UINT8 i=0;i<128;++i){
+		CAUTO				cui16random=FAMILYBASIC::stui16GetRandom();
+		CAUTO				cv2iposition=VECTOR2(cui16random&31,(cui16random>>5)&31);
+
+		if(cv2iposition.i16iY()<23)FAMILYBASIC::BG1_stWrite(
+			cv2iposition,
+			0xcd+((cui16random>>10)&1),
+			0
+		);
+	}
+	stgameThis.New();
+	return;
+}
+
+VOID					USER_Delete(VOID)noexcept{
+	stgameThis.Delete();
+	FAMILYBASIC::stDelete();
+	return;
+}
+
+VOID					USER_Main(VOID)noexcept{
+	stgameThis.Main();
+	return;
+}

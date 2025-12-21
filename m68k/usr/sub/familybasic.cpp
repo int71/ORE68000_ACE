@@ -50,10 +50,15 @@ VOID					FAMILYBASIC::stNew(VOID)noexcept{
 	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG1_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
 	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG2_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
 	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG3_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
-	stFillBG0({0,0},{128,128},0x8020);
-	stFillBG1({0,0},{128,128},0x8020);
-	stFillBG2({0,0},{128,128},0x8020);
-	stFillBG3({0,0},{128,128},0x8020);
+	SPRITE_stSetSize(IDSIZE::n256);
+	BG0_stSetSize(IDSIZE::n256);
+	BG1_stSetSize(IDSIZE::n256);
+	BG2_stSetSize(IDSIZE::n256);
+	BG3_stSetSize(IDSIZE::n256);
+	BG0_stFillAttribute({0,0},{128,128},0x8020);
+	BG1_stFillAttribute({0,0},{128,128},0x8020);
+	BG2_stFillAttribute({0,0},{128,128},0x8020);
+	BG3_stFillAttribute({0,0},{128,128},0x8020);
 	OS::BGM_stSetMask(
 		SOUND_DRIVER::stcui16cChannelMaskPCM0|
 		SOUND_DRIVER::stcui16cChannelMaskPCM1|
@@ -72,7 +77,7 @@ VOID					FAMILYBASIC::stDelete(VOID)noexcept{
 	return;
 }
 
-VOID					FAMILYBASIC::stSetPalette(
+VOID					FAMILYBASIC::PALETTE_stWrite(
 	CUINT8					cui8ipalette,
 	CUINT8					cui8inescolor0,
 	CUINT8					cui8inescolor1,
@@ -96,13 +101,133 @@ VOID					FAMILYBASIC::stSetPalette(
 	return;
 }
 
+VOID					FAMILYBASIC::PALETTE_stWriteSet(
+	CUINT8					cui8ispriteset,
+	CUINT8					cui8ibgset
+)noexcept{
+	static constexpr UINT8	staacspriteset[][4][4]={
+		{
+			{0x3f,0x36,0x16,0x02},
+			{0x3f,0x27,0x30,0x19},
+			{0x3f,0x35,0x25,0x17},
+			{0x3f,0x30,0x27,0x16}
+		},{
+			{0x3f,0x30,0x16,0x01},
+			{0x3f,0x10,0x00,0x01},
+			{0x3f,0x30,0x29,0x09},
+			{0x3f,0x30,0x16,0x07}
+		},{
+			{0x3f,0x30,0x26,0x12},
+			{0x3f,0x30,0x15,0x12},
+			{0x3f,0x30,0x12,0x16},
+			{0x3f,0x30,0x26,0x19}
+		}
+	};
+	static constexpr UINT8	staacbg[][4][4]={
+		{
+			{0x3f,0x2c,0x15,0x07},
+			{0x3f,0x27,0x21,0x12},
+			{0x3f,0x29,0x36,0x17},
+			{0x3f,0x30,0x26,0x07}
+		},{
+			{0x3f,0x30,0x21,0x02},
+			{0x3f,0x30,0x27,0x18},
+			{0x3f,0x30,0x27,0x16},
+			{0x3f,0x29,0x36,0x17}
+		}
+	};
+	CAUTO&					acsprite=staacspriteset[(cui8ispriteset<3)?cui8ispriteset:0];
+	CAUTO&					acbg=staacbg[(cui8ibgset<2)?cui8ibgset:0];
+
+	for(UINT8 ui8ipalette=0;ui8ipalette<4;++ui8ipalette){
+		PALETTE_stWrite(ui8ipalette+0,acsprite[ui8ipalette]);
+		PALETTE_stWrite(ui8ipalette+8,acbg[ui8ipalette]);
+	}
+	return;
+}
+
+VOID					FAMILYBASIC::SPRITE_stSetSize(
+	const IDSIZE			cidsize
+)noexcept{
+	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
+	static constexpr UINT16	stacui16value[]={
+		0x2000,
+		0x1000,
+		0x0000
+	};
+
+	VIDEO_DRIVER::stWrite(IDREGISTERW::SpriteOffsetX,stacui16value[UINT8(cidsize)]);
+	VIDEO_DRIVER::stWrite(IDREGISTERW::SpriteOffsetY,stacui16value[UINT8(cidsize)]);
+	return;
+}
+
+VOID					FAMILYBASIC::BG0_stSetSize(
+	const IDSIZE			cidsize
+)noexcept{
+	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
+	static constexpr UINT16	stacui16value[]={
+		0x2000,
+		0x1000,
+		0x0000
+	};
+
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG0OffsetX,stacui16value[UINT8(cidsize)]);
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG0OffsetY,stacui16value[UINT8(cidsize)]);
+	return;
+}
+
+VOID					FAMILYBASIC::BG1_stSetSize(
+	const IDSIZE			cidsize
+)noexcept{
+	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
+	static constexpr UINT16	stacui16value[]={
+		0x2000,
+		0x1000,
+		0x0000
+	};
+
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG1OffsetX,stacui16value[UINT8(cidsize)]);
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG1OffsetY,stacui16value[UINT8(cidsize)]);
+	return;
+}
+
+VOID					FAMILYBASIC::BG2_stSetSize(
+	const IDSIZE			cidsize
+)noexcept{
+	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
+	static constexpr UINT16	stacui16value[]={
+		0x2000,
+		0x1000,
+		0x0000
+	};
+
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG2OffsetX,stacui16value[UINT8(cidsize)]);
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG2OffsetY,stacui16value[UINT8(cidsize)]);
+	return;
+}
+
+VOID					FAMILYBASIC::BG3_stSetSize(
+	const IDSIZE			cidsize
+)noexcept{
+	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
+	static constexpr UINT16	stacui16value[]={
+		0x2000,
+		0x1000,
+		0x0000
+	};
+
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG3OffsetX,stacui16value[UINT8(cidsize)]);
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG3OffsetY,stacui16value[UINT8(cidsize)]);
+	return;
+}
+
 //	private
 
-VOID					FAMILYBASIC::stFillBG(
+VOID					FAMILYBASIC::BG_stFillAttribute(
 	CUINT32					cui32doffset,
 	CVECTOR2&				cv2idestination,
 	CVECTOR2&				cv2ndestination,
-	CUINT16					cui16nsource
+	CUINT16					cui16cattribute
 )noexcept{
 	AUTO					pui16destination=
 		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
@@ -121,15 +246,15 @@ VOID					FAMILYBASIC::stFillBG(
 		AUTO					pui16destination_line=pui16destination;
 		pui16destination_line<pui16destination_line_end;
 		++pui16destination_line
-	)*pui16destination_line=cui16nsource;
+	)*pui16destination_line=cui16cattribute;
 	return;
 }
 
-VOID					FAMILYBASIC::stWriteBG(
+VOID					FAMILYBASIC::BG_stWriteAttribute(
 	CUINT32					cui32doffset,
 	CVECTOR2&				cv2idestination,
-	const PCUINT16			cpcui16csource,
-	CUINT16					cui16nsource
+	const PCUINT16			cpcui16cattribute,
+	CUINT16					cui16nattribute
 )noexcept{
 	AUTO					pui16destination=
 		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
@@ -137,29 +262,29 @@ VOID					FAMILYBASIC::stWriteBG(
 		cv2idestination.i16iX();
 	CAUTO					cpui16attribute_end=
 		pui16destination+
-		cui16nsource;
+		cui16nattribute;
 
-	for(AUTO pcui16csource=cpcui16csource;pui16destination<cpui16attribute_end;++pui16destination){
-		*pui16destination=*pcui16csource;
-		++pcui16csource;
+	for(AUTO pcui16cattribute=cpcui16cattribute;pui16destination<cpui16attribute_end;++pui16destination){
+		*pui16destination=*pcui16cattribute;
+		++pcui16cattribute;
 	}
 	return;
 }
 
-VOID					FAMILYBASIC::stWriteBG(
+VOID					FAMILYBASIC::BG_stPrint(
 	CUINT32					cui32doffset,
 	CVECTOR2&				cv2idestination,
-	CUINT8					cui8ipalette,
-	const PCUSTR			cpcustrsource
+	const PCUSTR			cpcustrstring,
+	CUINT8					cui8ibgpalette
 )noexcept{
-	CAUTO					cui16cbase=UINT16(UINT16(cui8ipalette)<<12);
+	CAUTO					cui16cbase=UINT16(UINT16(cui8ibgpalette+8)<<12);
 	AUTO					pui16destination_base=
 		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
 		(cv2idestination.i16iY()<<7)+
 		cv2idestination.i16iX();
 	AUTO					pui16destination=pui16destination_base;
 
-	for(AUTO pcustrsource=cpcustrsource;*pcustrsource;++pcustrsource){
+	for(AUTO pcustrsource=cpcustrstring;*pcustrsource;++pcustrsource){
 		if(*pcustrsource!='\n'){
 			*pui16destination=cui16cbase|UINT16(UINT8(*pcustrsource));
 			++pui16destination;

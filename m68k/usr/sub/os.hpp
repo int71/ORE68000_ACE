@@ -61,6 +61,8 @@ namespace m68k::i71::sub{
 			SOUND_DRIVER			SE0_drvThis;
 			SOUND_DRIVER			SE1_drvThis;
 			SOUND_DRIVER			VOICE_drvThis;
+			UINT16					BGM_ui16nVolumeFadeMain;
+			UINT16					BGM_ui16nVolumeFadeSpeedMain;
 		public:
 			VOID					Delete(VOID)noexcept;
 		};
@@ -82,6 +84,17 @@ namespace m68k::i71::sub{
 		}
 		static _INLINE_ VOID	BGM_stPlay(const PCUINT8 cpcui8csource)noexcept{
 			st.BGM_drvThis.Play(cpcui8csource);
+			BGM_stSetMasterVolume(255);
+			return;
+		}
+		static _INLINE_ VOID	BGM_stSetMasterVolume(CUINT8 cui8nvolume)noexcept{
+			st.BGM_drvThis.SetMasterVolume(cui8nvolume);
+			st.BGM_ui16nVolumeFadeSpeedMain=0;
+			return;
+		}
+		static _INLINE_ VOID	BGM_stSetMasterVolumeFade(CUINT8 cui8nvolumefade,CUINT8 cui8nvolumefadespeed)noexcept{
+			st.BGM_ui16nVolumeFadeMain=UINT16(cui8nvolumefade)<<8;
+			st.BGM_ui16nVolumeFadeSpeedMain=UINT16(cui8nvolumefadespeed)<<4;
 			return;
 		}
 		static _INLINE_ VOID	SE0_stSetMask(CUINT16 cui16cchannelmask)noexcept{

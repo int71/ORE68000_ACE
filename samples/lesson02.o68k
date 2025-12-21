@@ -1,7 +1,7 @@
 /****************************************************************************
 **																			**
 **																			**
-**									m68k									**
+**						É}ÉCÉRÉì ORE68000 ACE Magazine						**
 **																			**
 **	'lesson02.o68k'									2025 written by int71	**
  ****************************************************************************/
@@ -28,17 +28,16 @@ UINT8					ui8iAnimation=0;
 
 VOID					USER_New(VOID)noexcept{
 	FAMILYBASIC::stNew();
-	FAMILYBASIC::stSetPalette(0,0x3f,0x30,0x16,0x01);
-	FAMILYBASIC::stSetPalette(8,0x3f,0x30,0x21,0x02);
-	FAMILYBASIC::stSetPalette(9,0x3f,0x30,0x27,0x18);
-	FAMILYBASIC::stWriteBG0({0,0},0x8,"LESSON 02:BG(1)");
-	FAMILYBASIC::stWriteBG0({24,0},0x8,"HI\n00000000\n\n1P\n00000000");
-	FAMILYBASIC::stFillBG1({24,0},{8,27},0x80ff);
-	FAMILYBASIC::stFillBG1({25,16},{6,10},0x80fe);
-	for(INT16 i16y=0;i16y<128;i16y+=16)for(INT16 i16x=0;i16x<128;i16x+=16)FAMILYBASIC::stFillBG2(
+	FAMILYBASIC::PALETTE_stWriteSet(1,1);
+	FAMILYBASIC::BG0_stPrint({0,0},"LESSON 02:BG(1)",0);
+	FAMILYBASIC::BG0_stPrint({24,0},"HI\n00000000\n\n1P\n00000000",0);
+	FAMILYBASIC::BG1_stFill({24,0},{8,27},0xff,0);
+	FAMILYBASIC::BG1_stFill({25,16},{6,10},0xfe,0);
+	for(INT16 i16y=0;i16y<128;i16y+=16)for(INT16 i16x=0;i16x<128;i16x+=16)FAMILYBASIC::BG2_stFill(
 		{INT16(i16x+2),INT16(i16y+2)},
 		{12,12},
-		0x90c0
+		0xc0,
+		1
 	);
 	return;
 }
@@ -96,7 +95,7 @@ VOID					USER_Main(VOID)noexcept{
 		6,		//	1110
 		0xff	//	1111
 	};
-	CAUTO					cui8cjoystick=FAMILYBASIC::stui8cReadJoystick(0);
+	CAUTO					cui8cjoystick=FAMILYBASIC::CONTROLLER_stui8cRead(0);
 
 	if(
 		CAUTO					cui8idirection=stacui8idirection[cui8cjoystick&0xf];
@@ -104,13 +103,9 @@ VOID					USER_Main(VOID)noexcept{
 	)ui8iDirection=cui8idirection;
 	v2iPosition+=stacv2nspeed[ui8iDirection];
 	++ui8iAnimation;
-	FAMILYBASIC::stWriteSprite(0,96,98,stacui16cpattern[ui8iDirection]+(ui8iAnimation&4),0x5100);
+	FAMILYBASIC::SPRITE_stWriteAttribute(0,96,98,stacui16cpattern[ui8iDirection]+(ui8iAnimation&4),0x5100);
 	VIDEO_DRIVER::stWrite(IDREGISTERW::BG2OffsetX,(v2iPosition.i16iX()-8-96)&0x3ff);
 	VIDEO_DRIVER::stWrite(IDREGISTERW::BG2OffsetY,(v2iPosition.i16iY()-8-98)&0x3ff);
-	if(cui8cjoystick&(1<<IDBUTTON::A))MEMORY::VRAM_stui16DelegateThis(
-		MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset+
-		(((v2iPosition.i16iY()&0x3ff)>>3)<<8)+
-		(((v2iPosition.i16iX()&0x3ff)>>3)<<1)
-	)=0x80db;
+	if(cui8cjoystick&(1<<IDBUTTON::A))FAMILYBASIC::BG2_stWrite({INT16((v2iPosition.i16iX()&0x3ff)>>3),INT16((v2iPosition.i16iY()&0x3ff)>>3)},0xdb,0);
 	return;
 }
