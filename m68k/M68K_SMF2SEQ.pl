@@ -4,12 +4,13 @@
 ##																			##
 ##									M68K									##
 ##																			##
-##	'M68K_SMF2SEQ.pl'								2025 written by int71	##
+##	'M68K_SMF2SEQ.pl'								2026 written by int71	##
 ##############################################################################
 use strict;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'smf.pl';
-my($sVersion,$sDate)=('2.31','2025/11/08');
+my($sVersion,$sDate)=('2.33','2026/01/17');
+my($COM_sDirectory)=('/d/Sync/Package/Cross/ORE68000_ACE/m68k');
 my($sChannelAdditionalVariableName)=('_INIT');
 new BASE::();
 
@@ -120,10 +121,8 @@ sub main{
 				}else{
 					$_+=0;
 				}
-				$switch{'NoDiscardChannel'}{$_}='';
+				$switch{'ForcedChannel'}{$_}='';
 			}
-		}else{
-			$switch{'NoDiscardChannel'}={};
 		}
 		if(defined $$option{'r'}){
 			$switch{'Replace'}=require $$option{'r'};
@@ -186,9 +185,9 @@ $BASE::Self (入力).mid [-v] [-h] [-o (演奏テキスト).sh] [-u (音符長�
   ・ピッチモジュレーション
 
   ノート音量(「VL=n」)、チャンネル音量(「VM=n」)は省略されますが、列挙位置が末尾であるため、文字列置換を阻害しません。
--n: 指定チャンネルについて、「キーイベントが存在しないチャンネル」を省略しないようにします。
+-n: 出力対象を指定チャンネルに強制します。
   「(チャンネル)」は数値「0～15」、もしくはチャンネル名「FM0～7」、「PCM0～7」で表記し、カンマ区切りで複数列挙できます。
-  「-c」と組み合わせる事で、多チャンネル演奏からの切り替え時に「ゴミ」が残らないようにできます。
+  「(入力).mid」出力時のワーク用チャンネルミュート忘れによる「想定外チャンネル出力」事故を避けたり、「-c」と組み合わせる事で、多チャンネル演奏からの切り替え時に「ゴミ」が残らないようにできます。
 -r: 演奏テキストの置換文字列定義ファイル名を指定します。
   「(置換文字列定義)」はPerlスクリプトであるので、変数、コメントの記述方法もPerlのそれに準じます。
 
@@ -800,24 +799,30 @@ sub USR_stSMF2SEQ{
 		my(@array_eused);
 
 		#	未使用チャンネルを調査
-		foreach $ref_line(@array_ref_line){
+		if(exists $$ref_switch{'ForcedChannel'}){
 			my($ichannel);
 
 			for($ichannel=0;$ichannel<$nchannel;++$ichannel){
-				if(exists $$ref_switch{'NoDiscardChannel'}{$ichannel}){
-					$array_eused[$ichannel]=1;
-				}elsif($array_eused[$ichannel]!=1){
-					if(exists $$ref_line{'Event'}){
-						if(defined $$ref_line{'Event'}[$ichannel]){
-							my($ref_array_event)=$$ref_line{'Event'}[$ichannel];
-							my($nevent)=scalar(@$ref_array_event);
+				$array_eused[$ichannel]=(exists $$ref_switch{'ForcedChannel'}{$ichannel});
+			}
+		}else{
+			foreach $ref_line(@array_ref_line){
+				my($ichannel);
 
-							if($nevent==1){
-								if($$ref_array_event[0] ne ''){
+				for($ichannel=0;$ichannel<$nchannel;++$ichannel){
+					if($array_eused[$ichannel]!=1){
+						if(exists $$ref_line{'Event'}){
+							if(defined $$ref_line{'Event'}[$ichannel]){
+								my($ref_array_event)=$$ref_line{'Event'}[$ichannel];
+								my($nevent)=scalar(@$ref_array_event);
+
+								if($nevent==1){
+									if($$ref_array_event[0] ne ''){
+										$array_eused[$ichannel]=1;
+									}
+								}elsif(1<$nevent){
 									$array_eused[$ichannel]=1;
 								}
-							}elsif(1<$nevent){
-								$array_eused[$ichannel]=1;
 							}
 						}
 					}
@@ -935,7 +940,7 @@ sub USR_stSMF2SEQ{
 
 		#	最終出力
 		$img_return=new BASE_IMAGE::();
-		$img_return->AddLINE('#!./M68K_MAKESEQUENCE.pl');
+		$img_return->AddLINE("#!$COM_sDirectory/M68K_MAKESEQUENCE.pl");
 		$img_return->AddLINE('#');
 		$img_return->AddLINE("#	TITLE:$$smf{'Info'}{'Title'}");
 		$img_return->AddLINE('#');

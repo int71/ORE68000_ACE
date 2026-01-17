@@ -27,10 +27,16 @@
         XInput,0,SignedThumbLXP,FALSE,00000000,,4096,24576))"/>
         <JOYSTICK-U value="((XInput,0,DigitalUp,FALSE,00000000,,4096,0),(XInput,
         0,SignedThumbLYM,FALSE,00000000,,4096,24576))"/>
+        <LOADSTATE value="((Keyboard,255,F3,TRUE,00000000,(Keyboard,255,Alt,
+        FALSE,00000000,,4096,0),4096,0))"/>
+        <PAUSE value="((Keyboard,255,P,TRUE,00000000,(Keyboard,255,Alt,FALSE,
+        00000000,,4096,0),4096,0))"/>
         <RESET value="((Keyboard,255,R,TRUE,00000000,(Keyboard,255,Alt,FALSE,
         00000000,,4096,0),4096,0))"/>
         <RESTART value="((Keyboard,255,R,TRUE,00000000,(Keyboard,255,Alt,FALSE,
         00000000,(Keyboard,255,Ctrl,FALSE,00000000,,4096,0),4096,0),4096,0))"/>
+        <SAVESTATE value="((Keyboard,255,F1,TRUE,00000000,(Keyboard,255,Alt,
+        FALSE,00000000,,4096,0),4096,0))"/>
         <SHUTDOWN value="((Keyboard,255,F4,TRUE,00000000,(Keyboard,255,Alt,
         FALSE,00000000,,4096,0),4096,0))"/>
     </HID>
