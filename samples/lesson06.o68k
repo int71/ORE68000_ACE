@@ -1,0 +1,951 @@
+/****************************************************************************
+**																			**
+**																			**
+**						マイコン ORE68000 ACE Magazine						**
+**																			**
+**	'lesson06.o68k'									2025 written by int71	**
+ ****************************************************************************/
+
+//
+//		include
+//
+
+#include				<sub/familybasic.hpp>
+
+//
+//		using
+//
+
+using namespace m68k::i71::sub;
+
+//
+//		class
+//
+
+//	GAME
+class GAME;
+using					CGAME=const GAME;
+using					PGAME=GAME*;
+using					PCGAME=CGAME*;
+
+//
+//		class:GAME
+//
+
+class GAME{
+public:
+
+	//
+	//		const
+	//
+
+	//	enum class IDMODE
+	//		ゲーム進行の「状態」を示す定数です。
+	enum class IDMODE{
+		Start,
+		Normal,
+		GameOver
+	};
+	//	UINT8					stcui8nDiscardBit
+	//		16bit中、6bitを「小数点値」扱いにします。
+	static constexpr UINT8	stcui8nDiscardBit=6;
+	//	UINT8					CONTROLLER_stcui8nRapid
+	//		「コントローラ」ソフトウェア連射の間隔(フレーム数)です。
+	static constexpr UINT8	CONTROLLER_stcui8nRapid=2;
+	//	VECTOR2					PLAYER_stcv2iiMinimum
+	//		「自機」が移動できる座標の最小値です。
+	static constexpr AUTO	PLAYER_stcv2iiMinimum=VECTOR2(  0+8, 32+8)<<stcui8nDiscardBit;
+	//	VECTOR2					PLAYER_stcv2iiMaximum
+	//		「自機」が移動できる座標の最大値です。
+	static constexpr AUTO	PLAYER_stcv2iiMaximum=VECTOR2(256-8,212-8)<<stcui8nDiscardBit;
+	//	UINT8					SHOT_stcui8nInstanceMaximum
+	//		「ショット最大数」です。
+	static constexpr UINT8	SHOT_stcui8nInstanceMaximum=8;
+	//	UINT8					ENEMY_stcui8nInstanceMaximum
+	//		「敵最大数」です。
+	static constexpr UINT8	ENEMY_stcui8nInstanceMaximum=16;
+	//	UINT8					SE0_stacui8cShot
+	//		「ショット」音です。
+	static constexpr UINT8	SE0_stacui8cShot[]=__O68K_MAKESEQUENCE(R"(
+		[
+			"#CHANNEL=PCM3",
+			#=============	   0
+			"#SPEED=1",
+			" 6A ,PT=-4,PG=33,PN=0,PM=0,VL=255,VM=255",
+			"-F  ,PT=-4   ",
+		];
+	)");
+	//	UINT8					SE1_stacui8cCrush
+	//		爆発音です。
+	//		YM2151B FM音源部のノイズ機能を利用しています。
+	static constexpr UINT8	SE1_stacui8cCrush[]=__O68K_MAKESEQUENCE(R"(
+		[
+			"#CHANNEL=FM7",
+			#=============	   0
+			"#SPEED=1",
+			" 3C ,PG=126,PN=0,PM=0,VL=255,VM=255",
+			"#SPEED=1",
+			"-           ",
+		];
+	)");
+
+	//
+	//		class
+	//
+
+	//	SHOT
+	class SHOT;
+	using					CSHOT=const SHOT;
+	using					PSHOT=SHOT*;
+	using					PCSHOT=CSHOT*;
+	//	ENEMY
+	class ENEMY;
+	using					CENEMY=const ENEMY;
+	using					PENEMY=ENEMY*;
+	using					PCENEMY=CENEMY*;
+
+	//
+	//		class:SHOT
+	//
+
+	class SHOT{
+	public:
+		//	enum class IDMODE
+		//		「ショット種別」を示す定数ですが、現状上方向に飛ぶショットだけです。
+		//		「生きているかどうか」のフラグを兼ねます。
+		enum class IDTYPE:UINT8{
+			None,
+			Normal
+		};
+	private:
+		//	IDTYPE					idType
+		//		「ショット種別」を保持しますが、現状上方向に飛ぶショットだけです。
+		//		「生きているかどうか」のフラグを兼ねます。
+		IDTYPE					idType;
+		//	VECTOR2					v2iPosition
+		//		「位置」です。
+		//		この値は6bit小数点値の「固定小数点値」です。
+		VECTOR2					v2iPosition;
+		//	VECTOR2					v2iPosition_Upper
+		//		整数状態での「位置」です。
+		//		当たり判定は整数状態で取るので、キャッシュ的に保持しておきます。
+		VECTOR2					v2iPosition_Upper;
+		//	VECTOR2					v2dVelocity
+		//		「移動速度」です。
+		//		この値は6bit小数点値の「固定小数点値」です。
+		VECTOR2					v2dVelocity;
+	public:
+		/*VOID*/				SHOT(VOID)noexcept{}
+		/*VOID*/				~SHOT(VOID)noexcept{
+			Delete();
+		}
+		//	VOID					New(VOID)
+		//		初期化処理で、プログラム開始後一度だけの実行で十分──
+		//		という建前なんですが、現状何もしてません。
+		VOID					New(VOID)noexcept{
+			return;
+		}
+		//	VOID					Delete(VOID)
+		//		「終了処理」ですが、現状何もする事はありません。
+		VOID					Delete(VOID)noexcept{
+			return;
+		}
+		//	OFWBOOL					eIsActive(VOID)
+		//		「idType」を生存フラグ解釈して、「生きて」いれば「TRUE」を返します。
+		constexpr OFWBOOL		eIsActive(VOID)const noexcept{
+			return (idType!=IDTYPE::None);
+		}
+		//	VOID					Start(const PGAME cpgameowner,const IDTYPE cidtype,CVECTOR2& cv2iposition)
+		//		「ショット」出現処理です。
+		//		「cpgameowner」が引数として渡っているのは、「自機の方向を調べる」等のサービスを提供するためですが、
+		//		現状利用していません。
+		VOID					Start(const PGAME cpgameowner,const IDTYPE cidtype,CVECTOR2& cv2iposition)noexcept{
+			idType=cidtype;
+			switch(idType){
+			case IDTYPE::Normal:
+				v2iPosition=cv2iposition+(VECTOR2(0,-4)<<stcui8nDiscardBit);
+				v2dVelocity={
+					INT16( 0)<<stcui8nDiscardBit,
+					INT16(-8)<<stcui8nDiscardBit
+				};
+				break;
+			default:
+				break;
+			}
+			return;
+		}
+		//	UINT8					ui8nShow(CUINT8 cui8isprite)
+		//		「ショット」表示処理です。
+		//		スプライト番号「cui8isprite」以降で表示する事を求めています。
+		//		「移動処理」と分けているのは、「表示を垂直帰線期間中に確実に完了させる」ためです。
+		//		返り値はスプライト枚数の使用実績です。
+		UINT8					ui8nShow(CUINT8 cui8isprite)const noexcept{
+			switch(idType){
+			case IDTYPE::Normal:
+				FAMILYBASIC::SPRITE_stWrite8(cui8isprite,(v2iPosition>>stcui8nDiscardBit)-VECTOR2(4,4),221,3);
+				return 1;
+			default:
+				break;
+			}
+			return 0;
+		}
+		//	VOID					Move(const PGAME cpgameowner)
+		//		「ショット」移動処理です。
+		//		移動の他、画面外脱出判定もここで行います。
+		//		「cpgameowner」が引数として渡っているのは、「自機の方向を調べる」等のサービスを提供するためですが、
+		//		現状利用していません。
+		VOID					Move(const PGAME cpgameowner)noexcept{
+			switch(idType){
+			case IDTYPE::Normal:
+				v2iPosition+=v2dVelocity;
+				if(v2iPosition.i16iY()<(INT16(-4)<<stcui8nDiscardBit))idType=IDTYPE::None;
+				v2iPosition_Upper=v2iPosition>>stcui8nDiscardBit;
+				break;
+			default:
+				break;
+			}
+			return;
+		}
+		//	OFWBOOL					eIsHit(CVECTOR2& cv2iposition_upper,CVECTOR2& cv2nhithalf_upper)
+		//		当たり判定です。
+		//		整数値たる位置「cv2iposition_upper」およびサイズ(の半分)「cv2nhithalf_upper」と比較して、
+		//		当たっていれば「TRUE」を返します。
+		OFWBOOL					eIsHit(CVECTOR2& cv2iposition_upper,CVECTOR2& cv2nhithalf_upper)noexcept{
+			switch(idType){
+			case IDTYPE::Normal:
+				if(v2iPosition_Upper.eIsHit512(VECTOR2(2,4),cv2iposition_upper,cv2nhithalf_upper)){
+					idType=IDTYPE::None;
+					return TRUE;
+				}
+				break;
+			default:
+				break;
+			}
+			return FALSE;
+		}
+	};
+
+	//
+	//		class:ENEMY
+	//
+
+	class ENEMY{
+	public:
+
+		//
+		//		const
+		//
+
+		//	enum class IDMODE
+		//		「敵種別」を示す定数です。
+		//		「生きているかどうか」のフラグを兼ねます。
+		enum class IDTYPE:UINT8{
+			None,					//	「生きて」ません。
+			Crushed,				//	当たり判定も何も無い、爆発パターンです。
+			Type0,					//	真下に一直線に移動する敵です。
+			Type1,					//	下から出現する「ゾ○ー」的な敵です。
+			Bullet					//	敵弾です。
+		};
+		//	VECTOR2					stcv2iiMinimum
+		//		「敵」が存在できる座標の最小値です。
+		static constexpr AUTO	stcv2iiMinimum=VECTOR2(  0-8,  0-8)<<stcui8nDiscardBit;
+		//	VECTOR2					stcv2iiMaximum
+		//		「敵」が存在できる座標の最大値です。
+		static constexpr AUTO	stcv2iiMaximum=VECTOR2(256+8,212+8)<<stcui8nDiscardBit;
+		//	UINT16					AIM_stcui16nCounter
+		//		「敵弾」発射間隔です。
+		static constexpr UINT16	AIM_stcui16nCounter=64;
+
+		//
+		//		body:ENEMY
+		//
+
+	private:
+		//	IDTYPE					idType
+		//		「敵種別」を保持します。
+		//		「生きているかどうか」のフラグを兼ねます。
+		IDTYPE					idType;
+		//	VECTOR2					v2iPosition
+		//		「位置」です。
+		//		この値は6bit小数点値の「固定小数点値」です。
+		VECTOR2					v2iPosition;
+		//	VECTOR2					v2iPosition_Upper
+		//		整数状態での「位置」です。
+		//		当たり判定は整数状態で取るので、キャッシュ的に保持しておきます。
+		VECTOR2					v2iPosition_Upper;
+		//	VECTOR2					v2dVelocity
+		//		「移動速度」です。
+		//		この値は6bit小数点値の「固定小数点値」です。
+		VECTOR2					v2dVelocity;
+		//	UINT16					ui16iPattern
+		//		「アニメーションカウンター」です。
+		UINT16					ui16iPattern;
+		//	UINT16					AIM_ui16iCounter
+		//		「敵弾」発射タイミングカウンタです。
+		//		間隔は「AIM_stcui16nCounter」になりますが、開始値は乱数で決めるので、
+		//		体感的には「バラバラ」と飛んでくるイメージになります。
+		UINT16					AIM_ui16iCounter;
+	public:
+		//	OFWBOOL					steIsInscreen(CVECTOR2& cv2iposition)
+		//		「cv2iposition」が画面内かどうかを判定します。
+		//		画面内であれば「TRUE」を返します。
+		static constexpr OFWBOOL	steIsInscreen(CVECTOR2& cv2iposition)noexcept{
+			return (
+				(stcv2iiMinimum.i16iX()<cv2iposition.i16iX())&&
+				(cv2iposition.i16iX()<stcv2iiMaximum.i16iX())&&
+				(stcv2iiMinimum.i16iY()<cv2iposition.i16iY())&&
+				(cv2iposition.i16iY()<stcv2iiMaximum.i16iY())
+			);
+		}
+		/*VOID*/				ENEMY(VOID)noexcept{}
+		/*VOID*/				~ENEMY(VOID)noexcept{
+			Delete();
+		}
+		//	VOID					New(VOID)
+		//		初期化処理で、プログラム開始後一度だけの実行で十分──
+		//		という建前なんですが、現状何もしてません。
+		VOID					New(VOID)noexcept{
+			return;
+		}
+		//	VOID					Delete(VOID)
+		//		「終了処理」ですが、現状何もする事はありません。
+		VOID					Delete(VOID)noexcept{
+			return;
+		}
+		//	OFWBOOL					eIsActive(VOID)
+		//		「idType」を生存フラグ解釈して、「生きて」いれば「TRUE」を返します。
+		constexpr OFWBOOL		eIsActive(VOID)const noexcept{
+			return (idType!=IDTYPE::None);
+		}
+		//	VOID					Start(const PGAME cpgameowner,const IDTYPE cidtype,CVECTOR2& cv2iposition)
+		//		「敵」出現処理です。
+		//		メイン処理から呼び出される他、「撃ち落とされた際の爆発状態への移行」時にもクラス内から呼び出されます。
+		//		「cpgameowner」が引数として渡っているのは、「自機の方向を調べる」等のサービスを提供するためです。
+		VOID					Start(const PGAME cpgameowner,const IDTYPE cidtype,CVECTOR2& cv2iposition=VECTOR2::stv2ImmediateZero())noexcept{
+			idType=cidtype;
+			switch(idType){
+			case IDTYPE::Crushed:	//	当たり判定も何も無い、爆発パターンです。
+				SetPosition(cv2iposition);
+				ui16iPattern=0;
+				//	出現ついでに音鳴らすんですが、
+				//	現状の演奏処理はノイズ使わない想定なので手動で「YM2151B」のレジスタを設定します。
+				SOUND_DRIVER::DEVICE_FM_stWrite(SOUND_DRIVER::FM_IDREGISTERW::NoiseDivRatio5,0x80+16);
+				FAMILYBASIC::SE1_stPlay(SE1_stacui8cCrush);
+				break;
+			case IDTYPE::Type0:		//	真下に一直線に移動する敵です。
+				SetPosition(VECTOR2(FAMILYBASIC::stui16GetRandom()&0xff,0-8)<<stcui8nDiscardBit);
+				v2dVelocity={
+					INT16(0)<<stcui8nDiscardBit,
+					INT16(2)<<stcui8nDiscardBit
+				};
+				//	敵弾発射のための準備をします。
+				AIM_Start();
+				break;
+			case IDTYPE::Type1:		//	下から出現する「ゾ○ー」的な敵です。
+				SetPosition(VECTOR2(FAMILYBASIC::stui16GetRandom()&0xff,212+8)<<stcui8nDiscardBit);
+				//	基本は「追いかけ」なんですが、まずは上方向に移動させます。
+				v2dVelocity={
+					INT16(0)<<stcui8nDiscardBit,
+					INT16(-1)<<stcui8nDiscardBit
+				};
+				ui16iPattern=0;
+				//	敵弾発射のための準備をします。
+				AIM_Start();
+				break;
+			case IDTYPE::Bullet:	//	敵弾です。
+				SetPosition(cv2iposition);
+				//	移動方向を「自機」に向けます。
+				v2dVelocity=VECTOR2::stv2Trigonometric(cpgameowner->ENEMY_ui8iAim(v2iPosition_Upper))>>(VECTOR2::TRIG_stcui8nWidthBit-stcui8nDiscardBit);
+				ui16iPattern=0;
+				break;
+			default:
+				break;
+			}
+			return;
+		}
+		//	UINT8					ui8nShow(CUINT8 cui8isprite)
+		//		「敵」表示処理です。
+		//		スプライト番号「cui8isprite」以降で表示する事を求めています。
+		//		「移動処理」と分けているのは、「表示を垂直帰線期間中に確実に完了させる」ためです。
+		//		返り値はスプライト枚数の使用実績です。
+		UINT8					ui8nShow(CUINT8 cui8isprite)const noexcept{
+			switch(idType){
+			case IDTYPE::Crushed:	//	当たり判定も何も無い、爆発パターンです。
+				FAMILYBASIC::SPRITE_stWrite16(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),(ui16iPattern&4)+176,3);
+				return 1;
+			case IDTYPE::Type0:		//	真下に一直線に移動する敵です。
+				FAMILYBASIC::SPRITE_stWrite16(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),160,1,FALSE,TRUE);
+				return 1;
+			case IDTYPE::Type1:		//	下から出現する「ゾ○ー」的な敵です。
+				FAMILYBASIC::SPRITE_stWrite16(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),(ui16iPattern&4)+144,1);
+				return 1;
+			case IDTYPE::Bullet:	//	敵弾です。
+				//	回転アニメーションさせるため泥臭く分岐。
+				switch((ui16iPattern>>2)&3){
+				case 0:
+					//	－
+					FAMILYBASIC::SPRITE_stWrite8(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),210,3,FALSE,FALSE,2);
+					break;
+				case 1:
+					//	＼
+					FAMILYBASIC::SPRITE_stWrite8(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),211,3,FALSE,FALSE,2);
+					break;
+				case 2:
+					//	｜
+					FAMILYBASIC::SPRITE_stWrite8(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),214,3,FALSE,FALSE,2);
+					break;
+				case 3:
+					//	／
+					FAMILYBASIC::SPRITE_stWrite8(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),211,3,TRUE,FALSE,2);
+					break;
+				}
+				return 1;
+			default:
+				break;
+			}
+			//	「生きて」ないのでスプライト消費はゼロ。
+			return 0;
+		}
+		//	VOID					Move(const PGAME cpgameowner)
+		//		「敵」移動処理です。
+		//		移動の他、画面外脱出判定、当たり判定、「敵弾」発射等もここで行います。
+		//		「cpgameowner」が引数として渡っているのは、新規「敵」生成や、
+		//		「自機の方向を調べる」等のサービスを提供するためです。
+		VOID					Move(const PGAME cpgameowner)noexcept{
+			switch(idType){
+			case IDTYPE::Crushed:	//	当たり判定も何も無い、爆発パターンです。
+				SetPosition(v2iPosition+v2dVelocity);
+				++ui16iPattern;
+				//	気が済んだら「生きて」いない状態に変化
+				if(ui16iPattern==16)Start(cpgameowner,IDTYPE::None);
+				break;
+			case IDTYPE::Type0:		//	真下に一直線に移動する敵です。
+				SetPosition(v2iPosition+v2dVelocity);
+				if(steIsInscreen(v2iPosition)){
+					//	画面内に収まっているので生存継続
+					AIM_Move(cpgameowner);
+					//	当たり判定は「敵」側から実施
+					if(cpgameowner->eIsHit(v2iPosition_Upper,VECTOR2(6,6))){
+						//	撃ち落とされたので加点後「爆発パターン」に変化
+						cpgameowner->AddScore(1);
+						Start(cpgameowner,IDTYPE::Crushed,v2iPosition);
+					}
+				}else idType=IDTYPE::None;
+				break;
+			case IDTYPE::Type1:		//	下から出現する「ゾ○ー」的な敵です。
+				SetPosition(v2iPosition+v2dVelocity);
+				if(steIsInscreen(v2iPosition)){
+					//	画面内に収まっているので生存継続
+					AIM_Move(cpgameowner);
+					//	当たり判定は「敵」側から実施
+					if(cpgameowner->eIsHit(v2iPosition_Upper,VECTOR2(6,6))){
+						//	撃ち落とされたので加点後「爆発パターン」に変化
+						cpgameowner->AddScore(1);
+						Start(cpgameowner,IDTYPE::Crushed,v2iPosition);
+					}else{
+						//	撃ち落とされてないので移動を実施
+						++ui16iPattern;
+						if(ui16iPattern<256){
+							//	256フレーム経過していなければ「追いかけ」る
+							if((ui16iPattern&31)==0){
+								//	32フレーム毎に「自機」に向かい直す
+								v2dVelocity=VECTOR2::stv2Trigonometric(cpgameowner->ENEMY_ui8iAim(v2iPosition_Upper))>>(VECTOR2::TRIG_stcui8nWidthBit-stcui8nDiscardBit);
+							}
+						}else{
+							//	256フレーム経過したなら画面外に移動
+							v2dVelocity={
+								INT16(0)<<stcui8nDiscardBit,
+								INT16(-2)<<stcui8nDiscardBit
+							};
+						}
+					}
+				}else idType=IDTYPE::None;
+				break;
+			case IDTYPE::Bullet:	//	敵弾です。
+				SetPosition(v2iPosition+v2dVelocity);
+				if(steIsInscreen(v2iPosition)){
+					//	画面内に収まっているので生存継続
+					if(cpgameowner->PLAYER_eIsHit(v2iPosition_Upper,VECTOR2(2,2))){
+						//	まだ「バリア」的なフィーチャーが無いので、この分岐に入る事はありません
+						Start(cpgameowner,IDTYPE::None);
+					}else{
+						++ui16iPattern;
+					}
+				}else idType=IDTYPE::None;
+				break;
+			default:
+				break;
+			}
+			return;
+		}
+	private:
+		//	VOID					SetPosition(CVECTOR2& cv2iposition)
+		//		「cv2iposition」で「位置」を更新します。
+		//		セット更新が必要となる「v2iPosition_Upper」があるので明示的に手続き化しています。
+		constexpr VOID			SetPosition(CVECTOR2& cv2iposition)noexcept{
+			v2iPosition=cv2iposition;
+			v2iPosition_Upper=v2iPosition>>stcui8nDiscardBit;
+			return;
+		}
+		//	VOID					AIM_Start(VOID)
+		//		「敵弾」発射管理情報を初期化します。
+		VOID					AIM_Start(VOID)noexcept{
+			//	カウンタ初期値を乱数にしておく事で、「敵弾」に「バラまき感」が出ます
+			AIM_ui16iCounter=FAMILYBASIC::stui16GetRandom()&(AIM_stcui16nCounter-1);
+			return;
+		}
+		//	VOID					AIM_Move(const PGAME cpgameowner)
+		//		「敵弾」発射管理定常処理です。
+		//		ここで間隔を見て「敵弾」を発射します。
+		VOID					AIM_Move(const PGAME cpgameowner)noexcept{
+			++AIM_ui16iCounter;
+			if(AIM_stcui16nCounter<=AIM_ui16iCounter){
+				AIM_ui16iCounter=0;
+				//	「敵」生成は「GAME」クラスの役割です。
+				cpgameowner->ENEMY_Start(IDTYPE::Bullet,v2iPosition);
+			}
+			return;
+		}
+	};
+
+	//
+	//		body:GAME
+	//
+
+private:
+	//	IDMODE					idMode
+	//		ゲームの「状態」を保持します。
+	//		今回は、プログラム中の「処理の場所」でなく、
+	//		「入口一つで毎回枝分かれする」という方法を採っています。
+	IDMODE					idMode;
+	//	UINT16					ui16nScore
+	//		点数です。「9999」まで表示できるようにしています。
+	UINT16					ui16nScore;
+	//	UINT8					CONTROLLER_ui8cCurrent
+	//		「コントローラ」入力値そのものです。
+	//		押下で当該bitが1になります。
+	UINT8					CONTROLLER_ui8cCurrent;
+	//	UINT8					CONTROLLER_ui8cSingle
+	//		「コントローラ」入力値ですが、
+	//		「CONTROLLER_ui8cCurrent」と異なり、押下の「瞬間」でだけ、当該bitが1になります。
+	UINT8					CONTROLLER_ui8cSingle;
+	//	UINT8					CONTROLLER_aui8cRapid[]
+	//		「コントローラ」ソフトウェア連射を実現するための履歴情報です。
+	UINT8					CONTROLLER_aui8cRapid[CONTROLLER_stcui8nRapid];
+	//	UINT8					CONTROLLER_ui8iRapid
+	//		「コントローラ」ソフトウェア連射を実現するための履歴情報の「参照位置」です。
+	UINT8					CONTROLLER_ui8iRapid;
+	//	VECTOR2					PLAYER_v2iPosition
+	//		「自機の位置」です。
+	//		この値は6bit小数点値の「固定小数点値」です。
+	VECTOR2					PLAYER_v2iPosition;
+	//	VECTOR2					PLAYER_v2iPosition_Upper
+	//		整数状態での「自機の位置」です。
+	//		当たり判定は整数状態で取るので、キャッシュ的に保持しておきます。
+	VECTOR2					PLAYER_v2iPosition_Upper;
+	//	VECTOR2					PLAYER_av2nSpeed[]
+	//		8方向+1(静止状態)に対応する「自機の速度(移動差分)」です。
+	//		この値は6bit小数点値の「固定小数点値」です。
+	VECTOR2					PLAYER_av2nSpeed[9];
+	//	UINT16					PLAYER_ui16iPattern
+	//		「自機」のアニメーションパターンという体ではありますが、
+	//		「ミス」後の「爆発アニメーションパターン」として使っているので、
+	//		事実上「ミス」フラグ扱いです。
+	UINT16					PLAYER_ui16iPattern;
+	//	SHOT					SHOT_ashotThis[]
+	//		「ショット状態」を保持する構造体の配列です。
+	SHOT					SHOT_ashotThis[SHOT_stcui8nInstanceMaximum];
+	//	ENEMY					ENEMY_aenmyThis[]
+	//		「敵状態」を保持する構造体の配列です。
+	ENEMY					ENEMY_aenmyThis[ENEMY_stcui8nInstanceMaximum];
+	//	UINT16					ENEMY_ui16nCounterRest
+	//		次の「敵」が出現するまでのカウンタ(フレーム)現在値です。
+	//		マイナス1され続け、「0」になると次の「敵」が出現します。
+	UINT16					ENEMY_ui16nCounterRest;
+	//	UINT16					ENEMY_ui16nCounter
+	//		次の「敵」が出現するまでのカウンタ(フレーム)母数です。
+	//		変数ではありますが、今のところ変動しません。
+	UINT16					ENEMY_ui16nCounter;
+	//	UINT16					SCROLL_ui16iPosition
+	//		「背景」スクロール位置です。
+	UINT16					SCROLL_ui16iPosition;
+public:
+	/*VOID*/				GAME(VOID)noexcept{}
+	/*VOID*/				~GAME(VOID)noexcept{
+		Delete();
+	}
+	//	VOID					New(VOID)
+	//		ゲームとしての初期化処理です。
+	//		ゲームオーバーが挟まろうが、実行は一度きりです。
+	VOID					New(VOID)noexcept{
+		idMode=IDMODE::Start;
+		CONTROLLER_ui8cCurrent=0;
+		for(AUTO& ui8ccurrent:CONTROLLER_aui8cRapid)ui8ccurrent=0x00;
+		for(AUTO& shotcurrent:SHOT_ashotThis)shotcurrent.New();
+		for(AUTO& enmycurrent:ENEMY_aenmyThis)enmycurrent.New();
+		return;
+	}
+	//	VOID					Delete(VOID)
+	//		ゲームとしての終了処理ですが、現状呼び出される事はありません。
+	VOID					Delete(VOID)noexcept{
+		for(AUTO& enmycurrent:ENEMY_aenmyThis)enmycurrent.Delete();
+		for(AUTO& shotcurrent:SHOT_ashotThis)shotcurrent.Delete();
+		return;
+	}
+	//	VOID					Main(VOID)
+	//		ゲームとしてのメイン処理です。
+	//		1/60秒毎の垂直帰線期間突入都度、「USER_Main」から呼び出されます。
+	_INLINE_ VOID			Main(VOID)noexcept{
+		switch(idMode){
+		case IDMODE::Start:
+			Start();
+			break;
+		case IDMODE::Normal:
+			Normal();
+			break;
+		case IDMODE::GameOver:
+			GameOver();
+			break;
+		}
+		return;
+	}
+	//	VOID					Start(VOID)
+	//		ゲーム開始処理です。
+	//		初期化処理の後の他、ゲームオーバーになった後にも実行されます。
+	VOID					Start(VOID)noexcept{
+		idMode=IDMODE::Normal;
+		ui16nScore=0;
+		//	「自機」初期化
+		PLAYER_v2iPosition={INT16(128)<<stcui8nDiscardBit,INT16(200)<<stcui8nDiscardBit};
+		PLAYER_v2iPosition_Upper=PLAYER_v2iPosition>>stcui8nDiscardBit;
+		//	「自機」移動速度初期化です。
+		//	将来的「動的変更」に備え変数になっていますが、現状固定値です。
+		{
+			INT16					i16nspeed=INT16(2)<<stcui8nDiscardBit;
+
+			PLAYER_av2nSpeed[0]={0,					0					};
+			PLAYER_av2nSpeed[1]={0,					INT16(-i16nspeed)	};
+			PLAYER_av2nSpeed[2]={INT16(+i16nspeed),	INT16(-i16nspeed)	};
+			PLAYER_av2nSpeed[3]={INT16(+i16nspeed), 0					};
+			PLAYER_av2nSpeed[4]={INT16(+i16nspeed),	INT16(+i16nspeed)	};
+			PLAYER_av2nSpeed[5]={0,					INT16(+i16nspeed)	};
+			PLAYER_av2nSpeed[6]={INT16(-i16nspeed),	INT16(+i16nspeed)	};
+			PLAYER_av2nSpeed[7]={INT16(-i16nspeed),	0					};
+			PLAYER_av2nSpeed[8]={INT16(-i16nspeed),	INT16(-i16nspeed)	};
+		}
+		PLAYER_ui16iPattern=0;
+		//	「敵」初期化
+		ENEMY_ui16nCounterRest=32;
+		ENEMY_ui16nCounter=128;
+		for(AUTO& enmycurrent:ENEMY_aenmyThis)enmycurrent.Start(this,ENEMY::IDTYPE::None,VECTOR2::stv2ImmediateZero());
+		//	「背景」初期化
+		SCROLL_ui16iPosition=0;
+		//	点数系初期化
+		FAMILYBASIC::BG0_stPrint({11,12},"          ",0);
+		ShowScore();
+		Normal();
+		return;
+	}
+	//	VOID					Normal(VOID)
+	//		ゲーム通常処理です。
+	//		1/60毎の実行で丁度良くなるよう、
+	//		「登場人物全てを満遍なくちょっとずつ動かす事」がポイントです。
+	VOID					Normal(VOID)noexcept{
+		using					IDBUTTON=FAMILYBASIC::IDBUTTON;
+
+		CONTROLLER_Update();
+		//	表示(垂直帰線期間中に完了できるよう冒頭に持ってくる)
+		Show();
+		//	移動
+		{
+			//	「背景」移動
+			SCROLL_ui16iPosition-=INT16(1)<<stcui8nDiscardBit;
+			//	「自機」移動
+			if(PLAYER_ui16iPattern==0){
+				//	UINT8					stacui8idirection
+				//		「コントローラ」入力と8方向+1(静止)の「方角」を関連付ける定数配列です。
+				//		「方角」と数字の対応は下記の通りです。
+				//
+				//			8	1	2
+				//				|
+				//			7---0---3
+				//				|
+				//			6	5	4
+				static constexpr UINT8	stacui8idirection[]={
+							//	UDLR←「コントローラ」のbit状態(押下で「1」)
+					0,		//	0000
+					3,		//	0001
+					7,		//	0010
+					0,		//	0011
+					5,		//	0100
+					4,		//	0101
+					6,		//	0110
+					5,		//	0111
+					1,		//	1000
+					2,		//	1001
+					8,		//	1010
+					1,		//	1011
+					0,		//	1100
+					3,		//	1101
+					7,		//	1110
+					0		//	1111
+				};
+
+				PLAYER_v2iPosition+=PLAYER_av2nSpeed[
+					stacui8idirection[CONTROLLER_ui8cCurrent&0xf]
+				];
+				PLAYER_v2iPosition=PLAYER_v2iPosition.v2GetMaximum(PLAYER_stcv2iiMinimum);
+				PLAYER_v2iPosition=PLAYER_v2iPosition.v2GetMinimum(PLAYER_stcv2iiMaximum);
+				PLAYER_v2iPosition_Upper=PLAYER_v2iPosition>>stcui8nDiscardBit;
+				//	「ショット」発射操作はソフトウェア連射で
+				if(CONTROLLER_ui8cGetRapid()&(1<<IDBUTTON::B)){
+					for(AUTO& shotcurrent:SHOT_ashotThis)if(!shotcurrent.eIsActive()){
+						//	「生きて」いない「ショット」を見つけたらその個体を初期化
+						shotcurrent.Start(this,SHOT::IDTYPE::Normal,PLAYER_v2iPosition);
+						FAMILYBASIC::SE0_stPlay(SE0_stacui8cShot);
+						break;
+					}
+				}
+			}
+			//	「敵」出現
+			--ENEMY_ui16nCounter;
+			if(ENEMY_ui16nCounter==0){
+				ENEMY_ui16nCounter=ENEMY_ui16nCounterRest;
+				//	適当に発生に重みづけ
+				switch(FAMILYBASIC::stui16GetRandom()&3){
+				case 0:
+					FALLTHROUGH;
+				case 1:
+					FALLTHROUGH;
+				case 2:
+					ENEMY_Start(ENEMY::IDTYPE::Type0);
+					break;
+				case 3:
+					ENEMY_Start(ENEMY::IDTYPE::Type1);
+					break;
+				}
+			}
+			//	「ショット」移動
+			for(AUTO& shotcurrent:SHOT_ashotThis)shotcurrent.Move(this);
+			//	「敵」移動
+			{
+				CAUTO					cui16nscore=ui16nScore;
+
+				for(AUTO& enmycurrent:ENEMY_aenmyThis)enmycurrent.Move(this);
+				//	点数に変動があった場合だけ表示
+				if(cui16nscore!=ui16nScore)ShowScore();
+			}
+		}
+		//	ゲームオーバー判定
+		if(PLAYER_ui16iPattern){
+			++PLAYER_ui16iPattern;
+			if(PLAYER_ui16iPattern==16){
+				FAMILYBASIC::BG0_stPrint({11,12},"GAME  OVER",0);
+				idMode=IDMODE::GameOver;
+				FAMILYBASIC::BGM_stSetMasterVolumeFade(255,4);
+			}
+		}
+		return;
+	}
+	//	VOID					GameOver(VOID)
+	//		ゲームオーバー処理です。
+	//		無くても構わないのですが、一応表示処理だけ実行しています。
+	//		リスタート判定は「CONTROLLER_ui8cSingle」で行っているので、
+	//		Aボタン押しっぱでゲームオーバーになったとしても、「即座に再開」とはなりません。
+	VOID					GameOver(VOID)noexcept{
+		CONTROLLER_Update();
+		Show();
+		//	リスタート判定
+		if(CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::IDBUTTON::A))idMode=IDMODE::Start;
+		return;
+	}
+private:
+	//	VOID					Show(VOID)
+	//		表示処理です。
+	//		通常進行中の表示の他、ゲームオーバー静止画像表示にも使います。
+	VOID					Show(VOID)const noexcept{
+		using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
+		UINT8					ui8isprite=0;
+
+		//	星
+		VIDEO_DRIVER::stWrite(IDREGISTERW::BG1OffsetY,((SCROLL_ui16iPosition>>stcui8nDiscardBit)&0x0ff)|0x2000);
+		VIDEO_DRIVER::stWrite(IDREGISTERW::BG2OffsetY,((SCROLL_ui16iPosition>>(stcui8nDiscardBit+1))&0x0ff)|0x2000);
+		VIDEO_DRIVER::stWrite(IDREGISTERW::BG3OffsetY,((SCROLL_ui16iPosition>>(stcui8nDiscardBit+2))&0x0ff)|0x2000);
+		//	自機
+		if(PLAYER_ui16iPattern==0){
+			FAMILYBASIC::SPRITE_stWrite16(ui8isprite,PLAYER_v2iPosition_Upper-VECTOR2(8,8),172,0);
+		}else{
+			FAMILYBASIC::SPRITE_stWrite16(ui8isprite,PLAYER_v2iPosition_Upper-VECTOR2(8,8),(PLAYER_ui16iPattern&4)+176,3);
+		}
+		++ui8isprite;
+		//	ショット
+		for(CAUTO& cshotcurrent:SHOT_ashotThis)ui8isprite+=cshotcurrent.ui8nShow(ui8isprite);
+		//	敵
+		for(CAUTO& cenmycurrent:ENEMY_aenmyThis)ui8isprite+=cenmycurrent.ui8nShow(ui8isprite);
+		//	残りは消去
+		while(ui8isprite!=0){
+			FAMILYBASIC::SPRITE_stErase(ui8isprite);
+			++ui8isprite;
+		}
+		return;
+	}
+	//	VOID					ShowScore(VOID)
+	//		点数表示処理です。最大「9999」まで表示できます。
+	//		通常「ui16nScore%1000」等と書くところですが、
+	//		割り算は遅いので引き算の繰り返しを行っています。
+	VOID					ShowScore(VOID)const noexcept{
+		USTR					austrscore[]="0000";
+		AUTO					ui16nscore=ui16nScore;
+		USTR					ustrzero=' ';
+		USTR					ustrdigit;
+
+		//	「千」の位
+		for(ustrdigit='0';1000<=ui16nscore;++ustrdigit,ui16nscore-=1000);
+		if(ustrdigit=='0'){
+			austrscore[0]=ustrzero;
+		}else{
+			ustrzero='0';
+			austrscore[0]=ustrdigit;
+		}
+		//	「百」の位
+		for(ustrdigit='0';100<=ui16nscore;++ustrdigit,ui16nscore-=100);
+		if(ustrdigit=='0'){
+			austrscore[1]=ustrzero;
+		}else{
+			ustrzero='0';
+			austrscore[1]=ustrdigit;
+		}
+		//	「十」の位
+		for(ustrdigit='0';10<=ui16nscore;++ustrdigit,ui16nscore-=10);
+		if(ustrdigit=='0'){
+			austrscore[2]=ustrzero;
+		}else{
+			ustrzero='0';
+			austrscore[2]=ustrdigit;
+		}
+		//	「一」の位は空白表示の場合が無いので単純変換
+		austrscore[3]='0'+ui16nscore;
+		FAMILYBASIC::BG0_stPrint({6,1},austrscore,0);
+	}
+	//	VOID					AddScore(CUINT16 cui16nscore)
+	//		スコアを加算します。
+	_INLINE_ VOID			AddScore(CUINT16 cui16nscore)noexcept{
+		ui16nScore+=cui16nscore;
+		return;
+	}
+	//	VOID					CONTROLLER_Update(VOID)
+	//		コントローラから状態をゲットして、
+	//		通常状態他、「押下」のみ状態、ソフトウェア連射状態を設定します。
+	_INLINE_ VOID			CONTROLLER_Update(VOID)noexcept{
+		CAUTO					cui8cprevious=CONTROLLER_ui8cCurrent;
+		AUTO					ui8crapid=CONTROLLER_aui8cRapid[0];
+
+		//	現在値
+		CONTROLLER_ui8cCurrent=FAMILYBASIC::CONTROLLER_stui8cRead(0);
+		//	変化値
+		CONTROLLER_ui8cSingle=CONTROLLER_ui8cCurrent&(CONTROLLER_ui8cCurrent^cui8cprevious);
+		//	連射値
+		for(UINT8 ui8irapid=1;ui8irapid<CONTROLLER_stcui8nRapid;++ui8irapid)ui8crapid|=CONTROLLER_aui8cRapid[ui8irapid];
+		CONTROLLER_ui8iRapid=(CONTROLLER_ui8iRapid+1)%CONTROLLER_stcui8nRapid;
+		CONTROLLER_aui8cRapid[CONTROLLER_ui8iRapid]=CONTROLLER_ui8cSingle|(CONTROLLER_ui8cCurrent&(~ui8crapid));
+		return;
+	}
+	//	UINT8					CONTROLLER_ui8cGetRapid(VOID)
+	//		「コントローラ」入力値で、「CONTROLLER_ui8cSingle」同様押下の「瞬間」でだけ、当該bitが1になりますが、
+	//		押下しっぱなしでも「CONTROLLER_stcui8nRapid」間隔で当該bitが1になります。
+	_INLINE_ UINT8			CONTROLLER_ui8cGetRapid(VOID)const noexcept{
+		return CONTROLLER_aui8cRapid[CONTROLLER_ui8iRapid];
+	}
+	//	OFWBOOL					eIsHit(CVECTOR2& cv2iposition_upper,CVECTOR2& cv2nhithalf_upper)
+	//		当たり判定です。
+	//		整数値たる位置「cv2iposition_upper」およびサイズ(の半分)「cv2nhithalf_upper」と比較して、
+	//		「ショットによる破壊」的意味で当たっていれば「TRUE」を返します。
+	OFWBOOL					eIsHit(CVECTOR2& cv2iposition_upper,CVECTOR2& cv2nhithalf_upper)noexcept{
+		if(PLAYER_eIsHit(cv2iposition_upper,cv2nhithalf_upper))return TRUE;
+		for(AUTO& shotcurrent:SHOT_ashotThis)if(shotcurrent.eIsHit(cv2iposition_upper,cv2nhithalf_upper))return TRUE;
+		return FALSE;
+	}
+	//	VOID					ENEMY_Start(const ENEMY::IDTYPE cidtype,CVECTOR2& cv2iposition)
+	//		「敵」を出現させます。
+	//		「敵状態」を保持する構造体の配列を「GAME」クラス側に持っているため、
+	//		「敵」出現は「GAME」クラスの役割になります。
+	VOID					ENEMY_Start(const ENEMY::IDTYPE cidtype,CVECTOR2& cv2iposition=VECTOR2::stv2ImmediateZero())noexcept{
+		for(AUTO& enmycurrent:ENEMY_aenmyThis)if(!enmycurrent.eIsActive()){
+			enmycurrent.Start(this,cidtype,cv2iposition);
+			break;
+		}
+		return;
+	}
+	//	UINT8					ENEMY_ui8iAim(CVECTOR2& cv2iposition_upper)
+	//		整数値たる位置「cv2iposition_upper」から見た自機の「方角」を返します。
+	//		この「方角」は「VECTOR2::stv2Trigonometric」に渡す事ができます。
+	UINT8					ENEMY_ui8iAim(CVECTOR2& cv2iposition_upper)const noexcept{
+		return VECTOR2(PLAYER_v2iPosition_Upper-cv2iposition_upper).ui8Atan();
+	}
+	//	OFWBOOL					PLAYER_eIsHit(CVECTOR2& cv2iposition_upper,CVECTOR2& cv2nhithalf_upper)
+	//		「自機」相手限定の当たり判定です。
+	//		整数値たる位置「cv2iposition_upper」およびサイズ(の半分)「cv2nhithalf_upper」と比較して、
+	//		「ショットによる破壊」的意味で当たっていれば「TRUE」を返しますが、
+	//		現状バリア的フィーチャーが無いので、「FALSE」しか返りません。
+	OFWBOOL					PLAYER_eIsHit(CVECTOR2& cv2iposition_upper,CVECTOR2& cv2nhithalf_upper)noexcept{
+		if(PLAYER_ui16iPattern==0)if(PLAYER_v2iPosition_Upper.eIsHit512(VECTOR2(6,6),cv2iposition_upper,cv2nhithalf_upper)){
+			PLAYER_ui16iPattern=1;
+			SOUND_DRIVER::DEVICE_FM_stWrite(SOUND_DRIVER::FM_IDREGISTERW::NoiseDivRatio5,0x80+31);
+			FAMILYBASIC::SE1_stPlay(SE1_stacui8cCrush);
+		}
+		return FALSE;
+	}
+};
+
+//
+//		user
+//
+
+static GAME				stgameThis;
+
+//
+//		entry
+//
+
+VOID					USER_New(VOID)noexcept{
+	FAMILYBASIC::stNew();
+	FAMILYBASIC::PALETTE_stWriteSet(1,1);
+	//	左右ループさせたくないので、スプライトは縦横512ドット空間に設定
+	FAMILYBASIC::SPRITE_stSetSize(FAMILYBASIC::IDSIZE::n512);
+	FAMILYBASIC::BG0_stPrint({0,0},"LESSON 06:GAME(2)",0);
+	FAMILYBASIC::BG0_stPrint({0,1},"SCORE",0);
+	//	星描画
+	for(UINT8 i=0;i<3;++i){
+		for(UINT8 j=0;j<128;++j){
+			CAUTO				cui16random=FAMILYBASIC::stui16GetRandom();
+			CAUTO				cv2iposition=VECTOR2(cui16random&31,(cui16random>>5)&31);
+			CAUTO				cui8ipattern=UINT8(0xcd+((cui16random>>10)&1));
+			CAUTO				cui8ibgpalette=UINT8((cui16random>>11)&3);
+
+			switch(i){
+			case 0:
+				FAMILYBASIC::BG1_stWrite(cv2iposition,cui8ipattern,cui8ibgpalette);
+				break;
+			case 1:
+				FAMILYBASIC::BG2_stWrite(cv2iposition,cui8ipattern,cui8ibgpalette);
+				break;
+			case 2:
+				FAMILYBASIC::BG3_stWrite(cv2iposition,cui8ipattern,cui8ibgpalette);
+				break;
+			}
+		}
+	}
+	stgameThis.New();
+	return;
+}
+
+VOID					USER_Delete(VOID)noexcept{
+	stgameThis.Delete();
+	FAMILYBASIC::stDelete();
+	return;
+}
+
+VOID					USER_Main(VOID)noexcept{
+	stgameThis.Main();
+	return;
+}

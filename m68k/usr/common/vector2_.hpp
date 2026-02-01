@@ -94,6 +94,18 @@ namespace m68k::i71::common{
 			i16Value1_Body=ci16value1;
 			return *this;
 		}
+		constexpr VECTOR2_		v2GetMinimum(CVECTOR2_& cv2source)noexcept{
+			return {
+				STD::stxGetMinimum(i16Value0_Body,cv2source.i16Value0_Body),
+				STD::stxGetMinimum(i16Value1_Body,cv2source.i16Value1_Body)
+			};
+		}
+		constexpr VECTOR2_		v2GetMaximum(CVECTOR2_& cv2source)noexcept{
+			return {
+				STD::stxGetMaximum(i16Value0_Body,cv2source.i16Value0_Body),
+				STD::stxGetMaximum(i16Value1_Body,cv2source.i16Value1_Body)
+			};
+		}
 		constexpr VECTOR2_		v2GetAbs(VOID)const noexcept{
 			return {
 				STD::stxGetAbs(i16Value0_Body),

@@ -806,34 +806,10 @@ namespace m68k::ore68000ace::driver{
 			PCM::stProgress();
 			return;
 		}
-		VOID					New(CUINT16 cui16cchannelmask)noexcept;
-		VOID					Delete(VOID)noexcept;
-		VOID					Play(const PCUINT8 cpcui8source)noexcept;
-		_INLINE_ VOID			PlayDynamic(const PCUINT8 cpcui8source)noexcept{
-			if((ROM_pcui8Cursor==NULL)||(cpcui8source<ROM_pcui8Cursor))Play(cpcui8source);
-			return;
-		}
-		VOID					SetMasterVolume(CUINT8 cui8nvolume)noexcept;
-		VOID					PlayVoice(const PCUINT8 cpcui8source,CUINT16 cui16nsourceblock,CUINT8 cui8ibufferblockaddress=0xfe)noexcept;
-		VOID					Progress(VOID)noexcept;
-	private:
 		static _INLINE_ VOID	stSetPitchModulationSpeed(CUINT8 cui8npitchmodulationspeed)noexcept{
 			DEVICE_FM_stWrite(DEVICE::FM_IDREGISTERW::LFOFrequency,cui8npitchmodulationspeed);
 			return;
 		}
-		_INLINE_ UINT16			ROM_ui16Read(VOID)noexcept{
-			CAUTO					cui8h=ROM_ui8Read();
-			CAUTO					cui8l=ROM_ui8Read();
-			return UINT16((UINT16(cui8h)<<8)|UINT16(cui8l));
-		}
-		_INLINE_ UINT8			ROM_ui8Read(VOID)noexcept{
-			CAUTO					cui8return=*ROM_pcui8Cursor;
-
-			++ROM_pcui8Cursor;
-			return cui8return;
-		}
-		UINT32					ROM_ui32ReadVU(VOID)noexcept;
-		UINT32					ROM_ui32dGetCursorOffset(CUINT8 cui8cflowtype)noexcept;
 		static _INLINE_ VOID	DEVICE_FM_stWrite(const FM_IDREGISTERW cidregister,CUINT8 cui8value)noexcept{
 			DEVICE_stui8Delegate(DEVICE_SOUND_FM_stcui16dSelectWOffset)=UINT8(cidregister);
 			DEVICE_stui8Delegate(DEVICE_SOUND_stcui16dDataOffset)=cui8value;
@@ -851,12 +827,36 @@ namespace m68k::ore68000ace::driver{
 		static _INLINE_ UINT8	DEVICE_stui8Read(VOID)noexcept{
 			return DEVICE_stcui8GetThis(DEVICE_stcui16dDataOffset);
 		}
+		VOID					New(CUINT16 cui16cchannelmask)noexcept;
+		VOID					Delete(VOID)noexcept;
+		VOID					Play(const PCUINT8 cpcui8source)noexcept;
+		_INLINE_ VOID			PlayDynamic(const PCUINT8 cpcui8source)noexcept{
+			if((ROM_pcui8Cursor==NULL)||(cpcui8source<ROM_pcui8Cursor))Play(cpcui8source);
+			return;
+		}
+		VOID					SetMasterVolume(CUINT8 cui8nvolume)noexcept;
+		VOID					PlayVoice(const PCUINT8 cpcui8source,CUINT16 cui16nsourceblock,CUINT8 cui8ibufferblockaddress=0xfe)noexcept;
+		VOID					Progress(VOID)noexcept;
+	private:
 		static _INLINE_ _UNDISCARDABLE_ UINT8&	DEVICE_stui8Delegate(CUINT16 cui16iaddress)noexcept{
 			return MEMORYS::DEVICE_stui8DelegateThis(DEVICE_SOUND_stcui16dOffsetS+cui16iaddress);
 		}
 		static _INLINE_ _UNDISCARDABLE_ CUINT8&	DEVICE_stcui8GetThis(CUINT16 cui16iaddress)noexcept{
 			return MEMORYS::DEVICE_stcui8GetThis(DEVICE_SOUND_stcui16dOffsetS+cui16iaddress);
 		}
+		_INLINE_ UINT16			ROM_ui16Read(VOID)noexcept{
+			CAUTO					cui8h=ROM_ui8Read();
+			CAUTO					cui8l=ROM_ui8Read();
+			return UINT16((UINT16(cui8h)<<8)|UINT16(cui8l));
+		}
+		_INLINE_ UINT8			ROM_ui8Read(VOID)noexcept{
+			CAUTO					cui8return=*ROM_pcui8Cursor;
+
+			++ROM_pcui8Cursor;
+			return cui8return;
+		}
+		UINT32					ROM_ui32ReadVU(VOID)noexcept;
+		UINT32					ROM_ui32dGetCursorOffset(CUINT8 cui8cflowtype)noexcept;
 	};
 }
 

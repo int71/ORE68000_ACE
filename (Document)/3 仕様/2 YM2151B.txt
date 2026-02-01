@@ -1,0 +1,554 @@
+・レジスタマップ(FM部)
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R番|名称                           |7  |6  |5  |4  |3  |2  |1  |0  |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R00|                               |                               |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R01|LFOReset1                      |***********************|RST|***|RST/0:LFO位相リセット 1:LFO停止                                                    |
+	|   |                               |                       |   |   |※LFOはFM/PCM共用                                                                  |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R02|LFOFrequency                   |累乗           |基本周波数     |「16+基本周波数*2^累乗」が周波数係数                                               |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R03|LFODepth7                      |種 |振幅                       |種/0:設定対象AMD 1:設定対象PMD                                                     |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R04|                               |                               |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R05|LFOShape2                      |***********************|波形   |波形/0:ノコギリ 1:矩形 2:三角 4:ノイズ                                             |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R06|                               |                               |                                                                                   |
+	|R07|                               |                               |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R08|Key                            |DN |C2 |C1 |M2 |M1 |チャンネル |M1～C2/0:KeyOff 1:KeyOn DN(DeNoise)/0:無効果 1:連続KeyOnノイズ除去有効             |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R09|                               |                               |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R0A|ClockAH                        |*******************************|                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R0B|ClockAL2                       |*******************************|                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R0C|ClockB                         |*******************************|                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R0D|                               |                               |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R0E|Timer                          |*******************************|                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R0F|NoiseDivRatio5                 |EN |*******|ノイズ分周         |EN/0:FM#7ノイズOFF 1:FM#7ノイズON                                                  |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R10|Ch0StereoLevelL7               |***|Lチャンネル音量            |Lチャンネル音量/0:最大 127:最小                                                    |
+	|R11|Ch1StereoLevelL7               |   |                           |※「ChnStereoLevelR7」の値と共に音源に反映                                         |
+	|R12|Ch2StereoLevelL7               |   |                           |                                                                                   |
+	|R13|Ch3StereoLevelL7               |   |                           |                                                                                   |
+	|R14|Ch4StereoLevelL7               |   |                           |                                                                                   |
+	|R15|Ch5StereoLevelL7               |   |                           |                                                                                   |
+	|R16|Ch6StereoLevelL7               |   |                           |                                                                                   |
+	|R17|Ch7StereoLevelL7               |   |                           |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R18|Ch0StereoLevelR7               |***|Rチャンネル音量            |Rチャンネル音量/0:最大 127:最小                                                    |
+	|R19|Ch1StereoLevelR7               |   |                           |※即時反映でなく「ChnStereoLevelL7」書き込み時に反映                               |
+	|R1A|Ch2StereoLevelR7               |   |                           |                                                                                   |
+	|R1B|Ch3StereoLevelR7               |   |                           |                                                                                   |
+	|R1C|Ch4StereoLevelR7               |   |                           |                                                                                   |
+	|R1D|Ch5StereoLevelR7               |   |                           |                                                                                   |
+	|R1E|Ch6StereoLevelR7               |   |                           |                                                                                   |
+	|R1F|Ch7StereoLevelR7               |   |                           |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R20|Ch0Feedback3Connect3           |*******|FeedBack   |Connect    |                                                                                   |
+	|R21|Ch1Feedback3Connect3           |       |           |           |                                                                                   |
+	|R22|Ch2Feedback3Connect3           |       |           |           |                                                                                   |
+	|R23|Ch3Feedback3Connect3           |       |           |           |                                                                                   |
+	|R24|Ch4Feedback3Connect3           |       |           |           |                                                                                   |
+	|R25|Ch5Feedback3Connect3           |       |           |           |                                                                                   |
+	|R26|Ch6Feedback3Connect3           |       |           |           |                                                                                   |
+	|R27|Ch7Feedback3Connect3           |       |           |           |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R28|Ch0Note7                       |***|オクターブ |ノートIndex    |ノートIndex/0:C# 1:D 2～3:D# 4:E 5:F 6～7:F# 8:G 9:G# 10～11:A 12:A# 13:B 14～15:C |
+	|R29|Ch1Note7                       |   |           |               |オクターブ/0～7                                                                    |
+	|R2A|Ch2Note7                       |   |           |               |周波数=440*2^(オクターブ-4+(ノート番号-8(A))/12)                                   |
+	|R2B|Ch3Note7                       |   |           |               |                                                                                   |
+	|R2C|Ch4Note7                       |   |           |               |                                                                                   |
+	|R2D|Ch5Note7                       |   |           |               |                                                                                   |
+	|R2E|Ch6Note7                       |   |           |               |                                                                                   |
+	|R2F|Ch7Note7                       |   |           |               |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R30|Ch0NoteFine6                   |音程微調整             |*******|音程微調整/0:補正「+0」 63:補正「+半音*63/64」                                     |
+	|R31|Ch1NoteFine6                   |                       |       |                                                                                   |
+	|R32|Ch2NoteFine6                   |                       |       |                                                                                   |
+	|R33|Ch3NoteFine6                   |                       |       |                                                                                   |
+	|R34|Ch4NoteFine6                   |                       |       |                                                                                   |
+	|R35|Ch5NoteFine6                   |                       |       |                                                                                   |
+	|R36|Ch6NoteFine6                   |                       |       |                                                                                   |
+	|R37|Ch7NoteFine6                   |                       |       |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R38|Ch0PMS3AMS2                    |***|PMS        |*******|AMS    |                                                                                   |
+	|R39|Ch1PMS3AMS2                    |   |           |       |       |                                                                                   |
+	|R3A|Ch2PMS3AMS2                    |   |           |       |       |                                                                                   |
+	|R3B|Ch3PMS3AMS2                    |   |           |       |       |                                                                                   |
+	|R3C|Ch4PMS3AMS2                    |   |           |       |       |                                                                                   |
+	|R3D|Ch5PMS3AMS2                    |   |           |       |       |                                                                                   |
+	|R3E|Ch6PMS3AMS2                    |   |           |       |       |                                                                                   |
+	|R3F|Ch7PMS3AMS2                    |   |           |       |       |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R40|Ch0M1DetuneFine3Multiply4      |***|DetuneFine |Multiply       |Multiply/0:周波数*0.5 1～15:周波数*n                                               |
+	|R41|Ch1M1DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R42|Ch2M1DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R43|Ch3M1DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R44|Ch4M1DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R45|Ch5M1DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R46|Ch6M1DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R47|Ch7M1DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R48|Ch0M2DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R49|Ch1M2DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R4A|Ch2M2DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R4B|Ch3M2DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R4C|Ch4M2DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R4D|Ch5M2DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R4E|Ch6M2DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R4F|Ch7M2DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R50|Ch0C1DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R51|Ch1C1DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R52|Ch2C1DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R53|Ch3C1DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R54|Ch4C1DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R55|Ch5C1DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R56|Ch6C1DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R57|Ch7C1DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R58|Ch0C2DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R59|Ch1C2DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R5A|Ch2C2DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R5B|Ch3C2DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R5C|Ch4C2DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R5D|Ch5C2DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R5E|Ch6C2DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	|R5F|Ch7C2DetuneFine3Multiply4      |   |           |               |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R60|Ch0M1TotalLevel7               |***|オペレータ音量             |オペレータ音量/0:最大 127:最小                                                     |
+	|R61|Ch1M1TotalLevel7               |   |                           |                                                                                   |
+	|R62|Ch2M1TotalLevel7               |   |                           |                                                                                   |
+	|R63|Ch3M1TotalLevel7               |   |                           |                                                                                   |
+	|R64|Ch4M1TotalLevel7               |   |                           |                                                                                   |
+	|R65|Ch5M1TotalLevel7               |   |                           |                                                                                   |
+	|R66|Ch6M1TotalLevel7               |   |                           |                                                                                   |
+	|R67|Ch7M1TotalLevel7               |   |                           |                                                                                   |
+	|R68|Ch0M2TotalLevel7               |   |                           |                                                                                   |
+	|R69|Ch1M2TotalLevel7               |   |                           |                                                                                   |
+	|R6A|Ch2M2TotalLevel7               |   |                           |                                                                                   |
+	|R6B|Ch3M2TotalLevel7               |   |                           |                                                                                   |
+	|R6C|Ch4M2TotalLevel7               |   |                           |                                                                                   |
+	|R6D|Ch5M2TotalLevel7               |   |                           |                                                                                   |
+	|R6E|Ch6M2TotalLevel7               |   |                           |                                                                                   |
+	|R6F|Ch7M2TotalLevel7               |   |                           |                                                                                   |
+	|R70|Ch0C1TotalLevel7               |   |                           |                                                                                   |
+	|R71|Ch1C1TotalLevel7               |   |                           |                                                                                   |
+	|R72|Ch2C1TotalLevel7               |   |                           |                                                                                   |
+	|R73|Ch3C1TotalLevel7               |   |                           |                                                                                   |
+	|R74|Ch4C1TotalLevel7               |   |                           |                                                                                   |
+	|R75|Ch5C1TotalLevel7               |   |                           |                                                                                   |
+	|R76|Ch6C1TotalLevel7               |   |                           |                                                                                   |
+	|R77|Ch7C1TotalLevel7               |   |                           |                                                                                   |
+	|R78|Ch0C2TotalLevel7               |   |                           |                                                                                   |
+	|R79|Ch1C2TotalLevel7               |   |                           |                                                                                   |
+	|R7A|Ch2C2TotalLevel7               |   |                           |                                                                                   |
+	|R7B|Ch3C2TotalLevel7               |   |                           |                                                                                   |
+	|R7C|Ch4C2TotalLevel7               |   |                           |                                                                                   |
+	|R7D|Ch5C2TotalLevel7               |   |                           |                                                                                   |
+	|R7E|Ch6C2TotalLevel7               |   |                           |                                                                                   |
+	|R7F|Ch7C2TotalLevel7               |   |                           |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R80|Ch0M1KeyScale2AttackRate5      |KS     |***|AttackRate         |AttackRate/0～1:即KeyOff 2:最遅 31:最速                                            |
+	|R81|Ch1M1KeyScale2AttackRate5      |       |   |                   |※即時反映でなく「Key」書き込みによるKeyOn時に反映                                 |
+	|R82|Ch2M1KeyScale2AttackRate5      |       |   |                   |KS(KeyScale)/0:効果最弱 3:効果最強                                                 |
+	|R83|Ch3M1KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R84|Ch4M1KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R85|Ch5M1KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R86|Ch6M1KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R87|Ch7M1KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R88|Ch0M2KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R89|Ch1M2KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R8A|Ch2M2KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R8B|Ch3M2KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R8C|Ch4M2KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R8D|Ch5M2KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R8E|Ch6M2KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R8F|Ch7M2KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R90|Ch0C1KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R91|Ch1C1KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R92|Ch2C1KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R93|Ch3C1KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R94|Ch4C1KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R95|Ch5C1KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R96|Ch6C1KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R97|Ch7C1KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R98|Ch0C2KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R99|Ch1C2KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R9A|Ch2C2KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R9B|Ch3C2KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R9C|Ch4C2KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R9D|Ch5C2KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R9E|Ch6C2KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	|R9F|Ch7C2KeyScale2AttackRate5      |       |   |                   |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|RA0|Ch0M1AME1Decay1Rate5           |AME|*******|Decay1Rate         |Decay1Rate/0:最遅 31:最速                                                          |
+	|RA1|Ch1M1AME1Decay1Rate5           |   |       |                   |※即時反映でなく「Key」書き込みによるKeyOn時に反映                                 |
+	|RA2|Ch2M1AME1Decay1Rate5           |   |       |                   |AME/0:振幅LFO無効 1:振幅LFO有効                                                    |
+	|RA3|Ch3M1AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RA4|Ch4M1AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RA5|Ch5M1AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RA6|Ch6M1AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RA7|Ch7M1AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RA8|Ch0M2AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RA9|Ch1M2AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RAA|Ch2M2AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RAB|Ch3M2AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RAC|Ch4M2AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RAD|Ch5M2AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RAE|Ch6M2AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RAF|Ch7M2AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RB0|Ch0C1AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RB1|Ch1C1AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RB2|Ch2C1AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RB3|Ch3C1AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RB4|Ch4C1AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RB5|Ch5C1AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RB6|Ch6C1AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RB7|Ch7C1AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RB8|Ch0C2AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RB9|Ch1C2AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RBA|Ch2C2AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RBB|Ch3C2AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RBC|Ch4C2AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RBD|Ch5C2AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RBE|Ch6C2AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	|RBF|Ch7C2AME1Decay1Rate5           |   |       |                   |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|RC0|Ch0M1DetuneRough2Decay2Rate5   |Det.R. |***|Decay2Rate         |Decay2Rate/0:最遅 31:最速                                                          |
+	|RC1|Ch1M1DetuneRough2Decay2Rate5   |       |   |                   |※即時反映でなく「Key」書き込みによるKeyOn時に反映                                 |
+	|RC2|Ch2M1DetuneRough2Decay2Rate5   |       |   |                   |Det.R.(DetuneRough)/0:効果最弱 3:効果最強                                          |
+	|RC3|Ch3M1DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RC4|Ch4M1DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RC5|Ch5M1DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RC6|Ch6M1DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RC7|Ch7M1DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RC8|Ch0M2DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RC9|Ch1M2DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RCA|Ch2M2DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RCB|Ch3M2DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RCC|Ch4M2DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RCD|Ch5M2DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RCE|Ch6M2DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RCF|Ch7M2DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RD0|Ch0C1DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RD1|Ch1C1DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RD2|Ch2C1DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RD3|Ch3C1DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RD4|Ch4C1DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RD5|Ch5C1DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RD6|Ch6C1DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RD7|Ch7C1DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RD8|Ch0C2DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RD9|Ch1C2DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RDA|Ch2C2DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RDB|Ch3C2DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RDC|Ch4C2DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RDD|Ch5C2DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RDE|Ch6C2DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	|RDF|Ch7C2DetuneRough2Decay2Rate5   |       |   |                   |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|RE0|Ch0M1DecayLevel4ReleaseRate4   |DecayLevel     |ReleaseRate    |ReleaseRate/0:最遅 15:最速                                                         |
+	|RE1|Ch1M1DecayLevel4ReleaseRate4   |               |               |DecayLevel/0:下降幅最小 15:下降幅最大                                              |
+	|RE2|Ch2M1DecayLevel4ReleaseRate4   |               |               |※上記いづれも即時反映でなく「Key」書き込みによるKeyOn時に反映                     |
+	|RE3|Ch3M1DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RE4|Ch4M1DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RE5|Ch5M1DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RE6|Ch6M1DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RE7|Ch7M1DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RE8|Ch0M2DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RE9|Ch1M2DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|REA|Ch2M2DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|REB|Ch3M2DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|REC|Ch4M2DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RED|Ch5M2DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|REE|Ch6M2DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|REF|Ch7M2DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RF0|Ch0C1DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RF1|Ch1C1DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RF2|Ch2C1DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RF3|Ch3C1DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RF4|Ch4C1DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RF5|Ch5C1DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RF6|Ch6C1DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RF7|Ch7C1DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RF8|Ch0C2DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RF9|Ch1C2DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RFA|Ch2C2DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RFB|Ch3C2DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RFC|Ch4C2DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RFD|Ch5C2DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RFE|Ch6C2DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	|RFF|Ch7C2DecayLevel4ReleaseRate4   |               |               |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+・レジスタマップ(PCM部)
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R番|名称                           |7  |6  |5  |4  |3  |2  |1  |0  |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R00|                               |                               |                                                                                   |
+	|R01|                               |                               |                                                                                   |
+	|R02|                               |                               |                                                                                   |
+	|R03|                               |                               |                                                                                   |
+	|R04|                               |                               |                                                                                   |
+	|R05|                               |                               |                                                                                   |
+	|R06|                               |                               |                                                                                   |
+	|R07|                               |                               |                                                                                   |
+	|R08|                               |                               |                                                                                   |
+	|R09|                               |                               |                                                                                   |
+	|R0A|                               |                               |                                                                                   |
+	|R0B|                               |                               |                                                                                   |
+	|R0C|                               |                               |                                                                                   |
+	|R0D|                               |                               |                                                                                   |
+	|R0E|                               |                               |                                                                                   |
+	|R0F|                               |                               |                                                                                   |
+	|R10|                               |                               |                                                                                   |
+	|R11|                               |                               |                                                                                   |
+	|R12|                               |                               |                                                                                   |
+	|R13|                               |                               |                                                                                   |
+	|R14|                               |                               |                                                                                   |
+	|R15|                               |                               |                                                                                   |
+	|R16|                               |                               |                                                                                   |
+	|R17|                               |                               |                                                                                   |
+	|R18|                               |                               |                                                                                   |
+	|R19|                               |                               |                                                                                   |
+	|R1A|                               |                               |                                                                                   |
+	|R1B|                               |                               |                                                                                   |
+	|R1C|                               |                               |                                                                                   |
+	|R1D|                               |                               |                                                                                   |
+	|R1E|                               |                               |                                                                                   |
+	|R1F|                               |                               |                                                                                   |
+	|R20|                               |                               |                                                                                   |
+	|R21|                               |                               |                                                                                   |
+	|R22|                               |                               |                                                                                   |
+	|R23|                               |                               |                                                                                   |
+	|R24|                               |                               |                                                                                   |
+	|R25|                               |                               |                                                                                   |
+	|R26|                               |                               |                                                                                   |
+	|R27|                               |                               |                                                                                   |
+	|R28|                               |                               |                                                                                   |
+	|R29|                               |                               |                                                                                   |
+	|R2A|                               |                               |                                                                                   |
+	|R2B|                               |                               |                                                                                   |
+	|R2C|                               |                               |                                                                                   |
+	|R2D|                               |                               |                                                                                   |
+	|R2E|                               |                               |                                                                                   |
+	|R2F|                               |                               |                                                                                   |
+	|R30|                               |                               |                                                                                   |
+	|R31|                               |                               |                                                                                   |
+	|R32|                               |                               |                                                                                   |
+	|R33|                               |                               |                                                                                   |
+	|R34|                               |                               |                                                                                   |
+	|R35|                               |                               |                                                                                   |
+	|R36|                               |                               |                                                                                   |
+	|R37|                               |                               |                                                                                   |
+	|R38|                               |                               |                                                                                   |
+	|R39|                               |                               |                                                                                   |
+	|R3A|                               |                               |                                                                                   |
+	|R3B|                               |                               |                                                                                   |
+	|R3C|                               |                               |                                                                                   |
+	|R3D|                               |                               |                                                                                   |
+	|R3E|                               |                               |                                                                                   |
+	|R3F|                               |                               |                                                                                   |
+	|R40|                               |                               |                                                                                   |
+	|R41|                               |                               |                                                                                   |
+	|R42|                               |                               |                                                                                   |
+	|R43|                               |                               |                                                                                   |
+	|R44|                               |                               |                                                                                   |
+	|R45|                               |                               |                                                                                   |
+	|R46|                               |                               |                                                                                   |
+	|R47|                               |                               |                                                                                   |
+	|R48|                               |                               |                                                                                   |
+	|R49|                               |                               |                                                                                   |
+	|R4A|                               |                               |                                                                                   |
+	|R4B|                               |                               |                                                                                   |
+	|R4C|                               |                               |                                                                                   |
+	|R4D|                               |                               |                                                                                   |
+	|R4E|                               |                               |                                                                                   |
+	|R4F|                               |                               |                                                                                   |
+	|R50|                               |                               |                                                                                   |
+	|R51|                               |                               |                                                                                   |
+	|R52|                               |                               |                                                                                   |
+	|R53|                               |                               |                                                                                   |
+	|R54|                               |                               |                                                                                   |
+	|R55|                               |                               |                                                                                   |
+	|R56|                               |                               |                                                                                   |
+	|R57|                               |                               |                                                                                   |
+	|R58|                               |                               |                                                                                   |
+	|R59|                               |                               |                                                                                   |
+	|R5A|                               |                               |                                                                                   |
+	|R5B|                               |                               |                                                                                   |
+	|R5C|                               |                               |                                                                                   |
+	|R5D|                               |                               |                                                                                   |
+	|R5E|                               |                               |                                                                                   |
+	|R5F|                               |                               |                                                                                   |
+	|R60|                               |                               |                                                                                   |
+	|R61|                               |                               |                                                                                   |
+	|R62|                               |                               |                                                                                   |
+	|R63|                               |                               |                                                                                   |
+	|R64|                               |                               |                                                                                   |
+	|R65|                               |                               |                                                                                   |
+	|R66|                               |                               |                                                                                   |
+	|R67|                               |                               |                                                                                   |
+	|R68|                               |                               |                                                                                   |
+	|R69|                               |                               |                                                                                   |
+	|R6A|                               |                               |                                                                                   |
+	|R6B|                               |                               |                                                                                   |
+	|R6C|                               |                               |                                                                                   |
+	|R6D|                               |                               |                                                                                   |
+	|R6E|                               |                               |                                                                                   |
+	|R6F|                               |                               |                                                                                   |
+	|R70|                               |                               |                                                                                   |
+	|R71|                               |                               |                                                                                   |
+	|R72|                               |                               |                                                                                   |
+	|R73|                               |                               |                                                                                   |
+	|R74|                               |                               |                                                                                   |
+	|R75|                               |                               |                                                                                   |
+	|R76|                               |                               |                                                                                   |
+	|R77|                               |                               |                                                                                   |
+	|R78|                               |                               |                                                                                   |
+	|R79|                               |                               |                                                                                   |
+	|R7A|                               |                               |                                                                                   |
+	|R7B|                               |                               |                                                                                   |
+	|R7C|                               |                               |                                                                                   |
+	|R7D|                               |                               |                                                                                   |
+	|R7E|                               |                               |                                                                                   |
+	|R7F|                               |                               |                                                                                   |
+	|R80|                               |                               |                                                                                   |
+	|R81|                               |                               |                                                                                   |
+	|R82|                               |                               |                                                                                   |
+	|R83|                               |                               |                                                                                   |
+	|R84|                               |                               |                                                                                   |
+	|R85|                               |                               |                                                                                   |
+	|R86|                               |                               |                                                                                   |
+	|R87|                               |                               |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R88|PCM_Ch0SampleCurrent8          |SampleCurrent                  |SampleCurrent/波形メモリ再生位置上位8ビット                                        |
+	|R89|PCM_Ch1SampleCurrent8          |                               |※読み取りリクエスト受付次第「PCM_ChnSampleCurrentFine8」の値も固定                |
+	|R8A|PCM_Ch2SampleCurrent8          |                               |                                                                                   |
+	|R8B|PCM_Ch3SampleCurrent8          |                               |                                                                                   |
+	|R8C|PCM_Ch4SampleCurrent8          |                               |                                                                                   |
+	|R8D|PCM_Ch5SampleCurrent8          |                               |                                                                                   |
+	|R8E|PCM_Ch6SampleCurrent8          |                               |                                                                                   |
+	|R8F|PCM_Ch7SampleCurrent8          |                               |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R90|PCM_Ch0SampleCurrentFine8      |SampleCurrentFine              |SampleCurrentFine/波形メモリ再生位置下位8ビット                                    |
+	|R91|PCM_Ch1SampleCurrentFine8      |                               |※「PCM_ChnSampleCurrent8」読み取りリクエスト時点での値                            |
+	|R92|PCM_Ch2SampleCurrentFine8      |                               |                                                                                   |
+	|R93|PCM_Ch3SampleCurrentFine8      |                               |                                                                                   |
+	|R94|PCM_Ch4SampleCurrentFine8      |                               |                                                                                   |
+	|R95|PCM_Ch5SampleCurrentFine8      |                               |                                                                                   |
+	|R96|PCM_Ch6SampleCurrentFine8      |                               |                                                                                   |
+	|R97|PCM_Ch7SampleCurrentFine8      |                               |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+	|R98|                               |                               |                                                                                   |
+	|R99|                               |                               |                                                                                   |
+	|R9A|                               |                               |                                                                                   |
+	|R9B|                               |                               |                                                                                   |
+	|R9C|                               |                               |                                                                                   |
+	|R9D|                               |                               |                                                                                   |
+	|R9E|                               |                               |                                                                                   |
+	|R9F|                               |                               |                                                                                   |
+	|RA0|                               |                               |                                                                                   |
+	|RA1|                               |                               |                                                                                   |
+	|RA2|                               |                               |                                                                                   |
+	|RA3|                               |                               |                                                                                   |
+	|RA4|                               |                               |                                                                                   |
+	|RA5|                               |                               |                                                                                   |
+	|RA6|                               |                               |                                                                                   |
+	|RA7|                               |                               |                                                                                   |
+	|RA8|                               |                               |                                                                                   |
+	|RA9|                               |                               |                                                                                   |
+	|RAA|                               |                               |                                                                                   |
+	|RAB|                               |                               |                                                                                   |
+	|RAC|                               |                               |                                                                                   |
+	|RAD|                               |                               |                                                                                   |
+	|RAE|                               |                               |                                                                                   |
+	|RAF|                               |                               |                                                                                   |
+	|RB0|                               |                               |                                                                                   |
+	|RB1|                               |                               |                                                                                   |
+	|RB2|                               |                               |                                                                                   |
+	|RB3|                               |                               |                                                                                   |
+	|RB4|                               |                               |                                                                                   |
+	|RB5|                               |                               |                                                                                   |
+	|RB6|                               |                               |                                                                                   |
+	|RB7|                               |                               |                                                                                   |
+	|RB8|                               |                               |                                                                                   |
+	|RB9|                               |                               |                                                                                   |
+	|RBA|                               |                               |                                                                                   |
+	|RBB|                               |                               |                                                                                   |
+	|RBC|                               |                               |                                                                                   |
+	|RBD|                               |                               |                                                                                   |
+	|RBE|                               |                               |                                                                                   |
+	|RBF|                               |                               |                                                                                   |
+	|RC0|                               |                               |                                                                                   |
+	|RC1|                               |                               |                                                                                   |
+	|RC2|                               |                               |                                                                                   |
+	|RC3|                               |                               |                                                                                   |
+	|RC4|                               |                               |                                                                                   |
+	|RC5|                               |                               |                                                                                   |
+	|RC6|                               |                               |                                                                                   |
+	|RC7|                               |                               |                                                                                   |
+	|RC8|                               |                               |                                                                                   |
+	|RC9|                               |                               |                                                                                   |
+	|RCA|                               |                               |                                                                                   |
+	|RCB|                               |                               |                                                                                   |
+	|RCC|                               |                               |                                                                                   |
+	|RCD|                               |                               |                                                                                   |
+	|RCE|                               |                               |                                                                                   |
+	|RCF|                               |                               |                                                                                   |
+	|RD0|                               |                               |                                                                                   |
+	|RD1|                               |                               |                                                                                   |
+	|RD2|                               |                               |                                                                                   |
+	|RD3|                               |                               |                                                                                   |
+	|RD4|                               |                               |                                                                                   |
+	|RD5|                               |                               |                                                                                   |
+	|RD6|                               |                               |                                                                                   |
+	|RD7|                               |                               |                                                                                   |
+	|RD8|                               |                               |                                                                                   |
+	|RD9|                               |                               |                                                                                   |
+	|RDA|                               |                               |                                                                                   |
+	|RDB|                               |                               |                                                                                   |
+	|RDC|                               |                               |                                                                                   |
+	|RDD|                               |                               |                                                                                   |
+	|RDE|                               |                               |                                                                                   |
+	|RDF|                               |                               |                                                                                   |
+	|RE0|                               |                               |                                                                                   |
+	|RE1|                               |                               |                                                                                   |
+	|RE2|                               |                               |                                                                                   |
+	|RE3|                               |                               |                                                                                   |
+	|RE4|                               |                               |                                                                                   |
+	|RE5|                               |                               |                                                                                   |
+	|RE6|                               |                               |                                                                                   |
+	|RE7|                               |                               |                                                                                   |
+	|RE8|                               |                               |                                                                                   |
+	|RE9|                               |                               |                                                                                   |
+	|REA|                               |                               |                                                                                   |
+	|REB|                               |                               |                                                                                   |
+	|REC|                               |                               |                                                                                   |
+	|RED|                               |                               |                                                                                   |
+	|REE|                               |                               |                                                                                   |
+	|REF|                               |                               |                                                                                   |
+	|RF0|                               |                               |                                                                                   |
+	|RF1|                               |                               |                                                                                   |
+	|RF2|                               |                               |                                                                                   |
+	|RF3|                               |                               |                                                                                   |
+	|RF4|                               |                               |                                                                                   |
+	|RF5|                               |                               |                                                                                   |
+	|RF6|                               |                               |                                                                                   |
+	|RF7|                               |                               |                                                                                   |
+	|RF8|                               |                               |                                                                                   |
+	|RF9|                               |                               |                                                                                   |
+	|RFA|                               |                               |                                                                                   |
+	|RFB|                               |                               |                                                                                   |
+	|RFC|                               |                               |                                                                                   |
+	|RFD|                               |                               |                                                                                   |
+	|RFE|                               |                               |                                                                                   |
+	|RFF|                               |                               |                                                                                   |
+	+---+-------------------------------+---+---+---+---+---+---+---+---+-----------------------------------------------------------------------------------+
+
+

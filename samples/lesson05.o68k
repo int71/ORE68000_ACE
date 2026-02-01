@@ -82,7 +82,7 @@ public:
 	static constexpr UINT8	ENEMY_stcui8nInstanceMaximum=16;
 	//	static constexpr UINT8	stacui8cBGM
 	//		「ゲーム中BGM」の演奏データです。ドドッチドドッチ。
-	static constexpr UINT8	stacui8cBGM[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr UINT8	BGM_stacui8cMain[]=__O68K_MAKESEQUENCE(R"(
 		my($_INIT)='  C ,PG=127';
 
 		[
@@ -498,7 +498,7 @@ public:
 		ENEMY_aenmyThis[0].Activate(TRUE);
 		FAMILYBASIC::BG0_stPrint({11,12},"          ",0);
 		ShowScore();
-		FAMILYBASIC::BGM_stPlay(stacui8cBGM);
+		FAMILYBASIC::BGM_stPlay(BGM_stacui8cMain);
 		Normal();
 		return;
 	}

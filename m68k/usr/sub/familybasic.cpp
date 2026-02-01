@@ -68,7 +68,8 @@ VOID					FAMILYBASIC::stNew(VOID)noexcept{
 		SOUND_DRIVER::stcui16cChannelMaskPCM3
 	);
 	OS::SE1_stSetMask(
-		SOUND_DRIVER::stcui16cChannelMaskPCM4
+		SOUND_DRIVER::stcui16cChannelMaskPCM4|
+		SOUND_DRIVER::stcui16cChannelMaskFM7
 	);
 	return;
 }
