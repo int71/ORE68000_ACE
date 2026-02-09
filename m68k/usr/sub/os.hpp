@@ -82,7 +82,7 @@ namespace m68k::i71::sub{
 			st.BGM_drvThis.New(cui16cchannelmask);
 			return;
 		}
-		static _INLINE_ VOID	BGM_stPlay(const PCUINT8 cpcui8csource)noexcept{
+		static _INLINE_ VOID	BGM_stPlay(_UNDISCARDABLE_ CUINT8* const cpcui8csource)noexcept{
 			st.BGM_drvThis.Play(cpcui8csource);
 			BGM_stSetMasterVolume(255);
 			return;
@@ -102,7 +102,7 @@ namespace m68k::i71::sub{
 			st.SE0_drvThis.New(cui16cchannelmask);
 			return;
 		}
-		static _INLINE_ VOID	SE0_stPlay(const PCUINT8 cpcui8csource)noexcept{
+		static _INLINE_ VOID	SE0_stPlay(_UNDISCARDABLE_ CUINT8* const cpcui8csource)noexcept{
 			st.SE0_drvThis.PlayDynamic(cpcui8csource);
 			return;
 		}
@@ -111,11 +111,11 @@ namespace m68k::i71::sub{
 			st.SE1_drvThis.New(cui16cchannelmask);
 			return;
 		}
-		static _INLINE_ VOID	SE1_stPlay(const PCUINT8 cpcui8csource)noexcept{
+		static _INLINE_ VOID	SE1_stPlay(_UNDISCARDABLE_ CUINT8* const cpcui8csource)noexcept{
 			st.SE1_drvThis.PlayDynamic(cpcui8csource);
 			return;
 		}
-		static _INLINE_ VOID	VOICE_stPlay(const PCUINT8 cpcui8csource,CUINT16 cui16nblock)noexcept{
+		static _INLINE_ VOID	VOICE_stPlay(_UNDISCARDABLE_ CUINT8* const cpcui8csource,CUINT16 cui16nblock)noexcept{
 			st.VOICE_drvThis.PlayVoice(cpcui8csource,cui16nblock);
 			return;
 		}

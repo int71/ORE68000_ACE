@@ -50,6 +50,12 @@ namespace m68k::hid{
 		};
 		using					IDBUTTON=_IDBUTTON::BODY;
 		static constexpr UINT8	stcui8nBank=			2;
+		static constexpr UINT8	stcui8cMaskButtonRight=	1<<IDBUTTON::Right;
+		static constexpr UINT8	stcui8cMaskButtonLeft=	1<<IDBUTTON::Left;
+		static constexpr UINT8	stcui8cMaskButtonDown=	1<<IDBUTTON::Down;
+		static constexpr UINT8	stcui8cMaskButtonUp=	1<<IDBUTTON::Up;
+		static constexpr UINT8	stcui8cMaskButtonA=		1<<IDBUTTON::A;
+		static constexpr UINT8	stcui8cMaskButtonB=		1<<IDBUTTON::B;
 	};
 }
 

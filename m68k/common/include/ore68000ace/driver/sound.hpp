@@ -485,7 +485,7 @@ namespace m68k::ore68000ace::driver{
 						UINT8					ui8cKey;
 					}Normal;
 					struct{
-						PCUINT8					pcui8Source;
+						_UNDISCARDABLE_ CUINT8* pcui8Source;
 						UINT16					ui16nSourceBlock64;
 						UINT16					ui16iBufferAddress;
 						UINT16					ui16iBufferProgress;
@@ -616,7 +616,7 @@ namespace m68k::ore68000ace::driver{
 					}
 					return;
 				}
-				_INLINE_ VOID			PlayVoice(const PCUINT8 cpcui8source,CUINT16 cui16nsourceblock,CUINT8 cui8ibufferblockaddress)noexcept{
+				_INLINE_ VOID			PlayVoice(_UNDISCARDABLE_ CUINT8* const cpcui8source,CUINT16 cui16nsourceblock,CUINT8 cui8ibufferblockaddress)noexcept{
 					//	「Progress_VoiceWrite64」のオーバーラン無音書き込みをアテに、
 					//	「Voice.ui16nSourceBlock64」には波形データより大き目の値を設定しておき、
 					//	しっかり最後まで再生できるようにしておく。
@@ -794,10 +794,10 @@ namespace m68k::ore68000ace::driver{
 		static inline ST		st;
 		UINT16					ui16cChannelMask;
 		UINT8					ui8iVoiceChannel;
-		PCUINT8					ROM_pcui8Cursor;
+		_UNDISCARDABLE_ CUINT8* ROM_pcui8Cursor;
 		UINT32					ui32nWait;
-		PCUINT8					apcui8Stack[stcui8nStack];
-		PCUINT8*				ppcui8Stack;
+		_UNDISCARDABLE_ CUINT8* apcui8Stack[stcui8nStack];
+		_UNDISCARDABLE_ CUINT8**	ppcui8Stack;
 	public:
 		static VOID				stNew(VOID)noexcept;
 		static VOID				stDelete(VOID)noexcept;
@@ -829,13 +829,13 @@ namespace m68k::ore68000ace::driver{
 		}
 		VOID					New(CUINT16 cui16cchannelmask)noexcept;
 		VOID					Delete(VOID)noexcept;
-		VOID					Play(const PCUINT8 cpcui8source)noexcept;
-		_INLINE_ VOID			PlayDynamic(const PCUINT8 cpcui8source)noexcept{
+		VOID					Play(_UNDISCARDABLE_ CUINT8* const cpcui8source)noexcept;
+		_INLINE_ VOID			PlayDynamic(_UNDISCARDABLE_ CUINT8* const cpcui8source)noexcept{
 			if((ROM_pcui8Cursor==NULL)||(cpcui8source<ROM_pcui8Cursor))Play(cpcui8source);
 			return;
 		}
 		VOID					SetMasterVolume(CUINT8 cui8nvolume)noexcept;
-		VOID					PlayVoice(const PCUINT8 cpcui8source,CUINT16 cui16nsourceblock,CUINT8 cui8ibufferblockaddress=0xfe)noexcept;
+		VOID					PlayVoice(_UNDISCARDABLE_ CUINT8* const cpcui8source,CUINT16 cui16nsourceblock,CUINT8 cui8ibufferblockaddress=0xfe)noexcept;
 		VOID					Progress(VOID)noexcept;
 	private:
 		static _INLINE_ _UNDISCARDABLE_ UINT8&	DEVICE_stui8Delegate(CUINT16 cui16iaddress)noexcept{

@@ -115,7 +115,7 @@ public:
 		//		「生きているかどうか」のフラグを兼ねます。
 		enum class IDTYPE:UINT8{
 			None,
-			Normal
+			Up
 		};
 	private:
 		//	IDTYPE					idType
@@ -162,7 +162,7 @@ public:
 		VOID					Start(const PGAME cpgameowner,const IDTYPE cidtype,CVECTOR2& cv2iposition)noexcept{
 			idType=cidtype;
 			switch(idType){
-			case IDTYPE::Normal:
+			case IDTYPE::Up:
 				v2iPosition=cv2iposition+(VECTOR2(0,-4)<<stcui8nDiscardBit);
 				v2dVelocity={
 					INT16( 0)<<stcui8nDiscardBit,
@@ -181,7 +181,7 @@ public:
 		//		返り値はスプライト枚数の使用実績です。
 		UINT8					ui8nShow(CUINT8 cui8isprite)const noexcept{
 			switch(idType){
-			case IDTYPE::Normal:
+			case IDTYPE::Up:
 				FAMILYBASIC::SPRITE_stWrite8(cui8isprite,(v2iPosition>>stcui8nDiscardBit)-VECTOR2(4,4),221,3);
 				return 1;
 			default:
@@ -196,7 +196,7 @@ public:
 		//		現状利用していません。
 		VOID					Move(const PGAME cpgameowner)noexcept{
 			switch(idType){
-			case IDTYPE::Normal:
+			case IDTYPE::Up:
 				v2iPosition+=v2dVelocity;
 				if(v2iPosition.i16iY()<(INT16(-4)<<stcui8nDiscardBit))idType=IDTYPE::None;
 				v2iPosition_Upper=v2iPosition>>stcui8nDiscardBit;
@@ -210,9 +210,9 @@ public:
 		//		当たり判定です。
 		//		整数値たる位置「cv2iposition_upper」およびサイズ(の半分)「cv2nhithalf_upper」と比較して、
 		//		当たっていれば「TRUE」を返します。
-		OFWBOOL					eIsHit(CVECTOR2& cv2iposition_upper,CVECTOR2& cv2nhithalf_upper)noexcept{
+		OFWBOOL					eIsHitL(CVECTOR2& cv2iposition_upper,CVECTOR2& cv2nhithalf_upper)noexcept{
 			switch(idType){
-			case IDTYPE::Normal:
+			case IDTYPE::Up:
 				if(v2iPosition_Upper.eIsHit512(VECTOR2(2,4),cv2iposition_upper,cv2nhithalf_upper)){
 					idType=IDTYPE::None;
 					return TRUE;
@@ -242,8 +242,8 @@ public:
 		enum class IDTYPE:UINT8{
 			None,					//	「生きて」ません。
 			Crushed,				//	当たり判定も何も無い、爆発パターンです。
-			Type0,					//	真下に一直線に移動する敵です。
-			Type1,					//	下から出現する「ゾ○ー」的な敵です。
+			NormalStraight,					//	真下に一直線に移動する敵です。
+			NormalFollower,					//	下から出現する「ゾ○ー」的な敵です。
 			Bullet					//	敵弾です。
 		};
 		//	VECTOR2					stcv2iiMinimum
@@ -332,7 +332,7 @@ public:
 				SOUND_DRIVER::DEVICE_FM_stWrite(SOUND_DRIVER::FM_IDREGISTERW::NoiseDivRatio5,0x80+16);
 				FAMILYBASIC::SE1_stPlay(SE1_stacui8cCrush);
 				break;
-			case IDTYPE::Type0:		//	真下に一直線に移動する敵です。
+			case IDTYPE::NormalStraight:		//	真下に一直線に移動する敵です。
 				SetPosition(VECTOR2(FAMILYBASIC::stui16GetRandom()&0xff,0-8)<<stcui8nDiscardBit);
 				v2dVelocity={
 					INT16(0)<<stcui8nDiscardBit,
@@ -341,7 +341,7 @@ public:
 				//	敵弾発射のための準備をします。
 				AIM_Start();
 				break;
-			case IDTYPE::Type1:		//	下から出現する「ゾ○ー」的な敵です。
+			case IDTYPE::NormalFollower:		//	下から出現する「ゾ○ー」的な敵です。
 				SetPosition(VECTOR2(FAMILYBASIC::stui16GetRandom()&0xff,212+8)<<stcui8nDiscardBit);
 				//	基本は「追いかけ」なんですが、まずは上方向に移動させます。
 				v2dVelocity={
@@ -373,10 +373,10 @@ public:
 			case IDTYPE::Crushed:	//	当たり判定も何も無い、爆発パターンです。
 				FAMILYBASIC::SPRITE_stWrite16(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),(ui16iPattern&4)+176,3);
 				return 1;
-			case IDTYPE::Type0:		//	真下に一直線に移動する敵です。
+			case IDTYPE::NormalStraight:		//	真下に一直線に移動する敵です。
 				FAMILYBASIC::SPRITE_stWrite16(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),160,1,FALSE,TRUE);
 				return 1;
-			case IDTYPE::Type1:		//	下から出現する「ゾ○ー」的な敵です。
+			case IDTYPE::NormalFollower:		//	下から出現する「ゾ○ー」的な敵です。
 				FAMILYBASIC::SPRITE_stWrite16(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),(ui16iPattern&4)+144,1);
 				return 1;
 			case IDTYPE::Bullet:	//	敵弾です。
@@ -419,26 +419,26 @@ public:
 				//	気が済んだら「生きて」いない状態に変化
 				if(ui16iPattern==16)Start(cpgameowner,IDTYPE::None);
 				break;
-			case IDTYPE::Type0:		//	真下に一直線に移動する敵です。
+			case IDTYPE::NormalStraight:		//	真下に一直線に移動する敵です。
 				SetPosition(v2iPosition+v2dVelocity);
 				if(steIsInscreen(v2iPosition)){
 					//	画面内に収まっているので生存継続
 					AIM_Move(cpgameowner);
 					//	当たり判定は「敵」側から実施
-					if(cpgameowner->eIsHit(v2iPosition_Upper,VECTOR2(6,6))){
+					if(cpgameowner->eIsHitL(v2iPosition_Upper,VECTOR2(6,6))){
 						//	撃ち落とされたので加点後「爆発パターン」に変化
 						cpgameowner->AddScore(1);
 						Start(cpgameowner,IDTYPE::Crushed,v2iPosition);
 					}
 				}else idType=IDTYPE::None;
 				break;
-			case IDTYPE::Type1:		//	下から出現する「ゾ○ー」的な敵です。
+			case IDTYPE::NormalFollower:		//	下から出現する「ゾ○ー」的な敵です。
 				SetPosition(v2iPosition+v2dVelocity);
 				if(steIsInscreen(v2iPosition)){
 					//	画面内に収まっているので生存継続
 					AIM_Move(cpgameowner);
 					//	当たり判定は「敵」側から実施
-					if(cpgameowner->eIsHit(v2iPosition_Upper,VECTOR2(6,6))){
+					if(cpgameowner->eIsHitL(v2iPosition_Upper,VECTOR2(6,6))){
 						//	撃ち落とされたので加点後「爆発パターン」に変化
 						cpgameowner->AddScore(1);
 						Start(cpgameowner,IDTYPE::Crushed,v2iPosition);
@@ -465,7 +465,7 @@ public:
 				SetPosition(v2iPosition+v2dVelocity);
 				if(steIsInscreen(v2iPosition)){
 					//	画面内に収まっているので生存継続
-					if(cpgameowner->PLAYER_eIsHit(v2iPosition_Upper,VECTOR2(2,2))){
+					if(cpgameowner->PLAYER_eIsHitL(v2iPosition_Upper,VECTOR2(2,2))){
 						//	まだ「バリア」的なフィーチャーが無いので、この分岐に入る事はありません
 						Start(cpgameowner,IDTYPE::None);
 					}else{
@@ -701,7 +701,7 @@ public:
 				if(CONTROLLER_ui8cGetRapid()&(1<<IDBUTTON::B)){
 					for(AUTO& shotcurrent:SHOT_ashotThis)if(!shotcurrent.eIsActive()){
 						//	「生きて」いない「ショット」を見つけたらその個体を初期化
-						shotcurrent.Start(this,SHOT::IDTYPE::Normal,PLAYER_v2iPosition);
+						shotcurrent.Start(this,SHOT::IDTYPE::Up,PLAYER_v2iPosition);
 						FAMILYBASIC::SE0_stPlay(SE0_stacui8cShot);
 						break;
 					}
@@ -718,10 +718,10 @@ public:
 				case 1:
 					FALLTHROUGH;
 				case 2:
-					ENEMY_Start(ENEMY::IDTYPE::Type0);
+					ENEMY_Start(ENEMY::IDTYPE::NormalStraight);
 					break;
 				case 3:
-					ENEMY_Start(ENEMY::IDTYPE::Type1);
+					ENEMY_Start(ENEMY::IDTYPE::NormalFollower);
 					break;
 				}
 			}
@@ -860,9 +860,9 @@ private:
 	//		当たり判定です。
 	//		整数値たる位置「cv2iposition_upper」およびサイズ(の半分)「cv2nhithalf_upper」と比較して、
 	//		「ショットによる破壊」的意味で当たっていれば「TRUE」を返します。
-	OFWBOOL					eIsHit(CVECTOR2& cv2iposition_upper,CVECTOR2& cv2nhithalf_upper)noexcept{
-		if(PLAYER_eIsHit(cv2iposition_upper,cv2nhithalf_upper))return TRUE;
-		for(AUTO& shotcurrent:SHOT_ashotThis)if(shotcurrent.eIsHit(cv2iposition_upper,cv2nhithalf_upper))return TRUE;
+	OFWBOOL					eIsHitL(CVECTOR2& cv2iposition_upper,CVECTOR2& cv2nhithalf_upper)noexcept{
+		if(PLAYER_eIsHitL(cv2iposition_upper,cv2nhithalf_upper))return TRUE;
+		for(AUTO& shotcurrent:SHOT_ashotThis)if(shotcurrent.eIsHitL(cv2iposition_upper,cv2nhithalf_upper))return TRUE;
 		return FALSE;
 	}
 	//	VOID					ENEMY_Start(const ENEMY::IDTYPE cidtype,CVECTOR2& cv2iposition)
@@ -887,7 +887,7 @@ private:
 	//		整数値たる位置「cv2iposition_upper」およびサイズ(の半分)「cv2nhithalf_upper」と比較して、
 	//		「ショットによる破壊」的意味で当たっていれば「TRUE」を返しますが、
 	//		現状バリア的フィーチャーが無いので、「FALSE」しか返りません。
-	OFWBOOL					PLAYER_eIsHit(CVECTOR2& cv2iposition_upper,CVECTOR2& cv2nhithalf_upper)noexcept{
+	OFWBOOL					PLAYER_eIsHitL(CVECTOR2& cv2iposition_upper,CVECTOR2& cv2nhithalf_upper)noexcept{
 		if(PLAYER_ui16iPattern==0)if(PLAYER_v2iPosition_Upper.eIsHit512(VECTOR2(6,6),cv2iposition_upper,cv2nhithalf_upper)){
 			PLAYER_ui16iPattern=1;
 			SOUND_DRIVER::DEVICE_FM_stWrite(SOUND_DRIVER::FM_IDREGISTERW::NoiseDivRatio5,0x80+31);

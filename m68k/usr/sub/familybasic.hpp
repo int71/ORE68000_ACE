@@ -49,6 +49,13 @@ namespace m68k::i71::sub{
 
 		using					IDKEY=m68k::hid::KEYBOARD::IDKEY;
 		using					IDBUTTON=m68k::hid::JOYSTICK::IDBUTTON;
+		static constexpr AUTO	stcui8nBank=			m68k::hid::JOYSTICK::stcui8nBank;
+		static constexpr AUTO	stcui8cMaskButtonRight=	m68k::hid::JOYSTICK::stcui8cMaskButtonRight;
+		static constexpr AUTO	stcui8cMaskButtonLeft=	m68k::hid::JOYSTICK::stcui8cMaskButtonLeft;
+		static constexpr AUTO	stcui8cMaskButtonDown=	m68k::hid::JOYSTICK::stcui8cMaskButtonDown;
+		static constexpr AUTO	stcui8cMaskButtonUp=	m68k::hid::JOYSTICK::stcui8cMaskButtonUp;
+		static constexpr AUTO	stcui8cMaskButtonA=		m68k::hid::JOYSTICK::stcui8cMaskButtonA;
+		static constexpr AUTO	stcui8cMaskButtonB=		m68k::hid::JOYSTICK::stcui8cMaskButtonB;
 		class _IDSIZE{
 		public:
 			enum BODY:UINT8{
@@ -272,7 +279,7 @@ namespace m68k::i71::sub{
 			BG_stPrint(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,cv2idestination,cpcustrstring,cui8ipalette);
 			return;
 		}
-		static _INLINE_ VOID	BGM_stPlay(const PCUINT8 cpcui8csequence)noexcept{
+		static _INLINE_ VOID	BGM_stPlay(_UNDISCARDABLE_ CUINT8* const cpcui8csequence)noexcept{
 			OS::BGM_stPlay(cpcui8csequence);
 			return;
 		}
@@ -284,11 +291,11 @@ namespace m68k::i71::sub{
 			OS::BGM_stSetMasterVolumeFade(cui8nvolumefade,cui8nvolumefadespeed);
 			return;
 		}
-		static _INLINE_ VOID	SE0_stPlay(const PCUINT8 cpcui8csequence)noexcept{
+		static _INLINE_ VOID	SE0_stPlay(_UNDISCARDABLE_ CUINT8* const cpcui8csequence)noexcept{
 			OS::SE0_stPlay(cpcui8csequence);
 			return;
 		}
-		static _INLINE_ VOID	SE1_stPlay(const PCUINT8 cpcui8csequence)noexcept{
+		static _INLINE_ VOID	SE1_stPlay(_UNDISCARDABLE_ CUINT8* const cpcui8csequence)noexcept{
 			OS::SE1_stPlay(cpcui8csequence);
 			return;
 		}

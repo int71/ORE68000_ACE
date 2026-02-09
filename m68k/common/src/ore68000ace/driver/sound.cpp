@@ -181,7 +181,7 @@ VOID					SOUND::Delete(VOID)noexcept{
 }
 
 VOID					SOUND::Play(
-	const PCUINT8			cpcui8source
+	_UNDISCARDABLE_ CUINT8* const	cpcui8source
 )noexcept{
 	ROM_pcui8Cursor=cpcui8source;
 	if(ROM_pcui8Cursor){
@@ -232,7 +232,7 @@ VOID					SOUND::SetMasterVolume(
 }
 
 VOID					SOUND::PlayVoice(
-	const PCUINT8			cpcui8source,
+	_UNDISCARDABLE_ CUINT8* const	cpcui8source,
 	CUINT16					cui16nsourceblock,
 	CUINT8					cui8ibufferblockaddress
 )noexcept{
