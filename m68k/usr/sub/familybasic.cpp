@@ -50,10 +50,20 @@ VOID					FAMILYBASIC::stNew(VOID)noexcept{
 	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG1_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
 	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG2_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
 	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG3_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
+	st.SPRITE_ui16dOffsetX=0;
+	st.SPRITE_ui16dOffsetY=0;
 	SPRITE_stSetSize(IDSIZE::n256);
+	st.BG0_ui16dOffsetX=0;
+	st.BG0_ui16dOffsetY=0;
 	BG0_stSetSize(IDSIZE::n256);
+	st.BG1_ui16dOffsetX=0;
+	st.BG1_ui16dOffsetY=0;
 	BG1_stSetSize(IDSIZE::n256);
+	st.BG2_ui16dOffsetX=0;
+	st.BG2_ui16dOffsetY=0;
 	BG2_stSetSize(IDSIZE::n256);
+	st.BG3_ui16dOffsetX=0;
+	st.BG3_ui16dOffsetY=0;
 	BG3_stSetSize(IDSIZE::n256);
 	BG0_stFillAttribute({0,0},{128,128},0x8020);
 	BG1_stFillAttribute({0,0},{128,128},0x8020);
@@ -86,10 +96,14 @@ VOID					FAMILYBASIC::PALETTE_stWrite(
 	CUINT8					cui8inescolor3
 )noexcept{
 	static constexpr UINT16	stacui16ccolornes[]={
-		common::ui16cGetColor(0x696969),common::ui16cGetColor(0x00148f),common::ui16cGetColor(0x1e029b),common::ui16cGetColor(0x3f008a),common::ui16cGetColor(0x600060),common::ui16cGetColor(0x660017),common::ui16cGetColor(0x570d00),common::ui16cGetColor(0x451b00),common::ui16cGetColor(0x243400),common::ui16cGetColor(0x004200),common::ui16cGetColor(0x004500),common::ui16cGetColor(0x003c1f),common::ui16cGetColor(0x00315c),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),
-		common::ui16cGetColor(0xafafaf),common::ui16cGetColor(0x0f51dd),common::ui16cGetColor(0x442ff3),common::ui16cGetColor(0x7220e2),common::ui16cGetColor(0xa319b3),common::ui16cGetColor(0xae1c51),common::ui16cGetColor(0xa43400),common::ui16cGetColor(0x884d00),common::ui16cGetColor(0x676d00),common::ui16cGetColor(0x208000),common::ui16cGetColor(0x008b00),common::ui16cGetColor(0x007f42),common::ui16cGetColor(0x006c97),common::ui16cGetColor(0x010101),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),
-		common::ui16cGetColor(0xffffff),common::ui16cGetColor(0x65aaff),common::ui16cGetColor(0x8c96ff),common::ui16cGetColor(0xb983ff),common::ui16cGetColor(0xdd6fff),common::ui16cGetColor(0xea6fbd),common::ui16cGetColor(0xeb8466),common::ui16cGetColor(0xdca21f),common::ui16cGetColor(0xbab403),common::ui16cGetColor(0x7ecb07),common::ui16cGetColor(0x54d33e),common::ui16cGetColor(0x3cd284),common::ui16cGetColor(0x3ec7cc),common::ui16cGetColor(0x4b4b4b),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),
-		common::ui16cGetColor(0xffffff),common::ui16cGetColor(0xbde2ff),common::ui16cGetColor(0xcecfff),common::ui16cGetColor(0xe6c2ff),common::ui16cGetColor(0xf6bcff),common::ui16cGetColor(0xf9c2ed),common::ui16cGetColor(0xfacfc6),common::ui16cGetColor(0xf8deac),common::ui16cGetColor(0xeee9a1),common::ui16cGetColor(0xd0f59f),common::ui16cGetColor(0xbbf5af),common::ui16cGetColor(0xb3f5cd),common::ui16cGetColor(0xb9edf0),common::ui16cGetColor(0xb9b9b9),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000)
+		common::ui16cGetColor(0x616161),common::ui16cGetColor(0x000088),common::ui16cGetColor(0x1f0d99),common::ui16cGetColor(0x371379),common::ui16cGetColor(0x561260),common::ui16cGetColor(0x5d0010),common::ui16cGetColor(0x520e00),common::ui16cGetColor(0x3a2308),
+		common::ui16cGetColor(0x21350c),common::ui16cGetColor(0x0d410e),common::ui16cGetColor(0x174417),common::ui16cGetColor(0x003a1f),common::ui16cGetColor(0x002f57),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),
+		common::ui16cGetColor(0xaaaaaa),common::ui16cGetColor(0x0d4dc4),common::ui16cGetColor(0x4b24de),common::ui16cGetColor(0x6912cf),common::ui16cGetColor(0x9014ad),common::ui16cGetColor(0x9d1c48),common::ui16cGetColor(0x923404),common::ui16cGetColor(0x735005),
+		common::ui16cGetColor(0x5d6913),common::ui16cGetColor(0x167a11),common::ui16cGetColor(0x138008),common::ui16cGetColor(0x127649),common::ui16cGetColor(0x1c6691),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),
+		common::ui16cGetColor(0xfcfcfc),common::ui16cGetColor(0x639afc),common::ui16cGetColor(0x8a7efc),common::ui16cGetColor(0xb06afc),common::ui16cGetColor(0xdd6df2),common::ui16cGetColor(0xe771ab),common::ui16cGetColor(0xe38658),common::ui16cGetColor(0xcc9e22),
+		common::ui16cGetColor(0xa8b100),common::ui16cGetColor(0x72c100),common::ui16cGetColor(0x5acd4e),common::ui16cGetColor(0x34c28e),common::ui16cGetColor(0x4fbece),common::ui16cGetColor(0x424242),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),
+		common::ui16cGetColor(0xfcfcfc),common::ui16cGetColor(0xbed4fc),common::ui16cGetColor(0xcacafc),common::ui16cGetColor(0xd9c4fc),common::ui16cGetColor(0xecc1fc),common::ui16cGetColor(0xfac3e7),common::ui16cGetColor(0xf7cec3),common::ui16cGetColor(0xe2cda7),
+		common::ui16cGetColor(0xdadb9c),common::ui16cGetColor(0xc8e39e),common::ui16cGetColor(0xbfe5b8),common::ui16cGetColor(0xb2ebc8),common::ui16cGetColor(0xb7e5eb),common::ui16cGetColor(0xacacac),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000)
 	};
 	CUINT16					acui16ccolor[]={
 		stacui16ccolornes[cui8inescolor0],
@@ -147,100 +161,157 @@ VOID					FAMILYBASIC::PALETTE_stWriteSet(
 	return;
 }
 
-VOID					FAMILYBASIC::SPRITE_stSetSize(
-	const IDSIZE			cidsize
+VOID					FAMILYBASIC::SPRITE_stSetOffset(
+	CVECTOR2&				cv2doffset
 )noexcept{
-	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
-	static constexpr UINT16	stacui16value[]={
-		0x2000,
-		0x1000,
-		0x0000
-	};
+	st.SPRITE_ui16dOffsetX=UINT16(cv2doffset.i16iX())&0x3ff;
+	st.SPRITE_ui16dOffsetY=UINT16(cv2doffset.i16iY())&0x3ff;
+	SPRITE_stApplyOffset();
+	return;
+}
 
-	VIDEO_DRIVER::stWrite(IDREGISTERW::SpriteOffsetX,stacui16value[UINT8(cidsize)]);
-	VIDEO_DRIVER::stWrite(IDREGISTERW::SpriteOffsetY,stacui16value[UINT8(cidsize)]);
+VOID					FAMILYBASIC::SPRITE_stSetSize(
+	const IDSIZE			cidsizex,
+	const IDSIZE			cidsizey
+)noexcept{
+	st.SPRITE_ui16cCirculationX=stacui16cCirculation[UINT8(cidsizex)];
+	st.SPRITE_ui16cCirculationY=stacui16cCirculation[UINT8(cidsizey)];
+	SPRITE_stApplyOffset();
+	return;
+}
+
+VOID					FAMILYBASIC::BG0_stSetOffset(
+	CVECTOR2&				cv2doffset
+)noexcept{
+	st.BG0_ui16dOffsetX=UINT16(cv2doffset.i16iX())&0x3ff;
+	st.BG0_ui16dOffsetY=UINT16(cv2doffset.i16iY())&0x3ff;
+	BG0_stApplyOffset();
 	return;
 }
 
 VOID					FAMILYBASIC::BG0_stSetSize(
-	const IDSIZE			cidsize
+	const IDSIZE			cidsizex,
+	const IDSIZE			cidsizey
 )noexcept{
-	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
-	static constexpr UINT16	stacui16value[]={
-		0x2000,
-		0x1000,
-		0x0000
-	};
+	st.BG0_ui16cCirculationX=stacui16cCirculation[UINT8(cidsizex)];
+	st.BG0_ui16cCirculationY=stacui16cCirculation[UINT8(cidsizey)];
+	BG0_stApplyOffset();
+	return;
+}
 
-	VIDEO_DRIVER::stWrite(IDREGISTERW::BG0OffsetX,stacui16value[UINT8(cidsize)]);
-	VIDEO_DRIVER::stWrite(IDREGISTERW::BG0OffsetY,stacui16value[UINT8(cidsize)]);
+VOID					FAMILYBASIC::BG1_stSetOffset(
+	CVECTOR2&				cv2iposition
+)noexcept{
+	st.BG1_ui16dOffsetX=UINT16(cv2iposition.i16iX())&0x3ff;
+	st.BG1_ui16dOffsetY=UINT16(cv2iposition.i16iY())&0x3ff;
+	BG1_stApplyOffset();
 	return;
 }
 
 VOID					FAMILYBASIC::BG1_stSetSize(
-	const IDSIZE			cidsize
+	const IDSIZE			cidsizex,
+	const IDSIZE			cidsizey
 )noexcept{
-	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
-	static constexpr UINT16	stacui16value[]={
-		0x2000,
-		0x1000,
-		0x0000
-	};
+	st.BG1_ui16cCirculationX=stacui16cCirculation[UINT8(cidsizex)];
+	st.BG1_ui16cCirculationY=stacui16cCirculation[UINT8(cidsizey)];
+	BG1_stApplyOffset();
+	return;
+}
 
-	VIDEO_DRIVER::stWrite(IDREGISTERW::BG1OffsetX,stacui16value[UINT8(cidsize)]);
-	VIDEO_DRIVER::stWrite(IDREGISTERW::BG1OffsetY,stacui16value[UINT8(cidsize)]);
+VOID					FAMILYBASIC::BG2_stSetOffset(
+	CVECTOR2&				cv2iposition
+)noexcept{
+	st.BG2_ui16dOffsetX=UINT16(cv2iposition.i16iX())&0x3ff;
+	st.BG2_ui16dOffsetY=UINT16(cv2iposition.i16iY())&0x3ff;
+	BG2_stApplyOffset();
 	return;
 }
 
 VOID					FAMILYBASIC::BG2_stSetSize(
-	const IDSIZE			cidsize
+	const IDSIZE			cidsizex,
+	const IDSIZE			cidsizey
 )noexcept{
-	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
-	static constexpr UINT16	stacui16value[]={
-		0x2000,
-		0x1000,
-		0x0000
-	};
+	st.BG2_ui16cCirculationX=stacui16cCirculation[UINT8(cidsizex)];
+	st.BG2_ui16cCirculationY=stacui16cCirculation[UINT8(cidsizey)];
+	BG2_stApplyOffset();
+	return;
+}
 
-	VIDEO_DRIVER::stWrite(IDREGISTERW::BG2OffsetX,stacui16value[UINT8(cidsize)]);
-	VIDEO_DRIVER::stWrite(IDREGISTERW::BG2OffsetY,stacui16value[UINT8(cidsize)]);
+VOID					FAMILYBASIC::BG3_stSetOffset(
+	CVECTOR2&				cv2iposition
+)noexcept{
+	st.BG3_ui16dOffsetX=UINT16(cv2iposition.i16iX())&0x3ff;
+	st.BG3_ui16dOffsetY=UINT16(cv2iposition.i16iY())&0x3ff;
+	BG3_stApplyOffset();
 	return;
 }
 
 VOID					FAMILYBASIC::BG3_stSetSize(
-	const IDSIZE			cidsize
+	const IDSIZE			cidsizex,
+	const IDSIZE			cidsizey
 )noexcept{
-	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
-	static constexpr UINT16	stacui16value[]={
-		0x2000,
-		0x1000,
-		0x0000
-	};
-
-	VIDEO_DRIVER::stWrite(IDREGISTERW::BG3OffsetX,stacui16value[UINT8(cidsize)]);
-	VIDEO_DRIVER::stWrite(IDREGISTERW::BG3OffsetY,stacui16value[UINT8(cidsize)]);
+	st.BG3_ui16cCirculationX=stacui16cCirculation[UINT8(cidsizex)];
+	st.BG3_ui16cCirculationY=stacui16cCirculation[UINT8(cidsizey)];
+	BG3_stApplyOffset();
 	return;
 }
 
 //	private
 
+VOID					FAMILYBASIC::SPRITE_stApplyOffset(VOID)noexcept{
+	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
+
+	VIDEO_DRIVER::stWrite(IDREGISTERW::SpriteOffsetX,st.SPRITE_ui16dOffsetX|st.SPRITE_ui16cCirculationX);
+	VIDEO_DRIVER::stWrite(IDREGISTERW::SpriteOffsetY,st.SPRITE_ui16dOffsetY|st.SPRITE_ui16cCirculationY);
+	return;
+}
+
+VOID					FAMILYBASIC::BG0_stApplyOffset(VOID)noexcept{
+	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
+
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG0OffsetX,st.BG0_ui16dOffsetX|st.BG0_ui16cCirculationX);
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG0OffsetY,st.BG0_ui16dOffsetY|st.BG0_ui16cCirculationY);
+	return;
+}
+
+VOID					FAMILYBASIC::BG1_stApplyOffset(VOID)noexcept{
+	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
+
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG1OffsetX,st.BG1_ui16dOffsetX|st.BG1_ui16cCirculationX);
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG1OffsetY,st.BG1_ui16dOffsetY|st.BG1_ui16cCirculationY);
+	return;
+}
+
+VOID					FAMILYBASIC::BG2_stApplyOffset(VOID)noexcept{
+	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
+
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG2OffsetX,st.BG2_ui16dOffsetX|st.BG2_ui16cCirculationX);
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG2OffsetY,st.BG2_ui16dOffsetY|st.BG2_ui16cCirculationY);
+	return;
+}
+
+VOID					FAMILYBASIC::BG3_stApplyOffset(VOID)noexcept{
+	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
+
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG3OffsetX,st.BG3_ui16dOffsetX|st.BG3_ui16cCirculationX);
+	VIDEO_DRIVER::stWrite(IDREGISTERW::BG3OffsetY,st.BG3_ui16dOffsetY|st.BG3_ui16cCirculationY);
+	return;
+}
+
 VOID					FAMILYBASIC::BG_stFillAttribute(
 	CUINT32					cui32doffset,
-	CVECTOR2&				cv2idestination,
-	CVECTOR2&				cv2ndestination,
+	CVECTOR2&				cv2iposition,
+	CVECTOR2&				cv2nsize,
 	CUINT16					cui16cattribute
 )noexcept{
 	AUTO					pui16destination=
 		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
-		(cv2idestination.i16iY()<<7)+
-		cv2idestination.i16iX();
-	CAUTO					cpui16destination_end=
-		pui16destination+
-		(cv2ndestination.i16nHeight()<<7);
-	AUTO					pui16destination_line_end=pui16destination+cv2ndestination.i16nWidth();
+		(cv2iposition.i16iY()<<7)+
+		cv2iposition.i16iX();
+	AUTO					pui16destination_line_end=pui16destination+cv2nsize.i16nWidth();
 
 	for(
-		;
+		CAUTO					cpui16destination_end=pui16destination+(cv2nsize.i16nHeight()<<7);
 		pui16destination<cpui16destination_end;
 		pui16destination+=128,pui16destination_line_end+=128
 	)for(
@@ -253,14 +324,14 @@ VOID					FAMILYBASIC::BG_stFillAttribute(
 
 VOID					FAMILYBASIC::BG_stWriteAttribute(
 	CUINT32					cui32doffset,
-	CVECTOR2&				cv2idestination,
+	CVECTOR2&				cv2iposition,
 	const PCUINT16			cpcui16cattribute,
 	CUINT16					cui16nattribute
 )noexcept{
 	AUTO					pui16destination=
 		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
-		(cv2idestination.i16iY()<<7)+
-		cv2idestination.i16iX();
+		(cv2iposition.i16iY()<<7)+
+		cv2iposition.i16iX();
 	CAUTO					cpui16attribute_end=
 		pui16destination+
 		cui16nattribute;
@@ -274,15 +345,15 @@ VOID					FAMILYBASIC::BG_stWriteAttribute(
 
 VOID					FAMILYBASIC::BG_stPrint(
 	CUINT32					cui32doffset,
-	CVECTOR2&				cv2idestination,
+	CVECTOR2&				cv2iposition,
 	const PCUSTR			cpcustrstring,
 	CUINT8					cui8ibgpalette
 )noexcept{
 	CAUTO					cui16cbase=UINT16(UINT16(cui8ibgpalette+8)<<12);
 	AUTO					pui16destination_base=
 		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
-		(cv2idestination.i16iY()<<7)+
-		cv2idestination.i16iX();
+		(cv2iposition.i16iY()<<7)+
+		cv2iposition.i16iX();
 	AUTO					pui16destination=pui16destination_base;
 
 	for(AUTO pcustrsource=cpcustrstring;*pcustrsource;++pcustrsource){
@@ -294,5 +365,30 @@ VOID					FAMILYBASIC::BG_stPrint(
 			pui16destination=pui16destination_base;
 		}
 	}
+	return;
+}
+
+VOID					FAMILYBASIC::BG_stCopyAttribute(
+	CUINT32					cui32doffset,
+	CVECTOR2&				cv2iposition,
+	CVECTOR2&				cv2nsize,
+	const PCUINT16			cpcui16cattribute
+)noexcept{
+	AUTO					pui16destination=
+		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
+		(cv2iposition.i16iY()<<7)+
+		cv2iposition.i16iX();
+	AUTO					pui16destination_line_end=pui16destination+cv2nsize.i16nWidth();
+	AUTO					pcui16cattribute=cpcui16cattribute;
+
+	for(
+		CAUTO					cpui16destination_end=pui16destination+(cv2nsize.i16nHeight()<<7);
+		pui16destination<cpui16destination_end;
+		pui16destination+=128,pui16destination_line_end+=128
+	)for(
+		AUTO					pui16destination_line=pui16destination;
+		pui16destination_line<pui16destination_line_end;
+		++pui16destination_line,++pcui16cattribute
+	)*pui16destination_line=*pcui16cattribute;
 	return;
 }

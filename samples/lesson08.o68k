@@ -1,0 +1,1504 @@
+/****************************************************************************
+**																			**
+**																			**
+**						マイコン ORE68000 ACE Magazine						**
+**																			**
+**	'lesson08.o68k'									2026 written by int71	**
+ ****************************************************************************/
+
+//
+//		include
+//
+
+#include				<sub/familybasic.hpp>
+
+//
+//		using
+//
+
+using namespace m68k::i71::sub;
+
+//	GAME
+class GAME;
+using					CGAME=const GAME;
+using					PGAME=GAME*;
+using					PCGAME=CGAME*;
+
+//
+//		class:GAME
+//
+
+class GAME{
+public:
+
+	//
+	//		const
+	//
+
+	//	enum class IDMODE
+	//		ゲーム進行の「状態」を示す定数です。
+	enum class IDMODE{
+		Start,
+		Normal,
+		GameOver
+	};
+	//	UINT8					stcui8nDiscardBit
+	//		16bit中、6bitを「小数点値」扱いにします。
+	static constexpr UINT8	stcui8nDiscardBit=		6;
+	//	VECTOR2					stcv2nMapBit
+	//		マップデータのサイズ(キャラクタ単位)ビット幅です。
+	static constexpr VECTOR2	stcv2nMapBit={7,7};
+	//	VECTOR2					stcv2nMap
+	//		マップデータのサイズ(キャラクタ単位)です。
+	static constexpr VECTOR2	stcv2nMap={
+		1<<stcv2nMapBit.i16nWidth(),
+		1<<stcv2nMapBit.i16nHeight()
+	};
+	//	VECTOR2					stcv2cMapMask
+	//		マップデータのサイズ(キャラクタ単位)に切り詰めるための、
+	//		ビットマスク値です。
+	static constexpr VECTOR2	stcv2cMapMask={
+		stcv2nMap.i16nWidth()-1,
+		stcv2nMap.i16nHeight()-1
+	};
+	//	UINT8					MAP_stcui8cNone
+	//		ファミリーベーシック的(8ビット幅での)空白キャラクタコードです。
+	static constexpr UINT8	MAP_stcui8cNone=0x20;
+	//	UINT8					MAP_stcui8cFlag
+	//		ファミリーベーシック的(8ビット幅での)旗キャラクタコードです。
+	static constexpr UINT8	MAP_stcui8cFlag=0xc7;
+	//	UINT8					MAP_stcui8cLadder
+	//		ファミリーベーシック的(8ビット幅での)ハシゴキャラクタコードです。
+	static constexpr UINT8	MAP_stcui8cLadder=0xd2;
+	//	UINT16					stacui16cMap[]
+	//		マップデータです。
+	//		8ドット四方のBGキャラクタが、
+	//		1キャラクタ当たり16ビットで「stcv2nMap」サイズの大きさで敷き詰められています。
+	static constexpr UINT16	stacui16cMap[]=__O68K_TMX2BIN("lesson08.tmx");
+	//	static constexpr UINT8	stacui8cBGM
+	//		「ゲーム中BGM」の演奏データです。毎度おなじみドドッチドドッチ。
+	static constexpr UINT8	BGM_stacui8cMain[]=__O68K_MAKESEQUENCE(R"(
+		my($_INIT)='  C ,PG=127';
+
+		[
+			"#CHANNEL=PCM0/PCM1/PCM2,TRANSPOSE=0,PMSPEED=204",
+			#=======================================	   0
+			"#SPEED=1",
+			"$_INIT      /$_INIT      /$_INIT      ",
+			"     PG=1,PN=0,PM=0,VL=127,VM=255/            /            ",
+			"            /     PG=1,PN=0,PM=0,VL=127,VM=255/            ",
+			"            /            /     PG=48,PN=0,PM=0,VL=255,VM=255",
+			"            /            /            ",
+			"#SPEED=5",
+			"#LABEL=LoopStart",
+			"            /            / 3C ,VL=255 ",
+			"            /            /-           ",
+			"            /            /  C         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <G         ",
+			"            /            /-           ",
+			"            /            / >C         ",
+			"            /            /-           ",
+			"            /            /  C         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <G         ",
+			"            /            /-           ",
+			#=======================================	   1
+			"            /            / >C         ",
+			"            /            /-           ",
+			"            /            /  C         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <E         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            /  F         ",
+			"            /            /-           ",
+			"            /            /  F#        ",
+			"            /            /-           ",
+			"            /            /  G         ",
+			"            /            /-           ",
+			#=======================================	   2
+			"            /            / >D         ",
+			"            /            /-           ",
+			"            /            /  D         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <G         ",
+			"            /            /-           ",
+			"            /            / >D         ",
+			"            /            /-           ",
+			"            /            /  D         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <G         ",
+			"            /            /-           ",
+			#=======================================	   3
+			"            /            / >D         ",
+			"            /            /-           ",
+			"            /            /  D         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <F#        ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            /  G         ",
+			"            /            /-           ",
+			"            /            /  G#        ",
+			"            /            /-           ",
+			"            /            /  A         ",
+			"            /            /-           ",
+			#=======================================	   4
+			"            /            /  G         ",
+			"            /            /-           ",
+			"            /            /  G         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            /  D         ",
+			"            /            /-           ",
+			"            /            /  G         ",
+			"            /            /-           ",
+			"            /            /  G         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            /  D         ",
+			"            /            /-           ",
+			#=======================================	   5
+			"            /            /  G         ",
+			"            /            /-           ",
+			"            /            /  G         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <B         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / >C         ",
+			"            /            /-           ",
+			"            /            /  C#        ",
+			"            /            /-           ",
+			"            /            /  D         ",
+			"            /            /-           ",
+			#=======================================	   6
+			"            /            / >C         ",
+			"            /            /-           ",
+			"            /            /  C         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <G         ",
+			"            /            /-           ",
+			"            /            / >C         ",
+			"            /            /-           ",
+			"            /            /  C         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <G         ",
+			"            /            /-           ",
+			#=======================================	   7
+			"            /            / >C         ",
+			"            /            /-           ",
+			"            /            /  C         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            / <E         ",
+			"            /            /-           ",
+			"            /            /            ",
+			"            /            /            ",
+			"            /            /  F         ",
+			"            /            /-           ",
+			"            /            /  F#        ",
+			"            /            /-           ",
+			"            /            /  G         ",
+			"            /            /-           ",
+			#=======================================	   8
+			"#SPEED=1",
+			"#JUMP=LoopStart",
+		];
+	)");
+	//	UINT8					stacui8cSE_Flag[]
+	//		「旗ゲット音」の演奏データです。
+	static constexpr _ORDERED_("SE0-00") UINT8	stacui8cSE_Flag[]=__O68K_MAKESEQUENCE(R"(
+	[
+		"#CHANNEL=PCM3",
+		#=============	   0
+		"#SPEED=4",
+		" 5B ,PG=1,PN=0,PM=0,VL=224,VM=255",
+		"  G         ",
+		"#SPEED=32",
+		"-           ",
+	];
+	)");
+	//	UINT8					stacui8cSE_Jump
+	//		「ジャンプ音」の演奏データです。
+	//		「PT=+1」は連続的音程変化、つまりポルタメントです。
+	static constexpr _ORDERED_("SE0-01") UINT8	stacui8cSE_Jump[]=__O68K_MAKESEQUENCE(R"(
+		[
+			"#CHANNEL=PCM3",
+			#=============	   0
+			"#SPEED=1",
+			" 4C ,PT=+2,PG=33,PN=0,PM=0,VL=224,VM=255",
+			"#SPEED=32",
+			"-D  ,PT=+64",
+		];
+	)");
+	//	UINT8					stacui8cSE_Slip[]
+	//		「スリップ音」の演奏データです。
+	static constexpr _ORDERED_("SE0-02") UINT8	stacui8cSE_Slip[]=__O68K_MAKESEQUENCE(R"(
+		[
+			"#CHANNEL=PCM3",
+			#=============	   0
+			"#SPEED=1",
+			" 6C ,PT=+1,PG=33,PN=0,PM=0,VL=208,VM=255",
+			"#SPEED=4",
+			"-D# ,PT=+4",
+			"#SPEED=1",
+			" C  ,PT=+1",
+			"#SPEED=16",
+			"-D# ,PT=+16",
+		];
+	)");
+	//	UINT8					stacui8cSE_Walk0[]
+	//		「歩行音(1)」の演奏データです。
+	static constexpr _ORDERED_("SE0-03") UINT8	stacui8cSE_Walk0[]=__O68K_MAKESEQUENCE(R"(
+		[
+			"#CHANNEL=PCM3",
+			#=============	   0
+			"#SPEED=1",
+			" 3E ,PG=33,PN=0,PM=0,VL=224,VM=255",
+			"-E",
+		];
+	)");
+	//	UINT8					stacui8cSE_Walk1[]
+	//		「歩行音(2)」の演奏データです。
+	static constexpr _ORDERED_("SE0-03") UINT8	stacui8cSE_Walk1[]=__O68K_MAKESEQUENCE(R"(
+		[
+			"#CHANNEL=PCM3",
+			#=============	   0
+			"#SPEED=1",
+			" 3G ,PG=33,PN=0,PM=0,VL=224,VM=255",
+			"-G",
+		];
+	)");
+	//	UINT8					stacui8cSE_Ladder0[]
+	//		「ハシゴ昇降音(1)」の演奏データです。
+	static constexpr _ORDERED_("SE0-03") UINT8	stacui8cSE_Ladder0[]=__O68K_MAKESEQUENCE(R"(
+		[
+			"#CHANNEL=PCM3",
+			#=============	   0
+			"#SPEED=1",
+			" 3C ,PT=+1,PG=33,PN=0,PM=0,VL=212,VM=255",
+			"-C# ,PT=+1",
+		];
+	)");
+	//	UINT8					stacui8cSE_Ladder1[]
+	//		「ハシゴ昇降音(2)」の演奏データです。
+	static constexpr _ORDERED_("SE0-03") UINT8	stacui8cSE_Ladder1[]=__O68K_MAKESEQUENCE(R"(
+		[
+			"#CHANNEL=PCM3",
+			#=============	   0
+			"#SPEED=1",
+			" 3G ,PT=+1 ,PG=33,PN=0,PM=0,VL=212,VM=255",
+			"-G# ,PT=+1",
+		];
+	)");
+
+	//
+	//		class
+	//
+
+	//	PLAYER
+	class PLAYER;
+	using					CPLAYER=const PLAYER;
+	using					PPLAYER=PLAYER*;
+	using					PCPLAYER=CPLAYER*;
+
+	//
+	//		class:PLAYER
+	//
+
+	class PLAYER{
+	public:
+
+		//
+		//		const
+		//
+
+		//	enum class IDTYPE
+		//		キャラクタ「種別」を示す定数です。
+		enum class IDTYPE:UINT8{
+			Mario,
+			Luigi,
+			Lady
+		};
+		//	enum class IDMODE
+		//		「状態」を示す定数です。
+		enum class IDMODE:UINT8{
+			None,					//	「不在」を意味しますが、2人同時向けの「予約」
+			Normal,					//	無入力状態
+			Walking,				//	左右入力あり状態
+			OnLadder,				//	ハシゴ昇降中(止まってる場合もあり)
+			Jumping					//	ジャンプ中
+		};
+		//	enum class IDDIRECTION
+		//		「方向」を示す定数です。
+		enum class IDDIRECTION:UINT8{
+			Right,					//	右向き
+			Left					//	左向き
+		};
+		//	VECTOR2					stcv2inHitHalf_Upper
+		//		「自機」当たり判定の大きさの半分です。
+		//		当たり判定は整数で行うため、この値は「固定小数点値」ではありません。
+		//		その気持ちを「_Upper」に込めています。
+		static constexpr AUTO	stcv2inHitHalf_Upper=VECTOR2(4,6);
+		//	INT16					stci16nAccel
+		//		地上での歩き加速度です。
+		static constexpr INT16	stci16nAccel=1<<(stcui8nDiscardBit-3);
+		//	INT16					stci16nXSpeedMaximum
+		//		横方向の最大速度です。
+		static constexpr INT16	stci16nXSpeedMaximum=1<<stcui8nDiscardBit;
+		//	INT16					stci16nXDashSpeedMaximum
+		//		横方向の最大ダッシュ速度です。
+		static constexpr INT16	stci16nXDashSpeedMaximum=4<<(stcui8nDiscardBit-1);
+		//	INT16					stci16nAccelAir
+		//		空中での(謎)加速度です。
+		static constexpr INT16	stci16nAccelAir=1<<(stcui8nDiscardBit-4);
+		//	INT16					stci16nStop
+		//		地上での自然停止減速度です。
+		static constexpr INT16	stci16nStop=1<<(stcui8nDiscardBit-4);
+		//	INT16					stci16nStopAir
+		//		空中での(謎)自然停止減速度です。
+		static constexpr INT16	stci16nStopAir=1<<(stcui8nDiscardBit-5);
+		//	INT16					stci16nJumpInitialSpeed
+		//		ジャンプ初速度最小値です。
+		static constexpr INT16	stci16nJumpInitialSpeed=3<<(stcui8nDiscardBit-1);
+		//	UINT8					stcui8nJumpKeeping
+		//		ジャンプボタン押しっぱなしでジャンプ初速度を維持できるフレーム数です。
+		static constexpr UINT8	stcui8nJumpKeeping=12;
+		//	INT16					stci16nGravity
+		//		重力加速度です。
+		static constexpr INT16	stci16nGravity=1<<(stcui8nDiscardBit-3);
+		//	INT16					stci16nYSpeedMaximum
+		//		縦方向の最大速度です。
+		static constexpr INT16	stci16nYSpeedMaximum=4<<stcui8nDiscardBit;
+		//	INT16					stci16nDUCollisionWidth_UpperHalf
+		//		足元、頭上の「空き」判定幅ドット数(の半分)です。
+		static constexpr INT16	stci16nDUCollisionWidth_UpperHalf=2;
+
+		//
+		//		body:PLAYER
+		//
+
+	private:
+		//	IDMODE					idMode
+		//		「状態」を保持します。
+		IDMODE					idMode;
+		//	IDDIRECTION				idDirection
+		//		「方向」を保持します。
+		IDDIRECTION				idDirection;
+		//	VECTOR2					v2iPosition
+		//		「位置」です。
+		//		この値は6bit小数点値の「固定小数点値」です。
+		VECTOR2					v2iPosition;
+		//	VECTOR2					v2iPosition_Upper
+		//		整数状態での「位置」です。
+		//		当たり判定は整数状態で取るので、キャッシュ的に保持しておきます。
+		VECTOR2					v2iPosition_Upper;
+		//	VECTOR2					v2iPosition_PredictedUpper
+		//		整数状態での「仮更新位置」です。
+		//		「壁にめり込む」等の状況を避けるため「位置」、「速度」を調整しますが、
+		//		その際にこの「仮更新位置」が使われます。
+		VECTOR2					v2iPosition_PredictedUpper;
+		//	VECTOR2					v2dVelocity
+		//		「速度」です。
+		//		この値は6bit小数点値の「固定小数点値」です。
+		VECTOR2					v2dVelocity;
+		//	UINT8					ui8iPattern
+		//		「アニメーションカウンター」です。
+		//		意味は「状態」に応じて変わります。
+		UINT8					ui8iPattern;
+		//	UINT8					ui8iPatternBase
+		//		「アニメーションカウンター」のベース値です。
+		//		この値が変わるとキャラクタが変わります。
+		UINT8					ui8iPatternBase;
+		//	UINT8					ui8iPalette
+		//		「パレット番号」です。
+		//		この値が変わるとキャラクタが変わります。
+		UINT8					ui8iPalette;
+		//	UINT8					ui8nJumpKeeping
+		//		ジャンプボタン押しっぱなしでジャンプ初速度を維持できる残りフレーム数です。
+		UINT8					ui8nJumpKeeping;
+		//	UINT8					ui8iWalkingSound
+		//		歩行音、スリップ音制御用変数です。
+		UINT8					ui8iWalkingSound;
+	public:
+		/*VOID*/				PLAYER(VOID)noexcept{}
+		/*VOID*/				~PLAYER(VOID)noexcept{
+			Delete();
+		}
+		//	VOID					New(VOID)
+		//		初期化処理で、プログラム開始後一度だけの実行で十分──
+		//		という建前なんですが、現状何もしてません。
+		VOID					New(VOID)noexcept{
+			return;
+		}
+		//	VOID					Delete(VOID)
+		//		「終了処理」ですが、現状何もする事はありません。
+		VOID					Delete(VOID)noexcept{
+			return;
+		}
+		//	OFWBOOL					eIsActive(VOID)
+		//		「生きて」いれば「TRUE」を返します。
+		constexpr OFWBOOL		eIsActive(VOID)const noexcept{
+			return (idMode!=IDMODE::None);
+		}
+		//	CVECTOR2&				cv2iGetPosition(VOID)
+		//		自機の「位置」を返します。
+		constexpr CVECTOR2&		cv2iGetPosition(VOID)const noexcept{
+			return v2iPosition;
+		}
+		//	VOID					Start(const PGAME cpgameowner,CVECTOR2& cv2iposition)
+		//		出現処理です。
+		//		メイン処理から呼び出されます。
+		VOID					Start(const PGAME cpgameowner,const IDTYPE cidtype,CVECTOR2& cv2iposition)noexcept{
+			SetMode(IDMODE::Normal);
+			idDirection=IDDIRECTION::Right;
+			v2iPosition=cv2iposition;
+			v2dVelocity=VECTOR2::stv2ImmediateZero();
+			UpdatePosition();
+			switch(cidtype){
+			case IDTYPE::Mario:
+				ui8iPatternBase=0;
+				ui8iPalette=0;
+				break;
+			case IDTYPE::Luigi:
+				ui8iPatternBase=0;
+				ui8iPalette=1;
+				break;
+			case IDTYPE::Lady:
+				ui8iPatternBase=28;
+				ui8iPalette=2;
+				break;
+			}
+			return;
+		}
+		//	UINT8					ui8nShow(CUINT8 cui8isprite)
+		//		表示処理です。
+		//		スプライト番号「cui8isprite」以降で表示する事を求めています。
+		//		「移動処理」と分けているのは、「表示を垂直帰線期間中に確実に完了させる」ためです。
+		//		返り値はスプライト枚数の使用実績です。
+		UINT8					ui8nShow(CUINT8 cui8isprite)const noexcept{
+			CAUTO					cv2iposition=v2iPosition_Upper-VECTOR2(8,8);
+
+			switch(idMode){
+			case IDMODE::Normal:
+				if(v2dVelocity.i16iX()!=0)FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+					ui8iPatternBase+16,
+					ui8iPalette,
+					OFWBOOL(idDirection==IDDIRECTION::Right)
+				);
+				else FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+					ui8iPatternBase+4,
+					ui8iPalette,
+					OFWBOOL(idDirection==IDDIRECTION::Right)
+				);
+				return 1;
+			case IDMODE::Walking:
+				switch(idDirection){
+				case IDDIRECTION::Right:
+					if(v2dVelocity.i16iX()<0)FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+						ui8iPatternBase+16,
+						ui8iPalette,
+						FALSE
+					);
+					else FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+						ui8iPatternBase+ui8iPattern+0,
+						ui8iPalette,
+						TRUE
+					);
+					break;
+				case IDDIRECTION::Left:
+					if(0<v2dVelocity.i16iX())FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+						ui8iPatternBase+16,
+						ui8iPalette,
+						TRUE
+					);
+					else FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+						ui8iPatternBase+ui8iPattern+0,
+						ui8iPalette,
+						FALSE
+					);
+					break;
+				}
+				return 1;
+			case IDMODE::OnLadder:
+				FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+					ui8iPatternBase+20,
+					ui8iPalette,
+					OFWBOOL((ui8iPattern&8)!=0)
+				);
+				return 1;
+			case IDMODE::Jumping:
+				FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+					ui8iPatternBase+12,
+					ui8iPalette,
+					OFWBOOL(idDirection==IDDIRECTION::Right)
+				);
+				return 1;
+			default:
+				break;
+			}
+			//	「生きて」ないのでスプライト消費はゼロ。
+			return 0;
+		}
+		//	VOID					Move(const PGAME cpgameowner)
+		//		移動処理です。
+		VOID					Move(const PGAME cpgameowner)noexcept{
+			CAUTO					controller_cui8crl=UINT8(cpgameowner->CONTROLLER_ui8cCurrent&(FAMILYBASIC::stcui8cMaskButtonRight|FAMILYBASIC::stcui8cMaskButtonLeft));
+			CAUTO					controller_cui8cdu=UINT8(cpgameowner->CONTROLLER_ui8cCurrent&(FAMILYBASIC::stcui8cMaskButtonDown|FAMILYBASIC::stcui8cMaskButtonUp));
+			CAUTO					controller_cejump=OFWBOOL((cpgameowner->CONTROLLER_ui8cSingle&FAMILYBASIC::stcui8cMaskButtonA)!=0);
+			CAUTO					cv2icm_upper=v2iPosition_Upper+VECTOR2(+0,+0);
+			CAUTO					cv2icu_upper=v2iPosition_Upper+VECTOR2(+0,-7);
+			CAUTO					map_cui8ccm=cpgameowner->MAP_ui8cRead(cv2icm_upper);
+			CAUTO					map_cui8ccu=cpgameowner->MAP_ui8cRead(cv2icu_upper);
+
+			if(map_cui8ccm==MAP_stcui8cFlag){
+				cpgameowner->MAP_Write(cv2icm_upper,MAP_stcui8cNone);
+				cpgameowner->AddScore(1);
+				FAMILYBASIC::SE0_stPlay(stacui8cSE_Flag);
+			}
+			if(map_cui8ccu==MAP_stcui8cFlag){
+				cpgameowner->MAP_Write(cv2icu_upper,MAP_stcui8cNone);
+				cpgameowner->AddScore(1);
+				FAMILYBASIC::SE0_stPlay(stacui8cSE_Flag);
+			}
+			if(
+				CAUTO					map_cui8ccd=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(+0,+8));
+				//	[条件1]マップ的にハシゴとの重なりがある事
+				(MAP_steIsLadder(map_cui8ccd)||MAP_steIsLadder(map_cui8ccm))&&
+				//	[条件2]ジャンプボタンが押されていない事
+				(!controller_cejump)&&(
+					//	[条件3+1]ハシゴ昇降中、または──
+					(idMode==IDMODE::OnLadder)||
+					//	[条件3+2]下入力あり、または──
+					(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonDown)||
+					//	[条件3+3]上入力あり
+					(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonUp)
+				)
+			){
+				//	ハシゴに重なっている
+				//	斜め方向入力は上下入力を優先
+				if(!(
+					(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonDown)?Move_eLadderY(cpgameowner,FALSE):(
+						(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonUp)?Move_eLadderY(cpgameowner,TRUE):FALSE
+					)
+				)){
+					//	ハシゴ昇降しなかった(出来なかった)
+					if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonRight){
+						Move_LadderX(cpgameowner,IDDIRECTION::Right);
+					}else if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonLeft){
+						Move_LadderX(cpgameowner,IDDIRECTION::Left);
+					}else if(idMode==IDMODE::OnLadder){
+						//	ハシゴ昇降途中でのニュートラル入力なので停止
+						v2dVelocity.i16iY()=0;
+					}else{
+						//	横方向移動途中でのニュートラル入力なので慣性移動
+						Move_Normal(cpgameowner);
+					}
+				}
+			}else{
+				//	ジャンプ状態に移行するかどうかの判定
+				if(
+					//	[条件1]ジャンプ中ではない事
+					(idMode!=IDMODE::Jumping)&&
+					//	[条件2]「足場(ハシゴでもOK)」がある事
+					(!MAP_steIsSpace(map_cui8ccd))&&
+					//	[条件3]ジャンプボタンが押されている事
+					controller_cejump
+				){
+					idMode=IDMODE::Jumping;
+					v2dVelocity.i16iY()=-stci16nJumpInitialSpeed-STD::stxGetAbs(v2dVelocity.i16iX());
+					ui8nJumpKeeping=stcui8nJumpKeeping;
+					FAMILYBASIC::SE0_stPlay(stacui8cSE_Jump);
+				}
+				//	ハシゴ重なり以外の状態での移動
+				if(idMode!=IDMODE::Jumping){
+					//	通常状態(足元の状況によっては落下するかもしれない)
+					if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonRight){
+						Move_Walking(cpgameowner,IDDIRECTION::Right);
+					}else if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonLeft){
+						Move_Walking(cpgameowner,IDDIRECTION::Left);
+					}else if(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonDown){
+						//	下方向の入力がある(「何か」を降りようとしている)
+						switch(idDirection){
+						case IDDIRECTION::Right:
+							if(
+								CAUTO					map_cui8crd=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(+4,+8));
+								MAP_steIsLadder(map_cui8crd)
+							){
+								//	少し右方向に行けばハシゴを降りれそうなので右方向移動動作に解釈変更
+								Move_Walking(cpgameowner,IDDIRECTION::Right);
+							}else{
+								Move_Normal(cpgameowner);
+							}
+							break;
+						case IDDIRECTION::Left:
+							if(
+								CAUTO					map_cui8cld=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(-5,+8));
+								MAP_steIsLadder(map_cui8cld)
+							){
+								//	少し左方向に行けばハシゴを降りれそうなので左方向移動動作に解釈変更
+								Move_Walking(cpgameowner,IDDIRECTION::Left);
+							}else{
+								Move_Normal(cpgameowner);
+							}
+							break;
+						}
+					}else if(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonUp){
+						//	上方向の入力がある(「何か」を昇ろうとしている)
+						switch(idDirection){
+						case IDDIRECTION::Right:
+							if(
+								CAUTO					map_cui8crd=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(+4,+7));
+								MAP_steIsLadder(map_cui8crd)
+							){
+								//	少し右方向に行けばハシゴを昇れそうなので右方向移動動作に解釈変更
+								Move_Walking(cpgameowner,IDDIRECTION::Right);
+							}else{
+								Move_Normal(cpgameowner);
+							}
+							break;
+						case IDDIRECTION::Left:
+							if(
+								CAUTO					map_cui8cld=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(-5,+7));
+								MAP_steIsLadder(map_cui8cld)
+							){
+								//	少し左方向に行けばハシゴを昇れそうなので左方向移動動作に解釈変更
+								Move_Walking(cpgameowner,IDDIRECTION::Left);
+							}else{
+								Move_Normal(cpgameowner);
+							}
+							break;
+						}
+					}else{
+						//	入力は無いので静止状態に(完全停止までに「滑り」を伴うかも知れない)
+						Move_Normal(cpgameowner);
+					}
+				}else{
+					//	ジャンプ中
+					if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonRight){
+						Move_Jumping(cpgameowner,IDDIRECTION::Right);
+					}else if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonLeft){
+						Move_Jumping(cpgameowner,IDDIRECTION::Left);
+					}else{
+						Move_Jumping(cpgameowner);
+					}
+				}
+			}
+			UpdatePosition();
+			return;
+		}
+	private:
+		static _INLINE_ OFWBOOL	MAP_steIsSpace(CUINT8 cui8cpattern)noexcept{
+			return (cui8cpattern==MAP_stcui8cNone)||(cui8cpattern==MAP_stcui8cFlag);
+		}
+		static _INLINE_ OFWBOOL	MAP_steIsLadder(CUINT8 cui8cpattern)noexcept{
+			return (cui8cpattern==MAP_stcui8cLadder);
+		}
+		static _INLINE_ OFWBOOL	MAP_steIsMovable(CUINT8 cui8cpattern)noexcept{
+			return MAP_steIsSpace(cui8cpattern)||MAP_steIsLadder(cui8cpattern);
+		}
+		static _INLINE_ OFWBOOL	MAP_steIsScoring(CUINT8 cui8cpattern)noexcept{
+			return (cui8cpattern==MAP_stcui8cFlag);
+		}
+		//	VOID					SetMode(const IDMODE cidmode)
+		//		静止中、歩行中等の状態に設定します。
+		//		状態によって「アニメーションパターン番号」を特別な値にしたいため、
+		//		処理を独立させています。
+		VOID					SetMode(const IDMODE cidmode)noexcept{
+			if(idMode!=cidmode)switch(cidmode){
+			case IDMODE::None:
+				break;
+			case IDMODE::Normal:
+				ui8iPattern=0;
+				break;
+			case IDMODE::Walking:
+				//	ミテクレ的に歩き始めアニメパターンは「8」にしておきたい
+				ui8iPattern=8;
+				ui8iWalkingSound=0;
+				break;
+			case IDMODE::OnLadder:
+				ui8iPattern=0;
+				break;
+			case IDMODE::Jumping:
+				ui8iPattern=0;
+				break;
+			}
+			idMode=cidmode;
+			return;
+		}
+		//	VOID					UpdatePosition(VOID)
+		//		「速度」を足して「位置」を更新し、
+		//		セットで整数状態での「位置」を設定します。
+		constexpr VOID			UpdatePosition(VOID)noexcept{
+			v2iPosition+=v2dVelocity;
+			v2iPosition_Upper=v2iPosition>>stcui8nDiscardBit;
+			return;
+		}
+		//	VOID					PredictPosition_Upper(VOID)
+		//		現状の「位置」と「速度」から整数状態での「仮更新位置」を設定します。
+		constexpr VOID			PredictPosition_Upper(VOID)noexcept{
+			v2iPosition_PredictedUpper=(v2iPosition+v2dVelocity)>>stcui8nDiscardBit;
+			return;
+		}
+		//	VOID					Move_Normal(const PGAME cpgameowner)
+		//		無入力状態の移動です。
+		//		完全停止している訳ではなく、
+		//		足元に何も無ければ落下し、あったとしても完全停止までに「滑り」を伴う可能性があります。
+		VOID					Move_Normal(const PGAME cpgameowner)noexcept{
+			if(0<v2dVelocity.i16iX()){
+				if(Move_eIsFalling(cpgameowner)){
+					v2dVelocity.i16iX()=STD::stxGetMaximum(v2dVelocity.i16iX()-stci16nStopAir,0);
+					PredictPosition_Upper();
+					Move_eIsCollidingR(cpgameowner);
+					Move_eIsCollidingD(cpgameowner);
+				}else{
+					SetMode(IDMODE::Normal);
+					v2dVelocity.i16iX()=STD::stxGetMaximum(v2dVelocity.i16iX()-stci16nStop,0);
+					PredictPosition_Upper();
+					Move_eIsCollidingR(cpgameowner);
+					if(ui8iWalkingSound!=2){
+						ui8iWalkingSound=2;
+						FAMILYBASIC::SE0_stPlay(stacui8cSE_Slip);
+					}
+				}
+			}else if(v2dVelocity.i16iX()<0){
+				if(Move_eIsFalling(cpgameowner)){
+					v2dVelocity.i16iX()=STD::stxGetMinimum(v2dVelocity.i16iX()+stci16nStopAir,0);
+					PredictPosition_Upper();
+					Move_eIsCollidingL(cpgameowner);
+					Move_eIsCollidingD(cpgameowner);
+				}else{
+					SetMode(IDMODE::Normal);
+					v2dVelocity.i16iX()=STD::stxGetMinimum(v2dVelocity.i16iX()+stci16nStop,0);
+					PredictPosition_Upper();
+					Move_eIsCollidingL(cpgameowner);
+					if(ui8iWalkingSound!=2){
+						ui8iWalkingSound=2;
+						FAMILYBASIC::SE0_stPlay(stacui8cSE_Slip);
+					}
+				}
+			}else{
+				//	真下への落下
+				if(Move_eIsFalling(cpgameowner)){
+					PredictPosition_Upper();
+					Move_eIsCollidingD(cpgameowner);
+				}else{
+					SetMode(IDMODE::Normal);
+				}
+			}
+			return;
+		}
+		//	VOID					Move_Walking(const PGAME cpgameowner,const IDDIRECTION ciddirection)
+		//		地上で「ciddirection」方向に歩き加速します。
+		//		壁にぶつかれば静止し、足元に何も無ければ落下します。
+		VOID					Move_Walking(const PGAME cpgameowner,const IDDIRECTION ciddirection)noexcept{
+			CAUTO					controller_cedash=OFWBOOL((cpgameowner->CONTROLLER_ui8cCurrent&FAMILYBASIC::stcui8cMaskButtonB)!=0);
+
+			switch(ciddirection){
+			case IDDIRECTION::Right:
+				if(Move_eIsFalling(cpgameowner)){
+					v2dVelocity.i16iX()=STD::stxGetMinimum(v2dVelocity.i16iX()+stci16nAccelAir,+stci16nXDashSpeedMaximum);
+					if(!controller_cedash)if(+stci16nXSpeedMaximum<v2dVelocity.i16iX())v2dVelocity.i16iX()=STD::stxGetMaximum(v2dVelocity.i16iX()-(stci16nAccelAir<<1),+stci16nXSpeedMaximum);
+					PredictPosition_Upper();
+					Move_eIsCollidingX(cpgameowner);
+					Move_eIsCollidingD(cpgameowner);
+				}else{
+					SetMode(IDMODE::Walking);
+					idDirection=IDDIRECTION::Right;
+					v2dVelocity.i16iX()=STD::stxGetMinimum(v2dVelocity.i16iX()+stci16nAccel,+stci16nXDashSpeedMaximum);
+					if(!controller_cedash)if(+stci16nXSpeedMaximum<v2dVelocity.i16iX())v2dVelocity.i16iX()=STD::stxGetMaximum(v2dVelocity.i16iX()-(stci16nAccel<<1),+stci16nXSpeedMaximum);
+					PredictPosition_Upper();
+					if(Move_eIsCollidingX(cpgameowner)){
+					}else{
+						ui8iPattern+=controller_cedash?2:1;
+						Move_Walking_Animate(cpgameowner);
+					}
+				}
+				break;
+			case IDDIRECTION::Left:
+				if(Move_eIsFalling(cpgameowner)){
+					v2dVelocity.i16iX()=STD::stxGetMaximum(v2dVelocity.i16iX()-stci16nAccelAir,-stci16nXDashSpeedMaximum);
+					if(!controller_cedash)if(v2dVelocity.i16iX()<-stci16nXSpeedMaximum)v2dVelocity.i16iX()=STD::stxGetMinimum(v2dVelocity.i16iX()+(stci16nAccelAir<<1),-stci16nXSpeedMaximum);
+					PredictPosition_Upper();
+					Move_eIsCollidingX(cpgameowner);
+					Move_eIsCollidingD(cpgameowner);
+				}else{
+					SetMode(IDMODE::Walking);
+					idDirection=IDDIRECTION::Left;
+					v2dVelocity.i16iX()=STD::stxGetMaximum(v2dVelocity.i16iX()-stci16nAccel,-stci16nXDashSpeedMaximum);
+					if(!controller_cedash)if(v2dVelocity.i16iX()<-stci16nXSpeedMaximum)v2dVelocity.i16iX()=STD::stxGetMinimum(v2dVelocity.i16iX()+(stci16nAccel<<1),-stci16nXSpeedMaximum);
+					PredictPosition_Upper();
+					if(Move_eIsCollidingX(cpgameowner)){
+					}else{
+						ui8iPattern+=controller_cedash?2:1;
+						Move_Walking_Animate(cpgameowner);
+					}
+				}
+				break;
+			}
+			return;
+		}
+		//	VOID					Move_Walking_Animate(const PGAME cpgameowner)
+		//		歩きアニメーション共通処理です。
+		//		「歩行音」もここで制御します。
+		VOID					Move_Walking_Animate(const PGAME cpgameowner)noexcept{
+			if(
+				((idDirection==IDDIRECTION::Right)&&(v2dVelocity.i16iX()<0))||
+				((idDirection==IDDIRECTION::Left)&&(0<v2dVelocity.i16iX()))
+			){
+				if(12<=ui8iPattern)ui8iPattern=0;
+				if(ui8iWalkingSound!=2){
+					ui8iWalkingSound=2;
+					FAMILYBASIC::SE0_stPlay(stacui8cSE_Slip);
+				}
+			}else{
+				if(12<=ui8iPattern){
+					ui8iPattern=0;
+					if(ui8iWalkingSound!=0){
+						ui8iWalkingSound=0;
+						FAMILYBASIC::SE0_stPlay(stacui8cSE_Walk1);
+					}
+				}else if(6<=ui8iPattern){
+					if(ui8iWalkingSound!=1){
+						ui8iWalkingSound=1;
+						FAMILYBASIC::SE0_stPlay(stacui8cSE_Walk0);
+					}
+				}
+			}
+			return;
+		}
+		//	VOID					Move_LadderX(const PGAME cpgameowner,const IDDIRECTION ciddirection)
+		//		ハシゴ上で「ciddirection」方向に歩き加速します。
+		//		壁にぶつかれば静止しますが、ハシゴ昇降によって横移動できる場合、ハシゴ昇降移動操作に解釈変更します。
+		VOID					Move_LadderX(const PGAME cpgameowner,const IDDIRECTION ciddirection)noexcept{
+			switch(ciddirection){
+			case IDDIRECTION::Right:
+				{
+					CAUTO					map_cui8crm=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(+4,+0));
+					CAUTO					map_cui8cru=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(+4,-8));
+					CAUTO					cemovablem=MAP_steIsMovable(map_cui8crm);
+					CAUTO					cemovableu=MAP_steIsMovable(map_cui8cru);
+
+					//	右方向に移動しようとしている
+					if((v2iPosition_Upper.i16iY()&7)==0){
+						//	縦座標がBGキャラクタキリ番
+						if(
+							cemovablem&&
+							(!cemovableu)
+						){
+							//	少しハシゴを降りる右方向に移動できそうなのでハシゴ降り動作に解釈変更
+							Move_eLadderY(cpgameowner,FALSE);
+						}else if(
+							(!cemovablem)&&
+							cemovableu
+						){
+							//	少しハシゴを昇ると右方向に移動できそうなのでハシゴ昇り動作に解釈変更
+							Move_eLadderY(cpgameowner,TRUE);
+						}else{
+							//	壁にぶつかっているか右方向に移動するか
+							Move_Walking(cpgameowner,IDDIRECTION::Right);
+						}
+					}else{
+						CAUTO					map_cui8crd=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(+4,+8));
+						CAUTO					cemovabled=MAP_steIsMovable(map_cui8crd);
+
+						if(
+							cemovabled&&
+							cemovablem&&
+							(!cemovableu)
+						){
+							//	少しハシゴを降りる右方向に移動できそうなのでハシゴ降り動作に解釈変更
+							Move_eLadderY(cpgameowner,FALSE);
+						}else if(
+							(!cemovabled)&&
+							cemovablem&&
+							cemovableu
+						){
+							//	少しハシゴを昇ると右方向に移動できそうなのでハシゴ昇り動作に解釈変更
+							Move_eLadderY(cpgameowner,TRUE);
+						}else{
+							//	壁にぶつかっているか右方向に移動するか
+							Move_Walking(cpgameowner,IDDIRECTION::Right);
+						}
+					}
+				}
+				break;
+			case IDDIRECTION::Left:
+				{
+					CAUTO					map_cui8clm=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(-5,+0));
+					CAUTO					map_cui8clu=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(-5,-8));
+					CAUTO					cemovablem=MAP_steIsMovable(map_cui8clm);
+					CAUTO					cemovableu=MAP_steIsMovable(map_cui8clu);
+
+					//	左方向に移動しようとしている
+					if((v2iPosition_Upper.i16iY()&7)==0){
+						//	縦座標がBGキャラクタキリ番
+						if(
+							cemovablem&&
+							(!cemovableu)
+						){
+							//	少しハシゴを降りる左方向に移動できそうなのでハシゴ降り動作に解釈変更
+							Move_eLadderY(cpgameowner,FALSE);
+						}else if(
+							(!cemovablem)&&
+							cemovableu
+						){
+							//	少しハシゴを昇ると左方向に移動できそうなのでハシゴ昇り動作に解釈変更
+							Move_eLadderY(cpgameowner,TRUE);
+						}else{
+							//	壁にぶつかっているか右方向に移動するか
+							Move_Walking(cpgameowner,IDDIRECTION::Left);
+						}
+					}else{
+						CAUTO					map_cui8cld=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(-5,+8));
+						CAUTO					cemovabled=MAP_steIsMovable(map_cui8cld);
+
+						if(
+							cemovabled&&
+							cemovablem&&
+							(!cemovableu)
+						){
+							//	少しハシゴを降りる左方向に移動できそうなのでハシゴ降り動作に解釈変更
+							Move_eLadderY(cpgameowner,FALSE);
+						}else if(
+							(!cemovabled)&&
+							cemovablem&&
+							cemovableu
+						){
+							//	少しハシゴを昇ると左方向に移動できそうなのでハシゴ昇り動作に解釈変更
+							Move_eLadderY(cpgameowner,TRUE);
+						}else{
+							//	壁にぶつかっているか右方向に移動するか
+							Move_Walking(cpgameowner,IDDIRECTION::Left);
+						}
+					}
+				}
+				break;
+			}
+			return;
+		}
+		//	OFWBOOL					Move_eLadderY(const PGAME cpgameowner,COFWBOOL ceup)
+		//		ハシゴ昇降移動を行います。
+		//		返り値は「実際に昇降できたかどうか」で、
+		//		わざわざ区別するのは「昇降出来ていなかったなら左右移動を試みたいから」です。
+		OFWBOOL					Move_eLadderY(const PGAME cpgameowner,COFWBOOL ceup)noexcept{
+			if(ceup){
+				if(
+					CAUTO
+						map_cui8ccd=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(+0,+7)),
+						map_cui8ccm=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(+0,-1));
+					MAP_steIsLadder(map_cui8ccd)||MAP_steIsLadder(map_cui8ccm)
+				){
+					//	昇る場合は足元最低1ドットの重なりを求める
+					v2dVelocity.i16iY()=INT16(-1)<<stcui8nDiscardBit;
+					PredictPosition_Upper();
+					if(!Move_eIsCollidingU(cpgameowner,TRUE)){
+						Move_LadderY_Commit(cpgameowner);
+						return TRUE;
+					}
+				}
+			}else{
+				v2dVelocity.i16iY()=INT16(+1)<<stcui8nDiscardBit;
+				PredictPosition_Upper();
+				if(!Move_eIsCollidingD(cpgameowner,TRUE)){
+					Move_LadderY_Commit(cpgameowner);
+					return TRUE;
+				}
+			}
+			return FALSE;
+		}
+		//	VOID					Move_LadderY_Commit(const PGAME cpgameowner)
+		//		ハシゴ昇降動作として確定させ、
+		//		横位置をハシゴキャラクタに合わせると共に、アニメパターンを更新します。
+		VOID					Move_LadderY_Commit(const PGAME cpgameowner)noexcept{
+			SetMode(IDMODE::OnLadder);
+			//	ハシゴ上下動時、ハシゴキャラクタに横位置合わせしていく
+			if(
+				CAUTO					ci16doffset=v2iPosition_Upper.i16iX()&7;
+				ci16doffset<4
+			){
+				v2dVelocity.i16iX()=INT16(+1)<<stcui8nDiscardBit;
+			}else if(4<ci16doffset){
+				v2dVelocity.i16iX()=INT16(-1)<<stcui8nDiscardBit;
+			}else{
+				v2dVelocity.i16iX()=0;
+			}
+			//	ハシゴアニメーションは16フレーム循環
+			++ui8iPattern;
+			if(ui8iPattern==8)FAMILYBASIC::SE0_stPlay(stacui8cSE_Ladder0);
+			else if(ui8iPattern==16){
+				ui8iPattern=0;
+				FAMILYBASIC::SE0_stPlay(stacui8cSE_Ladder1);
+			}
+			return;
+		}
+		//	VOID					Move_Jumping(const PGAME cpgameowner,const IDDIRECTION ciddirection)
+		//		左右方向の入力があるジャンプ移動です。
+		VOID					Move_Jumping(const PGAME cpgameowner,const IDDIRECTION ciddirection)noexcept{
+			CAUTO					controller_cedash=OFWBOOL((cpgameowner->CONTROLLER_ui8cCurrent&FAMILYBASIC::stcui8cMaskButtonB)!=0);
+
+			switch(ciddirection){
+			case IDDIRECTION::Right:
+				v2dVelocity.i16iX()=STD::stxGetMinimum(v2dVelocity.i16iX()+stci16nAccelAir,+stci16nXDashSpeedMaximum);
+				if(!controller_cedash)if(+stci16nXSpeedMaximum<v2dVelocity.i16iX())v2dVelocity.i16iX()=STD::stxGetMaximum(v2dVelocity.i16iX()-(stci16nAccelAir<<1),+stci16nXSpeedMaximum);
+				break;
+			case IDDIRECTION::Left:
+				v2dVelocity.i16iX()=STD::stxGetMaximum(v2dVelocity.i16iX()-stci16nAccelAir,-stci16nXDashSpeedMaximum);
+				if(!controller_cedash)if(v2dVelocity.i16iX()<-stci16nXSpeedMaximum)v2dVelocity.i16iX()=STD::stxGetMinimum(v2dVelocity.i16iX()+(stci16nAccelAir<<1),-stci16nXSpeedMaximum);
+				break;
+			}
+			Move_Jumping_Body(cpgameowner);
+			return;
+		}
+		//	VOID					Move_Jumping(const PGAME cpgameowner)
+		//		左右方向の入力が無いジャンプ移動です。
+		//		横方向の「速度」が減速する方向に働きます。
+		VOID					Move_Jumping(const PGAME cpgameowner)noexcept{
+			if(0<v2dVelocity.i16iX()){
+				v2dVelocity.i16iX()=STD::stxGetMaximum(v2dVelocity.i16iX()-stci16nStopAir,0);
+			}else if(v2dVelocity.i16iX()<0){
+				v2dVelocity.i16iX()=STD::stxGetMinimum(v2dVelocity.i16iX()+stci16nStopAir,0);
+			}
+			Move_Jumping_Body(cpgameowner);
+			return;
+		}
+		//	VOID					Move_Jumping_Body(const PGAME cpgameowner)
+		//		ジャンプ移動の共通処理です。
+		VOID					Move_Jumping_Body(const PGAME cpgameowner)noexcept{
+			CAUTO					controller_cejump=OFWBOOL((cpgameowner->CONTROLLER_ui8cCurrent&FAMILYBASIC::stcui8cMaskButtonA)!=0);
+
+			if((0<ui8nJumpKeeping)&&controller_cejump){
+				--ui8nJumpKeeping;
+			}else{
+				ui8nJumpKeeping=0;
+				v2dVelocity.i16iY()=STD::stxGetMinimum(v2dVelocity.i16iY()+stci16nGravity,stci16nYSpeedMaximum);
+			}
+			PredictPosition_Upper();
+			if(v2dVelocity.i16iY()<0){
+				Move_eIsCollidingU(cpgameowner);
+			}else{
+				if(Move_eIsCollidingD(cpgameowner))SetMode(IDMODE::Walking);
+			}
+			//	天井衝突時、横速度を殺したくないので、横方向の壁衝突判定は別途実施
+			PredictPosition_Upper();
+			Move_eIsCollidingX(cpgameowner);
+			return;
+		}
+		//	OFWBOOL					Move_eIsFalling(const PGAME cpgameowner)
+		//		足場があるかどうか、現状の「位置」で判定します。
+		//		もし足場が無いなら「重力加速度」で「速度」の縦成分を更新します。
+		//		補正は行わないので(補正前用処理なので)めり込みが発生しているかも知れません。
+		OFWBOOL					Move_eIsFalling(const PGAME cpgameowner)noexcept{
+			if(
+				CAUTO
+					map_cui8crd=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(+stci16nDUCollisionWidth_UpperHalf,8)),
+					map_cui8cld=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(-stci16nDUCollisionWidth_UpperHalf,8));
+				MAP_steIsSpace(map_cui8crd)&&
+				MAP_steIsSpace(map_cui8cld)
+			){
+				//	足元に何もないので落下する
+				v2dVelocity.i16iY()=STD::stxGetMinimum(v2dVelocity.i16iY()+stci16nGravity,stci16nYSpeedMaximum);
+				return TRUE;
+			}else{
+				v2dVelocity.i16iY()=0;
+			}
+			return FALSE;
+		}
+		//	OFWBOOL					Move_eIsCollidingX(const PGAME cpgameowner)
+		//		横移動で壁に衝突するかどうかを「仮更新位置」で判定します。
+		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
+		_INLINE_ OFWBOOL		Move_eIsCollidingX(const PGAME cpgameowner)noexcept{
+			if(0<v2dVelocity.i16iX())return Move_eIsCollidingR(cpgameowner);
+			else if(v2dVelocity.i16iX()<0)return Move_eIsCollidingL(cpgameowner);
+			return FALSE;
+		}
+		//	OFWBOOL					Move_eIsCollidingR(const PGAME cpgameowner)
+		//		右移動で壁に衝突するかどうかを「仮更新位置」で判定します。
+		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
+		OFWBOOL					Move_eIsCollidingR(const PGAME cpgameowner)noexcept{
+			if(
+				CAUTO					map_cui8crd=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(+4,7)),map_cui8crm=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(+4,-1)),map_cui8cru=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(+4,-8));
+				(!MAP_steIsMovable(map_cui8crd))||
+				(!MAP_steIsMovable(map_cui8crm))||
+				(!MAP_steIsMovable(map_cui8cru))
+			){
+				//	今のままだと壁にめり込むので補正をかける
+				v2iPosition.i16iX()=((v2iPosition_PredictedUpper.i16iX()&INT16(~7))+4)<<stcui8nDiscardBit;
+				v2dVelocity.i16iX()=0;
+				return TRUE;
+			}
+			return FALSE;
+		}
+		//	OFWBOOL					Move_eIsCollidingL(const PGAME cpgameowner)
+		//		左移動で壁に衝突するかどうかを「仮更新位置」で判定します。
+		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
+		OFWBOOL					Move_eIsCollidingL(const PGAME cpgameowner)noexcept{
+			if(
+				CAUTO					map_cui8cld=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(-5,7)),map_cui8clm=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(-5,-1)),map_cui8clu=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(-5,-8));
+				(!MAP_steIsMovable(map_cui8cld))||
+				(!MAP_steIsMovable(map_cui8clm))||
+				(!MAP_steIsMovable(map_cui8clu))
+			){
+				//	今のままだと壁にめり込むので補正をかける
+				v2iPosition.i16iX()=((v2iPosition_PredictedUpper.i16iX()&INT16(~7))+5)<<stcui8nDiscardBit;
+				v2dVelocity.i16iX()=0;
+				return TRUE;
+			}
+			return FALSE;
+		}
+		//	OFWBOOL					Move_eIsCollidingD(const PGAME cpgameowner,COFWBOOL celadder)
+		//		下移動で壁に衝突するかどうかを「仮更新位置」で判定します。
+		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
+		//		「celadder」を「TRUE」にすると「ハシゴ昇降向け」判定になり、
+		//		昇降しやすいよう判定幅が縮小され、
+		//		足元が「ハシゴ」であるならめり込みが許容されるようになります。
+		OFWBOOL					Move_eIsCollidingD(const PGAME cpgameowner,COFWBOOL celadder=FALSE)noexcept{
+			if(celadder){
+				if(
+					CAUTO					map_cui8ccd=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(0,8));
+					MAP_steIsLadder(map_cui8ccd)
+				){
+					if(v2dVelocity.i16iY()){
+						v2iPosition.i16iY()=v2iPosition_PredictedUpper.i16iY()<<stcui8nDiscardBit;
+						v2dVelocity.i16iY()=0;
+					}
+				}else if(!MAP_steIsSpace(map_cui8ccd)){
+					v2iPosition.i16iY()=(v2iPosition_PredictedUpper.i16iY()&INT16(~7))<<stcui8nDiscardBit;
+					v2dVelocity.i16iY()=0;
+					return TRUE;
+				}
+			}else{
+				if(
+					CAUTO
+						map_cui8crd=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(+stci16nDUCollisionWidth_UpperHalf,8)),
+						map_cui8cld=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(-stci16nDUCollisionWidth_UpperHalf,8));
+					(!MAP_steIsMovable(map_cui8crd))||
+					(!MAP_steIsMovable(map_cui8cld))
+				){
+					v2iPosition.i16iY()=(v2iPosition_PredictedUpper.i16iY()&INT16(~7))<<stcui8nDiscardBit;
+					v2dVelocity.i16iY()=0;
+					return TRUE;
+				}
+			}
+			return FALSE;
+		}
+		//	OFWBOOL					Move_eIsCollidingU(const PGAME cpgameowner,COFWBOOL celadder)
+		//		上移動で壁に衝突するかどうかを「仮更新位置」で判定します。
+		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
+		//		「celadder」を「TRUE」にすると「ハシゴ昇降向け」判定になり、
+		//		昇降しやすいよう判定幅が縮小されます。
+		OFWBOOL					Move_eIsCollidingU(const PGAME cpgameowner,COFWBOOL celadder=FALSE)noexcept{
+			if(celadder){
+				if(
+					CAUTO					map_cui8ccu=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(0,-8));
+					MAP_steIsLadder(map_cui8ccu)
+				){
+					if(v2dVelocity.i16iY()){
+						v2iPosition.i16iY()=v2iPosition_PredictedUpper.i16iY()<<stcui8nDiscardBit;
+						v2dVelocity.i16iY()=0;
+					}
+				}else if(!MAP_steIsSpace(map_cui8ccu)){
+					v2iPosition.i16iY()=((v2iPosition_PredictedUpper.i16iY()&INT16(~7))+8)<<stcui8nDiscardBit;
+					v2dVelocity.i16iY()=0;
+					return TRUE;
+				}
+			}else{
+				if(
+					CAUTO
+						map_cui8cru=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(+stci16nDUCollisionWidth_UpperHalf,-8)),
+						map_cui8clu=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(-stci16nDUCollisionWidth_UpperHalf,-8));
+					(!MAP_steIsMovable(map_cui8cru))||
+					(!MAP_steIsMovable(map_cui8clu))
+				){
+					v2iPosition.i16iY()=((v2iPosition_PredictedUpper.i16iY()&INT16(~7))+8)<<stcui8nDiscardBit;
+					v2dVelocity.i16iY()=0;
+					return TRUE;
+				}
+			}
+			return FALSE;
+		}
+	};
+
+	//
+	//		body:GAME
+	//
+
+private:
+	//	IDMODE					idMode
+	//		ゲームの「状態」を保持します。
+	//		今回は、プログラム中の「処理の場所」でなく、
+	//		「入口一つで毎回枝分かれする」という方法を採っています。
+	IDMODE					idMode;
+	//	UINT16					ui16nScore
+	//		点数です。「9999」まで表示できるようにしています。
+	UINT16					ui16nScore;
+	//	UINT8					CONTROLLER_ui8cCurrent
+	//		「コントローラ」入力値そのものです。
+	//		押下で当該bitが1になります。
+	UINT8					CONTROLLER_ui8cCurrent;
+	//	UINT8					CONTROLLER_ui8cSingle
+	//		「コントローラ」入力値ですが、
+	//		「CONTROLLER_ui8cCurrent」と異なり、押下の「瞬間」でだけ、当該bitが1になります。
+	UINT8					CONTROLLER_ui8cSingle;
+	//	PLAYER					PLAYER_plyrThis
+	//		「自機状態」を保持する構造体です。
+	PLAYER					PLAYER_plyrThis;
+	//	VECTOR2					SCROLL_v2iPosition
+	//		スクロール位置です。
+	VECTOR2					SCROLL_v2iPosition;
+public:
+	/*VOID*/				GAME(VOID)noexcept{}
+	/*VOID*/				~GAME(VOID)noexcept{
+		Delete();
+	}
+	//	VOID					New(VOID)
+	//		ゲームとしての初期化処理です。
+	//		ゲームオーバーが挟まろうが、実行は一度きりです。
+	VOID					New(VOID)noexcept{
+		idMode=IDMODE::Start;
+		CONTROLLER_ui8cCurrent=0;
+		PLAYER_plyrThis.New();
+		return;
+	}
+	//	VOID					Delete(VOID)
+	//		ゲームとしての終了処理ですが、現状呼び出される事はありません。
+	VOID					Delete(VOID)noexcept{
+		PLAYER_plyrThis.Delete();
+		return;
+	}
+	//	VOID					Main(VOID)
+	//		ゲームとしてのメイン処理です。
+	//		1/60秒毎の垂直帰線期間突入都度、「USER_Main」から呼び出されます。
+	_INLINE_ VOID			Main(VOID)noexcept{
+		switch(idMode){
+		case IDMODE::Start:
+			Start();
+			break;
+		case IDMODE::Normal:
+			Normal();
+			break;
+		case IDMODE::GameOver:
+			GameOver();
+			break;
+		}
+		return;
+	}
+	//	VOID					Start(VOID)
+	//		ゲーム開始処理です。
+	//		初期化処理の後の他、ゲームオーバーになった後にも実行されます。
+	VOID					Start(VOID)noexcept{
+		idMode=IDMODE::Normal;
+		ui16nScore=0;
+		//	「自機」初期化
+		PLAYER_plyrThis.Start(this,PLAYER::IDTYPE::Mario,VECTOR2(4,1024-16)<<stcui8nDiscardBit);
+		//	「背景」初期化
+		FAMILYBASIC::SPRITE_stSetSize(FAMILYBASIC::IDSIZE::n1024);
+		FAMILYBASIC::BG1_stSetSize(FAMILYBASIC::IDSIZE::n1024);
+		SCROLL_v2iPosition=VECTOR2(0,1024-212)<<stcui8nDiscardBit;
+		FAMILYBASIC::BG1_stCopyAttribute({0,0},stcv2nMap,stacui16cMap);
+		//	点数系初期化
+		FAMILYBASIC::BG0_stPrint({11,12},"          ",0);
+		ShowScore();
+		FAMILYBASIC::BGM_stPlay(BGM_stacui8cMain);
+		FAMILYBASIC::BGM_stSetMasterVolume(224);
+		Normal();
+		return;
+	}
+	//	VOID					Normal(VOID)
+	//		ゲーム通常処理です。
+	//		1/60毎の実行で丁度良くなるよう、
+	//		「登場人物全てを満遍なくちょっとずつ動かす事」がポイントです。
+	VOID					Normal(VOID)noexcept{
+		CONTROLLER_Update();
+		//	表示(垂直帰線期間中に完了できるよう冒頭に持ってくる)
+		Show();
+		//	「自機」移動
+		{
+			CAUTO					cui16nscore=ui16nScore;
+
+			PLAYER_plyrThis.Move(this);
+			SCROLL_v2iPosition=PLAYER_plyrThis.cv2iGetPosition()-(VECTOR2(128,112)<<stcui8nDiscardBit);
+			//	点数に変動があった場合だけ表示
+			if(cui16nscore!=ui16nScore)ShowScore();
+		}
+		//	ゲームオーバー判定
+		if(!PLAYER_plyrThis.eIsActive()){
+			FAMILYBASIC::BG0_stPrint({11,12},"GAME  OVER",0);
+			idMode=IDMODE::GameOver;
+			FAMILYBASIC::BGM_stSetMasterVolumeFade(255,4);
+		}
+		return;
+	}
+	//	VOID					GameOver(VOID)
+	//		ゲームオーバー処理です。
+	//		無くても構わないのですが、一応表示処理だけ実行しています。
+	//		リスタート判定は「CONTROLLER_ui8cSingle」で行っているので、
+	//		Aボタン押しっぱでゲームオーバーになったとしても、「即座に再開」とはなりません。
+	VOID					GameOver(VOID)noexcept{
+		CONTROLLER_Update();
+		Show();
+		//	リスタート判定
+		if(CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::IDBUTTON::A))idMode=IDMODE::Start;
+		return;
+	}
+private:
+	//	VOID					Show(VOID)
+	//		表示処理です。
+	//		通常進行中の表示の他、ゲームオーバー静止画像表示にも使います。
+	VOID					Show(VOID)const noexcept{
+		UINT8					ui8isprite=0;
+
+		//	背景
+		FAMILYBASIC::SPRITE_stSetOffset(SCROLL_v2iPosition>>stcui8nDiscardBit);
+		FAMILYBASIC::BG1_stSetOffset(SCROLL_v2iPosition>>stcui8nDiscardBit);
+		//	自機
+		PLAYER_plyrThis.ui8nShow(ui8isprite);
+		//	残りは消去
+		while(ui8isprite!=0){
+			FAMILYBASIC::SPRITE_stErase(ui8isprite);
+			++ui8isprite;
+		}
+		return;
+	}
+	//	VOID					ShowScore(VOID)
+	//		点数表示処理です。最大「9999」まで表示できます。
+	//		通常「ui16nScore%1000」等と書くところですが、
+	//		割り算は遅いので引き算の繰り返しを行っています。
+	VOID					ShowScore(VOID)const noexcept{
+		USTR					austrscore[]="0000";
+		AUTO					ui16nscore=ui16nScore;
+		USTR					ustrzero=' ';
+		USTR					ustrdigit;
+
+		//	「千」の位
+		for(ustrdigit='0';1000<=ui16nscore;++ustrdigit,ui16nscore-=1000);
+		if(ustrdigit=='0'){
+			austrscore[0]=ustrzero;
+		}else{
+			ustrzero='0';
+			austrscore[0]=ustrdigit;
+		}
+		//	「百」の位
+		for(ustrdigit='0';100<=ui16nscore;++ustrdigit,ui16nscore-=100);
+		if(ustrdigit=='0'){
+			austrscore[1]=ustrzero;
+		}else{
+			ustrzero='0';
+			austrscore[1]=ustrdigit;
+		}
+		//	「十」の位
+		for(ustrdigit='0';10<=ui16nscore;++ustrdigit,ui16nscore-=10);
+		if(ustrdigit=='0'){
+			austrscore[2]=ustrzero;
+		}else{
+			ustrzero='0';
+			austrscore[2]=ustrdigit;
+		}
+		//	「一」の位は空白表示の場合が無いので単純変換
+		austrscore[3]='0'+ui16nscore;
+		FAMILYBASIC::BG0_stPrint({6,1},austrscore,0);
+	}
+	//	VOID					AddScore(CUINT16 cui16nscore)
+	//		スコアを加算します。
+	_INLINE_ VOID			AddScore(CUINT16 cui16nscore)noexcept{
+		ui16nScore+=cui16nscore;
+		if(9999<ui16nScore)ui16nScore=9999;
+		return;
+	}
+	//	VOID					CONTROLLER_Update(VOID)
+	//		コントローラから状態をゲットして、
+	//		通常状態他、「押下」のみ状態を設定します。
+	_INLINE_ VOID			CONTROLLER_Update(VOID)noexcept{
+		CAUTO					cui8cprevious=CONTROLLER_ui8cCurrent;
+
+		//	現在値
+		CONTROLLER_ui8cCurrent=FAMILYBASIC::CONTROLLER_stui8cRead(0);
+		//	変化値
+		CONTROLLER_ui8cSingle=CONTROLLER_ui8cCurrent&(CONTROLLER_ui8cCurrent^cui8cprevious);
+		return;
+	}
+	//	VOID					MAP_Write(CVECTOR2& cv2iposition_upper,CUINT8 cui8cpattern)
+	//		整数状態での「位置」にあるBGキャラクタコードを「cui8cpattern」に書き換えます。
+	//		BGキャラクタは8ドット四方なので、「位置」下3ビットは無視されます。
+	_INLINE_ VOID			MAP_Write(CVECTOR2& cv2iposition_upper,CUINT8 cui8cpattern)noexcept{
+		FAMILYBASIC::BG1_stWriteAttribute(
+			VECTOR2(
+				(cv2iposition_upper.i16iX()>>3)&stcv2cMapMask.i16nWidth(),
+				(cv2iposition_upper.i16iY()>>3)&stcv2cMapMask.i16nHeight()
+			),
+			UINT16(cui8cpattern)
+		);
+		return;
+	}
+	//	UINT8					MAP_ui8cRead(CVECTOR2& cv2iposition_upper)
+	//		整数状態での「位置」にあるBGキャラクタコードを取得します。
+	//		BGキャラクタは8ドット四方なので、「位置」下3ビットは無視されます。
+	//		「ORE68000 ACE」としてのBGキャラクタコードは16ビット幅あるのですが、
+	//		ファミリーベーシック的には8ビットなので、上8ビットは破棄します。
+	_INLINE_ UINT8			MAP_ui8cRead(CVECTOR2& cv2iposition_upper)noexcept{
+		return UINT8(FAMILYBASIC::BG1_stui16cReadAttribute(
+			VECTOR2(
+				(cv2iposition_upper.i16iX()>>3)&stcv2cMapMask.i16nWidth(),
+				(cv2iposition_upper.i16iY()>>3)&stcv2cMapMask.i16nHeight()
+			)
+		)&0xff);
+	}
+};
+
+//
+//		user
+//
+
+static GAME				stgameThis;
+
+//
+//		entry
+//
+
+VOID					USER_New(VOID)noexcept{
+	FAMILYBASIC::stNew();
+	FAMILYBASIC::PALETTE_stWriteSet(0,1);
+	//	左右ループさせたくないので、スプライトは縦横512ドット空間に設定
+	FAMILYBASIC::SPRITE_stSetSize(FAMILYBASIC::IDSIZE::n512);
+	FAMILYBASIC::BG0_stPrint({0,0},"LESSON 08:MAP(1)",0);
+	FAMILYBASIC::BG0_stPrint({0,1},"SCORE",0);
+	stgameThis.New();
+	return;
+}
+
+VOID					USER_Delete(VOID)noexcept{
+	stgameThis.Delete();
+	FAMILYBASIC::stDelete();
+	return;
+}
+
+VOID					USER_Main(VOID)noexcept{
+	stgameThis.Main();
+	return;
+}

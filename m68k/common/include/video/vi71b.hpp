@@ -445,9 +445,9 @@ namespace m68k::video{
 	public:
 		static constexpr UINT16	stui16cGetColor(CBYTE cbired,CBYTE cbigreen,CBYTE cbiblue)noexcept{
 			return 
-				(UINT16(cbired  >>4)<<0)|
-				(UINT16(cbigreen>>4)<<4)|
-				(UINT16(cbiblue >>4)<<8);
+				UINT16(((cbired<0xe8)?(cbired+8)>>4:0xf)<<0)|
+				UINT16(((cbigreen<0xe8)?(cbigreen+8)>>4:0xf)<<4)|
+				UINT16(((cbiblue<0xe8)?(cbiblue+8)>>4:0xf)<<8);
 		}
 		static constexpr UINT16	stui16cGetColor(CDWORD cdwvalue)noexcept{
 			return stui16cGetColor(

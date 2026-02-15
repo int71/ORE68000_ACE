@@ -21,7 +21,9 @@
 //		macro
 //
 
-#define __O68K_MAKESEQUENCE(cpsustrsource)	{0xff}
+#define __O68K_FILE(cpcustrfilename)	{}
+#define __O68K_MAKESEQUENCE(cpcustrsource)	{0xff}
+#define __O68K_TMX2BIN(cpcustrfilename)	{}
 
 //
 //		namespace:m68k::i71::sub
@@ -65,11 +67,43 @@ namespace m68k::i71::sub{
 			};
 		};
 		using					IDSIZE=_IDSIZE::BODY;
+		static constexpr UINT16	stacui16cCirculation[]={
+			0x2000,
+			0x1000,
+			0x0000
+		};
+
+		//
+		//		class
+		//
+
+		//	ST
+		class ST;
+		using					CST=const ST;
+		using					PST=ST*;
+		using					PCST=CST*;
+
+		//
+		//		class:ST
+		//
+
+		class ST{
+		public:
+			UINT16					SPRITE_ui16dOffsetX,SPRITE_ui16dOffsetY,SPRITE_ui16cCirculationX,SPRITE_ui16cCirculationY;
+			UINT16					BG0_ui16dOffsetX,BG0_ui16dOffsetY,BG0_ui16cCirculationX,BG0_ui16cCirculationY;
+			UINT16					BG1_ui16dOffsetX,BG1_ui16dOffsetY,BG1_ui16cCirculationX,BG1_ui16cCirculationY;
+			UINT16					BG2_ui16dOffsetX,BG2_ui16dOffsetY,BG2_ui16cCirculationX,BG2_ui16cCirculationY;
+			UINT16					BG3_ui16dOffsetX,BG3_ui16dOffsetY,BG3_ui16cCirculationX,BG3_ui16cCirculationY;
+		public:
+			VOID					Delete(VOID)noexcept;
+		};
 
 		//
 		//		body:FAMILYBASIC
 		//
 
+	private:
+		static inline ST		st;
 	public:
 		static VOID				stNew(VOID)noexcept;
 		static VOID				stDelete(VOID)noexcept;
@@ -82,7 +116,12 @@ namespace m68k::i71::sub{
 			return;
 		}
 		static VOID				PALETTE_stWriteSet(CUINT8 cui8ispriteset,CUINT8 cui8ibgset)noexcept;
-		static VOID				SPRITE_stSetSize(const IDSIZE cidsize)noexcept;
+		static VOID				SPRITE_stSetOffset(CVECTOR2& cv2doffset)noexcept;
+		static _INLINE_ VOID	SPRITE_stSetSize(const IDSIZE cidsize)noexcept{
+			SPRITE_stSetSize(cidsize,cidsize);
+			return;
+		}
+		static VOID				SPRITE_stSetSize(const IDSIZE cidsizex,const IDSIZE cidsizey)noexcept;
 		static _INLINE_ VOID	SPRITE_stWritePattern8(CUINT8 cui8ipattern,CUINT32 cui32cpattern0,CUINT32 cui32cpattern1,CUINT32 cui32cpattern2,CUINT32 cui32cpattern3,CUINT32 cui32cpattern4,CUINT32 cui32cpattern5,CUINT32 cui32cpattern6,CUINT32 cui32cpattern7)noexcept{
 			CAUTO					cui32doffset=MAP::VRAM::PATTERN_SPRITE_stcui32dOffset+(UINT32(cui8ipattern)<<5);
 
@@ -151,133 +190,181 @@ namespace m68k::i71::sub{
 			MEMORY::VRAM_stui32DelegateThis(cui32doffset+0x1c)=cui32cpattern7;
 			return;
 		}
-		static VOID				BG0_stSetSize(const IDSIZE cidsize)noexcept;
-		static _INLINE_ VOID	BG0_stFillAttribute(CVECTOR2& cv2idestination,CVECTOR2& cv2ndestination,CUINT16 cui16cattribute)noexcept{
-			BG_stFillAttribute(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,cv2idestination,cv2ndestination,cui16cattribute);
+		static VOID				BG0_stSetOffset(CVECTOR2& cv2doffset)noexcept;
+		static _INLINE_ VOID	BG0_stSetSize(const IDSIZE cidsize)noexcept{
+			BG0_stSetSize(cidsize,cidsize);
 			return;
 		}
-		static _INLINE_ VOID	BG0_stFill(CVECTOR2& cv2idestination,CVECTOR2& cv2ndestination,CUINT8 cui8ipattern,CUINT8 cui8ibgpalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
+		static VOID				BG0_stSetSize(const IDSIZE cidsizex,const IDSIZE cidsizey)noexcept;
+		static _INLINE_ VOID	BG0_stFillAttribute(CVECTOR2& cv2iposition,CVECTOR2& cv2nsize,CUINT16 cui16cattribute)noexcept{
+			BG_stFillAttribute(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,cv2iposition,cv2nsize,cui16cattribute);
+			return;
+		}
+		static _INLINE_ VOID	BG0_stFill(CVECTOR2& cv2iposition,CVECTOR2& cv2nsize,CUINT8 cui8ipattern,CUINT8 cui8ibgpalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
 			BG0_stFillAttribute(
-				cv2idestination,
-				cv2ndestination,
+				cv2iposition,
+				cv2nsize,
 				UINT16(cui8ipattern)|(UINT16(ceinverth)<<10)|(UINT16(ceinvertv)<<11)|(UINT16(cui8ibgpalette+8)<<12)
 			);
 			return;
 		}
-		static _INLINE_ VOID	BG0_stWriteAttribute(CVECTOR2& cv2idestination,CUINT16 cui16cattribute)noexcept{
-			BG_stWriteAttribute(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,cv2idestination,cui16cattribute);
+		static _INLINE_ VOID	BG0_stWriteAttribute(CVECTOR2& cv2iposition,CUINT16 cui16cattribute)noexcept{
+			BG_stWriteAttribute(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,cv2iposition,cui16cattribute);
 			return;
 		}
-		static _INLINE_ VOID	BG0_stWriteAttribute(CVECTOR2& cv2idestination,const PCUINT16 cpcui16cattribute,CUINT16 cui16nattribute)noexcept{
-			BG_stWriteAttribute(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,cv2idestination,cpcui16cattribute,cui16nattribute);
+		static _INLINE_ VOID	BG0_stWriteAttribute(CVECTOR2& cv2iposition,const PCUINT16 cpcui16cattribute,CUINT16 cui16nattribute)noexcept{
+			BG_stWriteAttribute(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,cv2iposition,cpcui16cattribute,cui16nattribute);
 			return;
 		}
-		static _INLINE_ VOID	BG0_stWrite(CVECTOR2& cv2idestination,CUINT8 cui8ipattern,CUINT8 cui8ibgpalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
+		static _INLINE_ VOID	BG0_stWrite(CVECTOR2& cv2iposition,CUINT8 cui8ipattern,CUINT8 cui8ibgpalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
 			BG0_stWriteAttribute(
-				cv2idestination,
+				cv2iposition,
 				UINT16(cui8ipattern)|(UINT16(ceinverth)<<10)|(UINT16(ceinvertv)<<11)|(UINT16(cui8ibgpalette+8)<<12)
 			);
 			return;
 		}
-		static _INLINE_ VOID	BG0_stPrint(CVECTOR2& cv2idestination,const PCUSTR cpcustrstring,CUINT8 cui8ibgpalette)noexcept{
-			BG_stPrint(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,cv2idestination,cpcustrstring,cui8ibgpalette);
+		static _INLINE_ VOID	BG0_stPrint(CVECTOR2& cv2iposition,const PCUSTR cpcustrstring,CUINT8 cui8ibgpalette)noexcept{
+			BG_stPrint(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,cv2iposition,cpcustrstring,cui8ibgpalette);
 			return;
 		}
-		static VOID				BG1_stSetSize(const IDSIZE cidsize)noexcept;
-		static _INLINE_ VOID	BG1_stFillAttribute(CVECTOR2& cv2idestination,CVECTOR2& cv2ndestination,CUINT16 cui16cattribute)noexcept{
-			BG_stFillAttribute(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,cv2idestination,cv2ndestination,cui16cattribute);
+		static _INLINE_ VOID	BG0_stCopyAttribute(CVECTOR2& cv2iposition,CVECTOR2& cv2nsize,const PCUINT16 cpcui16cattribute)noexcept{
+			BG_stCopyAttribute(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,cv2iposition,cv2nsize,cpcui16cattribute);
 			return;
 		}
-		static _INLINE_ VOID	BG1_stFill(CVECTOR2& cv2idestination,CVECTOR2& cv2ndestination,CUINT8 cui8ipattern,CUINT8 cui8ibgpalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
+		static _INLINE_ UINT16	BG0_stui16cReadAttribute(CVECTOR2& cv2iposition)noexcept{
+			return BG_stui16cReadAttribute(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,cv2iposition);
+		}
+		static VOID				BG1_stSetOffset(CVECTOR2& cv2doffset)noexcept;
+		static _INLINE_ VOID	BG1_stSetSize(const IDSIZE cidsize)noexcept{
+			BG1_stSetSize(cidsize,cidsize);
+			return;
+		}
+		static VOID				BG1_stSetSize(const IDSIZE cidsizex,const IDSIZE cidsizey)noexcept;
+		static _INLINE_ VOID	BG1_stFillAttribute(CVECTOR2& cv2iposition,CVECTOR2& cv2nsize,CUINT16 cui16cattribute)noexcept{
+			BG_stFillAttribute(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,cv2iposition,cv2nsize,cui16cattribute);
+			return;
+		}
+		static _INLINE_ VOID	BG1_stFill(CVECTOR2& cv2iposition,CVECTOR2& cv2ndestination,CUINT8 cui8ipattern,CUINT8 cui8ibgpalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
 			BG1_stFillAttribute(
-				cv2idestination,
+				cv2iposition,
 				cv2ndestination,
 				UINT16(cui8ipattern)|(UINT16(ceinverth)<<10)|(UINT16(ceinvertv)<<11)|(UINT16(cui8ibgpalette+8)<<12)
 			);
 			return;
 		}
-		static _INLINE_ VOID	BG1_stWriteAttribute(CVECTOR2& cv2idestination,CUINT16 cui16cattribute)noexcept{
-			BG_stWriteAttribute(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,cv2idestination,cui16cattribute);
+		static _INLINE_ VOID	BG1_stWriteAttribute(CVECTOR2& cv2iposition,CUINT16 cui16cattribute)noexcept{
+			BG_stWriteAttribute(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,cv2iposition,cui16cattribute);
 			return;
 		}
-		static _INLINE_ VOID	BG1_stWriteAttribute(CVECTOR2& cv2idestination,const PCUINT16 cpcui16cattribute,CUINT16 cui16nattribute)noexcept{
-			BG_stWriteAttribute(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,cv2idestination,cpcui16cattribute,cui16nattribute);
+		static _INLINE_ VOID	BG1_stWriteAttribute(CVECTOR2& cv2iposition,const PCUINT16 cpcui16cattribute,CUINT16 cui16nattribute)noexcept{
+			BG_stWriteAttribute(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,cv2iposition,cpcui16cattribute,cui16nattribute);
 			return;
 		}
-		static _INLINE_ VOID	BG1_stWrite(CVECTOR2& cv2idestination,CUINT8 cui8ipattern,CUINT8 cui8ibgpalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
+		static _INLINE_ VOID	BG1_stWrite(CVECTOR2& cv2iposition,CUINT8 cui8ipattern,CUINT8 cui8ibgpalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
 			BG1_stWriteAttribute(
-				cv2idestination,
+				cv2iposition,
 				UINT16(cui8ipattern)|(UINT16(ceinverth)<<10)|(UINT16(ceinvertv)<<11)|(UINT16(cui8ibgpalette+8)<<12)
 			);
 			return;
 		}
-		static _INLINE_ VOID	BG1_stPrint(CVECTOR2& cv2idestination,const PCUSTR cpcustrstring,CUINT8 cui8ipalette)noexcept{
-			BG_stPrint(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,cv2idestination,cpcustrstring,cui8ipalette);
+		static _INLINE_ VOID	BG1_stPrint(CVECTOR2& cv2iposition,const PCUSTR cpcustrstring,CUINT8 cui8ipalette)noexcept{
+			BG_stPrint(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,cv2iposition,cpcustrstring,cui8ipalette);
 			return;
 		}
-		static VOID				BG2_stSetSize(const IDSIZE cidsize)noexcept;
-		static _INLINE_ VOID	BG2_stFillAttribute(CVECTOR2& cv2idestination,CVECTOR2& cv2ndestination,CUINT16 cui16cattribute)noexcept{
-			BG_stFillAttribute(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,cv2idestination,cv2ndestination,cui16cattribute);
+		static _INLINE_ VOID	BG1_stCopyAttribute(CVECTOR2& cv2iposition,CVECTOR2& cv2nsize,const PCUINT16 cpcui16cattribute)noexcept{
+			BG_stCopyAttribute(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,cv2iposition,cv2nsize,cpcui16cattribute);
 			return;
 		}
-		static _INLINE_ VOID	BG2_stFill(CVECTOR2& cv2idestination,CVECTOR2& cv2ndestination,CUINT8 cui8ipattern,CUINT8 cui8ibgpalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
+		static _INLINE_ UINT16	BG1_stui16cReadAttribute(CVECTOR2& cv2iposition)noexcept{
+			return BG_stui16cReadAttribute(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,cv2iposition);
+		}
+		static VOID				BG2_stSetOffset(CVECTOR2& cv2doffset)noexcept;
+		static _INLINE_ VOID	BG2_stSetSize(const IDSIZE cidsize)noexcept{
+			BG2_stSetSize(cidsize,cidsize);
+			return;
+		}
+		static VOID				BG2_stSetSize(const IDSIZE cidsizex,const IDSIZE cidsizey)noexcept;
+		static _INLINE_ VOID	BG2_stFillAttribute(CVECTOR2& cv2iposition,CVECTOR2& cv2nsize,CUINT16 cui16cattribute)noexcept{
+			BG_stFillAttribute(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,cv2iposition,cv2nsize,cui16cattribute);
+			return;
+		}
+		static _INLINE_ VOID	BG2_stFill(CVECTOR2& cv2iposition,CVECTOR2& cv2ndestination,CUINT8 cui8ipattern,CUINT8 cui8ibgpalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
 			BG2_stFillAttribute(
-				cv2idestination,
+				cv2iposition,
 				cv2ndestination,
 				UINT16(cui8ipattern)|(UINT16(ceinverth)<<10)|(UINT16(ceinvertv)<<11)|(UINT16(cui8ibgpalette+8)<<12)
 			);
 			return;
 		}
-		static _INLINE_ VOID	BG2_stWriteAttribute(CVECTOR2& cv2idestination,CUINT16 cui16cattribute)noexcept{
-			BG_stWriteAttribute(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,cv2idestination,cui16cattribute);
+		static _INLINE_ VOID	BG2_stWriteAttribute(CVECTOR2& cv2iposition,CUINT16 cui16cattribute)noexcept{
+			BG_stWriteAttribute(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,cv2iposition,cui16cattribute);
 			return;
 		}
-		static _INLINE_ VOID	BG2_stWriteAttribute(CVECTOR2& cv2idestination,const PCUINT16 cpcui16cattribute,CUINT16 cui16nattribute)noexcept{
-			BG_stWriteAttribute(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,cv2idestination,cpcui16cattribute,cui16nattribute);
+		static _INLINE_ VOID	BG2_stWriteAttribute(CVECTOR2& cv2iposition,const PCUINT16 cpcui16cattribute,CUINT16 cui16nattribute)noexcept{
+			BG_stWriteAttribute(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,cv2iposition,cpcui16cattribute,cui16nattribute);
 			return;
 		}
-		static _INLINE_ VOID	BG2_stWrite(CVECTOR2& cv2idestination,CUINT8 cui8ipattern,CUINT8 cui8ibgpalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
+		static _INLINE_ VOID	BG2_stWrite(CVECTOR2& cv2iposition,CUINT8 cui8ipattern,CUINT8 cui8ibgpalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
 			BG2_stWriteAttribute(
-				cv2idestination,
+				cv2iposition,
 				UINT16(cui8ipattern)|(UINT16(ceinverth)<<10)|(UINT16(ceinvertv)<<11)|(UINT16(cui8ibgpalette+8)<<12)
 			);
 			return;
 		}
-		static _INLINE_ VOID	BG2_stPrint(CVECTOR2& cv2idestination,const PCUSTR cpcustrstring,CUINT8 cui8ipalette)noexcept{
-			BG_stPrint(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,cv2idestination,cpcustrstring,cui8ipalette);
+		static _INLINE_ VOID	BG2_stPrint(CVECTOR2& cv2iposition,const PCUSTR cpcustrstring,CUINT8 cui8ipalette)noexcept{
+			BG_stPrint(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,cv2iposition,cpcustrstring,cui8ipalette);
 			return;
 		}
-		static VOID				BG3_stSetSize(const IDSIZE cidsize)noexcept;
-		static _INLINE_ VOID	BG3_stFillAttribute(CVECTOR2& cv2idestination,CVECTOR2& cv2ndestination,CUINT16 cui16cattribute)noexcept{
-			BG_stFillAttribute(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,cv2idestination,cv2ndestination,cui16cattribute);
+		static _INLINE_ VOID	BG2_stCopyAttribute(CVECTOR2& cv2iposition,CVECTOR2& cv2nsize,const PCUINT16 cpcui16cattribute)noexcept{
+			BG_stCopyAttribute(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,cv2iposition,cv2nsize,cpcui16cattribute);
 			return;
 		}
-		static _INLINE_ VOID	BG3_stFill(CVECTOR2& cv2idestination,CVECTOR2& cv2ndestination,CUINT8 cui8ipattern,CUINT8 cui8ibgpalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
+		static _INLINE_ UINT16	BG2_stui16cReadAttribute(CVECTOR2& cv2iposition)noexcept{
+			return BG_stui16cReadAttribute(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,cv2iposition);
+		}
+		static VOID				BG3_stSetOffset(CVECTOR2& cv2doffset)noexcept;
+		static _INLINE_ VOID	BG3_stSetSize(const IDSIZE cidsize)noexcept{
+			BG3_stSetSize(cidsize,cidsize);
+			return;
+		}
+		static VOID				BG3_stSetSize(const IDSIZE cidsizex,const IDSIZE cidsizey)noexcept;
+		static _INLINE_ VOID	BG3_stFillAttribute(CVECTOR2& cv2iposition,CVECTOR2& cv2nsize,CUINT16 cui16cattribute)noexcept{
+			BG_stFillAttribute(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,cv2iposition,cv2nsize,cui16cattribute);
+			return;
+		}
+		static _INLINE_ VOID	BG3_stFill(CVECTOR2& cv2iposition,CVECTOR2& cv2ndestination,CUINT8 cui8ipattern,CUINT8 cui8ibgpalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
 			BG3_stFillAttribute(
-				cv2idestination,
+				cv2iposition,
 				cv2ndestination,
 				UINT16(cui8ipattern)|(UINT16(ceinverth)<<10)|(UINT16(ceinvertv)<<11)|(UINT16(cui8ibgpalette+8)<<12)
 			);
 			return;
 		}
-		static _INLINE_ VOID	BG3_stWriteAttribute(CVECTOR2& cv2idestination,CUINT16 cui16cattribute)noexcept{
-			BG_stWriteAttribute(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,cv2idestination,cui16cattribute);
+		static _INLINE_ VOID	BG3_stWriteAttribute(CVECTOR2& cv2iposition,CUINT16 cui16cattribute)noexcept{
+			BG_stWriteAttribute(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,cv2iposition,cui16cattribute);
 			return;
 		}
-		static _INLINE_ VOID	BG3_stWriteAttribute(CVECTOR2& cv2idestination,const PCUINT16 cpcui16cattribute,CUINT16 cui16nattribute)noexcept{
-			BG_stWriteAttribute(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,cv2idestination,cpcui16cattribute,cui16nattribute);
+		static _INLINE_ VOID	BG3_stWriteAttribute(CVECTOR2& cv2iposition,const PCUINT16 cpcui16cattribute,CUINT16 cui16nattribute)noexcept{
+			BG_stWriteAttribute(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,cv2iposition,cpcui16cattribute,cui16nattribute);
 			return;
 		}
-		static _INLINE_ VOID	BG3_stWrite(CVECTOR2& cv2idestination,CUINT8 cui8ipattern,CUINT8 cui8ibgpalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
+		static _INLINE_ VOID	BG3_stWrite(CVECTOR2& cv2iposition,CUINT8 cui8ipattern,CUINT8 cui8ibgpalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
 			BG3_stWriteAttribute(
-				cv2idestination,
+				cv2iposition,
 				UINT16(cui8ipattern)|(UINT16(ceinverth)<<10)|(UINT16(ceinvertv)<<11)|(UINT16(cui8ibgpalette+8)<<12)
 			);
 			return;
 		}
-		static _INLINE_ VOID	BG3_stPrint(CVECTOR2& cv2idestination,const PCUSTR cpcustrstring,CUINT8 cui8ipalette)noexcept{
-			BG_stPrint(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,cv2idestination,cpcustrstring,cui8ipalette);
+		static _INLINE_ VOID	BG3_stPrint(CVECTOR2& cv2iposition,const PCUSTR cpcustrstring,CUINT8 cui8ipalette)noexcept{
+			BG_stPrint(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,cv2iposition,cpcustrstring,cui8ipalette);
 			return;
+		}
+		static _INLINE_ VOID	BG3_stCopyAttribute(CVECTOR2& cv2iposition,CVECTOR2& cv2nsize,const PCUINT16 cpcui16cattribute)noexcept{
+			BG_stCopyAttribute(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,cv2iposition,cv2nsize,cpcui16cattribute);
+			return;
+		}
+		static _INLINE_ UINT16	BG3_stui16cReadAttribute(CVECTOR2& cv2iposition)noexcept{
+			return BG_stui16cReadAttribute(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,cv2iposition);
 		}
 		static _INLINE_ VOID	BGM_stPlay(_UNDISCARDABLE_ CUINT8* const cpcui8csequence)noexcept{
 			OS::BGM_stPlay(cpcui8csequence);
@@ -306,18 +393,32 @@ namespace m68k::i71::sub{
 			return OS::DEVICE_JOYSTICK_stui8Read(cui8ibank);
 		}
 	private:
-		static VOID				BG_stFillAttribute(CUINT32 cui32doffset,CVECTOR2& cv2idestination,CVECTOR2& cv2ndestination,CUINT16 cui16cattribute)noexcept;
-		static _INLINE_ VOID	BG_stWriteAttribute(CUINT32 cui32doffset,CVECTOR2& cv2idestination,CUINT16 cui16cattribute)noexcept{
+		static VOID				SPRITE_stApplyOffset(VOID)noexcept;
+		static VOID				BG0_stApplyOffset(VOID)noexcept;
+		static VOID				BG1_stApplyOffset(VOID)noexcept;
+		static VOID				BG2_stApplyOffset(VOID)noexcept;
+		static VOID				BG3_stApplyOffset(VOID)noexcept;
+		static VOID				BG_stFillAttribute(CUINT32 cui32doffset,CVECTOR2& cv2iposition,CVECTOR2& cv2nsize,CUINT16 cui16cattribute)noexcept;
+		static _INLINE_ VOID	BG_stWriteAttribute(CUINT32 cui32doffset,CVECTOR2& cv2iposition,CUINT16 cui16cattribute)noexcept{
 			CAUTO					cpui16destination=
 				&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
-				(cv2idestination.i16iY()<<7)+
-				cv2idestination.i16iX();
+				(cv2iposition.i16iY()<<7)+
+				cv2iposition.i16iX();
 
 			*cpui16destination=cui16cattribute;
 			return;
 		}
-		static VOID				BG_stWriteAttribute(CUINT32 cui32doffset,CVECTOR2& cv2idestination,const PCUINT16 cpcui16cattribute,CUINT16 cui16nattribute)noexcept;
-		static VOID				BG_stPrint(CUINT32 cui32doffset,CVECTOR2& cv2idestination,const PCUSTR cpcustrstring,CUINT8 cui8ibgpalette)noexcept;
+		static VOID				BG_stWriteAttribute(CUINT32 cui32doffset,CVECTOR2& cv2iposition,const PCUINT16 cpcui16cattribute,CUINT16 cui16nattribute)noexcept;
+		static VOID				BG_stPrint(CUINT32 cui32doffset,CVECTOR2& cv2iposition,const PCUSTR cpcustrstring,CUINT8 cui8ibgpalette)noexcept;
+		static VOID				BG_stCopyAttribute(CUINT32 cui32doffset,CVECTOR2& cv2iposition,CVECTOR2& cv2nsize,const PCUINT16 cpcui16cattribute)noexcept;
+		static _INLINE_ UINT16	BG_stui16cReadAttribute(CUINT32 cui32doffset,CVECTOR2& cv2iposition)noexcept{
+			CAUTO					cpcui16source=
+				&MEMORY::VRAM_stcui16GetThis(cui32doffset)+
+				(cv2iposition.i16iY()<<7)+
+				cv2iposition.i16iX();
+
+			return *cpcui16source;
+		}
 	};
 }
 

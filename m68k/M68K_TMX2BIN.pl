@@ -4,13 +4,13 @@
 ##																			##
 ##									M68K									##
 ##																			##
-##	'M68K_TMX2BIN.pl'								2025 written by int71	##
+##	'M68K_TMX2BIN.pl'								2026 written by int71	##
 ##############################################################################
 use strict;
 use integer;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'base.pl';
-my($sVersion,$sDate)=('1.33','2025/11/08');
+my($sVersion,$sDate)=('1.42','2026/02/13');
 my($CLASS_sStage)='STAGE';
 my($CLASS_STAGE_sArea)='AREA';
 my($CLASS_STAGE_sBGM)='BGM_PLAY';
@@ -64,9 +64,9 @@ sub main{
 			$switch{'Project'}='ORE68000ACE';
 		}
 		if($$option{'p'} ne ''){
-			$switch{'Palette'}=($$option{'p'}&15)<<12;
+			$switch{'Palette'}=$$option{'p'}&15;
 		}else{
-			$switch{'Palette'}=0x0<<12;
+			$switch{'Palette'}=0x0;
 		}
 		if($$option{'ps'} ne ''){
 			foreach(split(/\,/,$$option{'ps'})){
@@ -84,11 +84,6 @@ sub main{
 		}else{
 			$switch{'Transpose'}=0;
 		}
-		if($$option{'m'} ne ''){
-			$switch{'Margin'}=$$option{'m'}
-		}else{
-			$switch{'Margin'}=0;
-		}
 	}
 	{
 		my($img_destination,$img_destination_c)=&USR_stTMX2BIN($source,\%switch);
@@ -101,6 +96,19 @@ sub main{
 				while(defined($line=$img_destination_c->GetLINE())){
 					BASE::Print("$line\n");
 				}
+			}
+		}elsif(defined $$option{'dx'}){
+			my($ndata)=$img_destination->GetSize()>>1;
+
+			if($ndata){
+				my($idata);
+
+				$img_destination->SetCurrent(0);
+				BASE::Print(sprintf("0x%04x",$img_destination->GetWORD_B()));
+				for($idata=1;$idata<$ndata;++$idata){
+					BASE::Print(sprintf(",0x%04x",$img_destination->GetWORD_B()));
+				}
+				BASE::Print("\n");
 			}
 		}else{
 			$img_destination->Save("$switch{'NameBIN'}.bin");
@@ -123,7 +131,7 @@ sub USR_stShowHelp{
   「.tmx」形式マップファイルをBGアトリビュート形式バイナリに変換します。
 
 <書式>
-$BASE::Self (入力).tmx [-v] [-h] [-o (出力).bin] [-c (Cソース).cpp] [-j (プロジェクト名)] [-p (パレット番号)] [-ps (タイルY座標)=(パレット番号)[,...]] [-t 0|1] [-m 0|1] [-d]
+$BASE::Self (入力).tmx [-v] [-h] [-o (出力).bin] [-c (Cソース).cpp] [-j (プロジェクト名)] [-p (パレット番号)] [-ps (タイルY座標)=(パレット番号)[,...]] [-t 0|1] [-d] [-dx]
 
 <オプション>
 -v: バージョンを表示します。
@@ -131,11 +139,16 @@ $BASE::Self (入力).tmx [-v] [-h] [-o (出力).bin] [-c (Cソース).cpp] [-j (
 -o: 出力ファイル名を指定します。デフォルト値は「(入力).bin」です。
 -c: 出力イベントCソースファイル名を指定します。デフォルト値は「(入力).cpp」です。
 -j: Cソースファイル内コメントとして記載するプロジェクト名を指定します。デフォルト値は「ORE68000ACE」です。
--p: パレット番号を指定します。デフォルト値は「0」です。
+-p: パレット番号を指定します。デフォルト値は「0」です。パレット違いの同一画像を複数タイルセットとする場合、この指定値は「基準値」となり、タイルセット番号がオフセットとなります。例えば4タイルセット存在する状態で「-p 2」と指定すると、パレット番号は「2～5」が使用される事になります。
 -ps:パレット番号をタイルY座標単位で個別指定します。カンマ区切りで列挙でき、「30=15,31=15」と書けば「タイルY座標30、31のタイルのみパレット15」という意味になります。
 -t: 「0」を指定すると「横(列)方向のデータを縦(行)方向」に、「1」を指定すると「縦(行)方向のデータを横(列)方向」に出力します。デフォルト値は「0」です。
--m: 「0」を指定すると通常の「32x32」サイズのタイルセット、「1」を指定するとパレット指定ありの「34x32」サイズのタイルセットと解釈します。デフォルト値は「0」です。
 -d: ファイルでなく標準出力に出力します。現状「Cソースファイル」のみの出力です。
+-dx: 「(出力).bin」データの内容「のみ」を1行のC配列形式「0xnn[,...]」で表示します。
+
+<「(入力).tmx」について>
+・タイルサイズ
+  自動判別しますが、マップを構成するタイルは「正方形である」事を前提とします。
+  もし正方形でなければ、「左端2タイル分はパレット定義領域である」と解釈します。
 
 <「(Cソース).cpp」について>
 ・メタ文字
@@ -189,34 +202,14 @@ sub USR_stTMX2BIN{
 	my($source,$ref_switch)=@_;
 	my(@array_ref_array_attribute,$nwidth);
 	my(@array_ref_event);
-	my($cpalette)=$$ref_switch{'Palette'};
+	my($cpalettebase)=$$ref_switch{'Palette'};
 	my($ref_palettespecific)=$$ref_switch{'PaletteSpecific'};
-	my($sub_pattern)=($$ref_switch{'Margin'}==0)?sub{
-		my($ipattern)=@_;
-
-		$ipattern=($ipattern-1)&0x3ff;
-		{
-			my($iiy)=$ipattern>>5;
-
-			if(exists $$ref_palettespecific{$iiy}){
-				return $ipattern|$$ref_palettespecific{$iiy};
-			}
-		}
-		return $ipattern|$cpalette;
-	}:sub{
-		my($ipattern)=@_;
-
-		--$ipattern;
-		$ipattern=((($ipattern/34)<<5)+($ipattern%34)-2)&0x3ff;
-		{
-			my($iiy)=$ipattern>>5;
-
-			if(exists $$ref_palettespecific{$iiy}){
-				return $ipattern|$$ref_palettespecific{$iiy};
-			}
-		}
-		return $ipattern|$cpalette;
-	};
+	my($inpatternwidthbit);
+	my($inpalettebit);
+	my($inpatternwidth);
+	my($inpatternwidthwithpalette);
+	my($icpatternmask);
+	my($sub_pattern);
 
 	$nwidth=0;
 	{
@@ -225,7 +218,61 @@ sub USR_stTMX2BIN{
 		$img_source=new BASE_IMAGE::($source);
 		$img_source->SetCurrent(0);
 		while(defined ($_=$img_source->GetLINE())){
-			if(/\<data\s+encoding/){
+			if(/\<tileset\s+firstgid\=\"(\d+)\"\s+name\=\"(\S+)\"\s+tilewidth\=\"(\d+)\"\s+tileheight\=\"(\d+)\"\s+tilecount\=\"(\d+)\"\s+columns\=\"(\d+)\"/){
+				my($icfirstid,$sname,$intilewidth,$intileheight,$intile,$inwidth)=($1,$2,$3,$4,$5,$6);
+
+				#	タイルセット
+				if($icfirstid==1){
+					#	マップデータを成すタイルセットは複数あるやも知れぬが、
+					#	基本パラメータは属性「firstgid="1"」の「tileset」であると解釈。
+					#	まずはタイルサイズからビット幅(2の累乗)算出。
+					for($inpatternwidthbit=1;(1<<$inpatternwidthbit)<=$inwidth;++$inpatternwidthbit){
+						$inpatternwidth=1<<$inpatternwidthbit;
+					}
+					--$inpatternwidthbit;
+					$inpalettebit=$inpatternwidthbit<<1;
+					$inpatternwidthwithpalette=$inpatternwidth+2;
+					$icpatternmask=$inpatternwidth*$inpatternwidth-1;
+					#	端数無ければ「NxN」サイズ、あればパレット指定ありの「(N+2)xN」サイズと解釈
+					$sub_pattern=($inpatternwidth==$inwidth)?sub{
+						my($ipattern)=@_;
+						my($cpalette);
+
+						--$ipattern;
+						$cpalette=($cpalettebase+($ipattern>>$inpalettebit))<<12;
+						$ipattern&=$icpatternmask;
+						{
+							my($iiy)=$ipattern>>$inpatternwidthbit;
+
+							if(exists $$ref_palettespecific{$iiy}){
+								return $ipattern|$$ref_palettespecific{$iiy};
+							}
+						}
+						return $ipattern|$cpalette;
+					}:sub{
+						my($ipattern)=@_;
+						my($cpalette);
+
+						--$ipattern;
+						$ipattern=(($ipattern/$inpatternwidthwithpalette)<<$inpatternwidthbit)+($ipattern%$inpatternwidthwithpalette)-2;
+						$cpalette=($cpalettebase+($ipattern>>$inpalettebit))<<12;
+						$ipattern&=$icpatternmask;
+						{
+							my($iiy)=$ipattern>>$inpatternwidthbit;
+
+							if(exists $$ref_palettespecific{$iiy}){
+								return $ipattern|$$ref_palettespecific{$iiy};
+							}
+						}
+						return $ipattern|$cpalette;
+					};
+				}
+				while(defined ($_=$img_source->GetLINE())){
+					if(/\<\/tileset/){
+						last;
+					}
+				}
+			}elsif(/\<data\s+/){
 				my($iy)=0;
 
 				#	マップデータ
