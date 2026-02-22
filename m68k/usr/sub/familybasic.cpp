@@ -117,46 +117,35 @@ VOID					FAMILYBASIC::PALETTE_stWrite(
 }
 
 VOID					FAMILYBASIC::PALETTE_stWriteSet(
-	CUINT8					cui8ispriteset,
-	CUINT8					cui8ibgset
+	CUINT8					cui8isetsprite,
+	CUINT8					cui8isetbg
 )noexcept{
-	static constexpr UINT8	staacspriteset[][4][4]={
-		{
-			{0x3f,0x36,0x16,0x02},
-			{0x3f,0x27,0x30,0x19},
-			{0x3f,0x35,0x25,0x17},
-			{0x3f,0x30,0x27,0x16}
-		},{
-			{0x3f,0x30,0x16,0x01},
-			{0x3f,0x10,0x00,0x01},
-			{0x3f,0x30,0x29,0x09},
-			{0x3f,0x30,0x16,0x07}
-		},{
-			{0x3f,0x30,0x26,0x12},
-			{0x3f,0x30,0x15,0x12},
-			{0x3f,0x30,0x12,0x16},
-			{0x3f,0x30,0x26,0x19}
-		}
-	};
-	static constexpr UINT8	staacbg[][4][4]={
-		{
-			{0x3f,0x2c,0x15,0x07},
-			{0x3f,0x27,0x21,0x12},
-			{0x3f,0x29,0x36,0x17},
-			{0x3f,0x30,0x26,0x07}
-		},{
-			{0x3f,0x30,0x21,0x02},
-			{0x3f,0x30,0x27,0x18},
-			{0x3f,0x30,0x27,0x16},
-			{0x3f,0x29,0x36,0x17}
-		}
-	};
-	CAUTO&					acsprite=staacspriteset[(cui8ispriteset<3)?cui8ispriteset:0];
-	CAUTO&					acbg=staacbg[(cui8ibgset<2)?cui8ibgset:0];
+	CAUTO&					acsetsprite=PALETTE_staacSetSprite[(cui8isetsprite<3)?cui8isetsprite:0];
+	CAUTO&					acsetbg=PALETTE_staacSetBG[(cui8isetbg<2)?cui8isetbg:0];
 
 	for(UINT8 ui8ipalette=0;ui8ipalette<4;++ui8ipalette){
-		PALETTE_stWrite(ui8ipalette+0,acsprite[ui8ipalette]);
-		PALETTE_stWrite(ui8ipalette+8,acbg[ui8ipalette]);
+		PALETTE_stWrite(ui8ipalette+ 0,acsetsprite[ui8ipalette]);
+		PALETTE_stWrite(ui8ipalette+ 8,acsetbg[ui8ipalette]);
+	}
+	return;
+}
+
+VOID					FAMILYBASIC::PALETTE_stWriteSet2(
+	CUINT8					cui8isetsprite0,
+	CUINT8					cui8isetsprite1,
+	CUINT8					cui8isetbg0,
+	CUINT8					cui8isetbg1
+)noexcept{
+	CAUTO&					acsetsprite0=PALETTE_staacSetSprite[(cui8isetsprite0<3)?cui8isetsprite0:0];
+	CAUTO&					acsetsprite1=PALETTE_staacSetSprite[(cui8isetsprite1<3)?cui8isetsprite1:0];
+	CAUTO&					acsetbg0=PALETTE_staacSetBG[(cui8isetbg0<2)?cui8isetbg0:0];
+	CAUTO&					acsetbg1=PALETTE_staacSetBG[(cui8isetbg1<2)?cui8isetbg1:0];
+
+	for(UINT8 ui8ipalette=0;ui8ipalette<4;++ui8ipalette){
+		PALETTE_stWrite(ui8ipalette+ 0,acsetsprite0[ui8ipalette]);
+		PALETTE_stWrite(ui8ipalette+ 4,acsetsprite1[ui8ipalette]);
+		PALETTE_stWrite(ui8ipalette+ 8,acsetbg0[ui8ipalette]);
+		PALETTE_stWrite(ui8ipalette+12,acsetbg1[ui8ipalette]);
 	}
 	return;
 }
