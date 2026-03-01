@@ -3,7 +3,7 @@
 **																			**
 **						マイコン ORE68000 ACE Magazine						**
 **																			**
-**	'lesson09.o68k'									2026 written by int71	**
+**	'lesson10.o68k'									2026 written by int71	**
  ****************************************************************************/
 
 //
@@ -43,18 +43,43 @@ public:
 		GameOver
 	};
 	//	UINT8					stcui8nDiscardBit
-	//		16bit中、6bitを「小数点値」扱いにします。
-	static constexpr UINT8	stcui8nDiscardBit=		6;
-	//	VECTOR2					stcv2nMapBit
+	//		「固定小数点値」中の何ビットを「小数点値」扱いにするかを示します。
+	//		ここでは16bit中6bitを「小数点値」扱いにします。
+	static constexpr UINT8	stcui8nDiscardBit=6;
+	//	INT16					stci16iOne
+	//		整数「1」に相当する固定小数点値です。
+	static constexpr INT16	stci16iOne=1<<stcui8nDiscardBit;
+	//	INT16					stci16cDiscardMask
+	//		「小数点値」部分のマスクです。
+	static constexpr INT16	stci16cDiscardMask=stci16iOne-1;
+	//	UINT8					CONTROLLER_stcui8cRight
+	//		コントローラ「右移動操作」入力ビットを示すマスク値です。
+	static constexpr AUTO	CONTROLLER_stcui8cRight=FAMILYBASIC::stcui8cMaskButtonRight;
+	//	UINT8					CONTROLLER_stcui8cLeft
+	//		コントローラ「左移動操作」入力ビットを示すマスク値です。
+	static constexpr AUTO	CONTROLLER_stcui8cLeft=FAMILYBASIC::stcui8cMaskButtonLeft;
+	//	UINT8					CONTROLLER_stcui8cDown
+	//		コントローラ「下移動操作」入力ビットを示すマスク値です。
+	static constexpr AUTO	CONTROLLER_stcui8cDown=FAMILYBASIC::stcui8cMaskButtonDown;
+	//	UINT8					CONTROLLER_stcui8cUp
+	//		コントローラ「上移動操作」入力ビットを示すマスク値です。
+	static constexpr AUTO	CONTROLLER_stcui8cUp=FAMILYBASIC::stcui8cMaskButtonUp;
+	//	UINT8					CONTROLLER_stcui8cJump
+	//		コントローラ「ジャンプ操作」入力ビットを示すマスク値です。
+	static constexpr AUTO	CONTROLLER_stcui8cJump=FAMILYBASIC::stcui8cMaskButtonA;
+	//	UINT8					CONTROLLER_stcui8cDash
+	//		コントローラ「ダッシュ操作」入力ビットを示すマスク値です。
+	static constexpr AUTO	CONTROLLER_stcui8cDash=FAMILYBASIC::stcui8cMaskButtonB;
+	//	VECTOR2					MAP_stcv2nSizeBit
 	//		マップデータのサイズ(キャラクタ単位)ビット幅です。
 	static constexpr VECTOR2	MAP_stcv2nSizeBit={7,7};
-	//	VECTOR2					stcv2nMap
+	//	VECTOR2					MAP_stcv2nSize
 	//		マップデータのサイズ(キャラクタ単位)です。
 	static constexpr VECTOR2	MAP_stcv2nSize={
 		1<<MAP_stcv2nSizeBit.i16nWidth(),
 		1<<MAP_stcv2nSizeBit.i16nHeight()
 	};
-	//	VECTOR2					stcv2cMapMask
+	//	VECTOR2					MAP_stcv2cSizeMask
 	//		マップデータのサイズ(キャラクタ単位)に切り詰めるための、
 	//		ビットマスク値です。
 	static constexpr VECTOR2	MAP_stcv2cSizeMask={
@@ -70,15 +95,15 @@ public:
 	//	UINT8					MAP_stcui8cLadder
 	//		ファミリーベーシック的(8ビット幅での)ハシゴキャラクタコードです。
 	static constexpr UINT8	MAP_stcui8cLadder=0xd2;
-	//	UINT16					stacui16cMap[]
+	//	UINT16					MAP_stacui16cAttribute[]
 	//		マップデータです。
 	//		8ドット四方のBGキャラクタが、
 	//		1キャラクタ当たり16ビットで「stcv2nMap」サイズの大きさで敷き詰められています。
-	static constexpr UINT16	MAP_stacui16cAttribute[]=__O68K_TMX2BIN("lesson09.tmx");
+	static constexpr UINT16	MAP_stacui16cAttribute[]=__O68K_TMX2BIN("lesson10.tmx");
 	//	UINT8					ENEMY_stcui8nInstanceMaximum
 	//		「敵最大数」です。
-	static constexpr UINT8	ENEMY_stcui8nInstanceMaximum=	64;
-	//	static constexpr UINT8	stacui8cBGM
+	static constexpr UINT8	ENEMY_stcui8nInstanceMaximum=64;
+	//	static constexpr UINT8	BGM_stacui8cMain
 	//		「ゲーム中BGM」の演奏データです。毎度おなじみドドッチドドッチ。
 	static constexpr UINT8	BGM_stacui8cMain[]=__O68K_MAKESEQUENCE(R"(
 		my($_INIT)='  C ,PG=127';
@@ -234,9 +259,9 @@ public:
 			"#JUMP=LoopStart",
 		];
 	)");
-	//	UINT8					stacui8cSE_Flag[]
+	//	UINT8					SE0_stacui8cPoint[]
 	//		「旗ゲット音」の演奏データです。
-	static constexpr _ORDERED_("SE0-00") UINT8	stacui8cSE_Flag[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr _ORDERED_("SE0-00") UINT8	SE0_stacui8cPoint[]=__O68K_MAKESEQUENCE(R"(
 	[
 		"#CHANNEL=PCM3",
 		#=============	   0
@@ -247,10 +272,10 @@ public:
 		"-           ",
 	];
 	)");
-	//	UINT8					stacui8cSE_Jump
+	//	UINT8					SE0_stacui8cJump
 	//		「ジャンプ音」の演奏データです。
 	//		「PT=+1」は連続的音程変化、つまりポルタメントです。
-	static constexpr _ORDERED_("SE0-01") UINT8	stacui8cSE_Jump[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr _ORDERED_("SE0-01") UINT8	SE0_stacui8cJump[]=__O68K_MAKESEQUENCE(R"(
 		[
 			"#CHANNEL=PCM3",
 			#=============	   0
@@ -260,9 +285,9 @@ public:
 			"-D  ,PT=+64",
 		];
 	)");
-	//	UINT8					stacui8cSE_Slip[]
+	//	UINT8					SE0_stacui8cSlip[]
 	//		「スリップ音」の演奏データです。
-	static constexpr _ORDERED_("SE0-02") UINT8	stacui8cSE_Slip[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr _ORDERED_("SE0-02") UINT8	SE0_stacui8cSlip[]=__O68K_MAKESEQUENCE(R"(
 		[
 			"#CHANNEL=PCM3",
 			#=============	   0
@@ -276,9 +301,9 @@ public:
 			"-D# ,PT=+16",
 		];
 	)");
-	//	UINT8					stacui8cSE_Walk0[]
+	//	UINT8					SE0_stacui8cWalk0[]
 	//		「歩行音(1)」の演奏データです。
-	static constexpr _ORDERED_("SE0-03") UINT8	stacui8cSE_Walk0[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr _ORDERED_("SE0-03") UINT8	SE0_stacui8cWalk0[]=__O68K_MAKESEQUENCE(R"(
 		[
 			"#CHANNEL=PCM3",
 			#=============	   0
@@ -287,9 +312,9 @@ public:
 			"-E",
 		];
 	)");
-	//	UINT8					stacui8cSE_Walk1[]
+	//	UINT8					SE0_stacui8cWalk1[]
 	//		「歩行音(2)」の演奏データです。
-	static constexpr _ORDERED_("SE0-03") UINT8	stacui8cSE_Walk1[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr _ORDERED_("SE0-03") UINT8	SE0_stacui8cWalk1[]=__O68K_MAKESEQUENCE(R"(
 		[
 			"#CHANNEL=PCM3",
 			#=============	   0
@@ -298,9 +323,9 @@ public:
 			"-G",
 		];
 	)");
-	//	UINT8					stacui8cSE_Ladder0[]
+	//	UINT8					SE0_stacui8cLadder0[]
 	//		「ハシゴ昇降音(1)」の演奏データです。
-	static constexpr _ORDERED_("SE0-03") UINT8	stacui8cSE_Ladder0[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr _ORDERED_("SE0-03") UINT8	SE0_stacui8cLadder0[]=__O68K_MAKESEQUENCE(R"(
 		[
 			"#CHANNEL=PCM3",
 			#=============	   0
@@ -309,9 +334,9 @@ public:
 			"-C# ,PT=+1",
 		];
 	)");
-	//	UINT8					stacui8cSE_Ladder1[]
+	//	UINT8					SE0_stacui8cLadder1[]
 	//		「ハシゴ昇降音(2)」の演奏データです。
-	static constexpr _ORDERED_("SE0-03") UINT8	stacui8cSE_Ladder1[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr _ORDERED_("SE0-03") UINT8	SE0_stacui8cLadder1[]=__O68K_MAKESEQUENCE(R"(
 		[
 			"#CHANNEL=PCM3",
 			#=============	   0
@@ -325,7 +350,7 @@ public:
 	//		class
 	//
 
-	//	CHARACTER
+	//	CHARACTER_
 	class CHARACTER_;
 	using					CCHARACTER_=const CHARACTER_;
 	using					PCHARACTER_=CHARACTER_*;
@@ -335,14 +360,19 @@ public:
 	using					CPLAYER=const PLAYER;
 	using					PPLAYER=PLAYER*;
 	using					PCPLAYER=CPLAYER*;
-	//	ENEMY
+	//	ENEMY_
 	class ENEMY_;
 	using					CENEMY_=const ENEMY_;
 	using					PENEMY_=ENEMY_*;
 	using					PCENEMY_=CENEMY_*;
+	//	SHELLCREEPER
+	class SHELLCREEPER;
+	using					CSHELLCREEPER=const SHELLCREEPER;
+	using					PSHELLCREEPER=SHELLCREEPER*;
+	using					PCSHELLCREEPER=CSHELLCREEPER*;
 
 	//
-	//		class:CHARACTER
+	//		class:CHARACTER_
 	//
 
 	class CHARACTER_{
@@ -358,9 +388,22 @@ public:
 			Right,					//	右向き
 			Left					//	左向き
 		};
+		//	enum class IDHIT
+		//		「当たり方」を示す定数です。
+		enum class IDHIT:UINT8{
+			None,					//	無し
+			HitR,					//	右向きに当たった(漠然と、もしくは無敵、ファイヤーボール的攻撃)
+			HitL,					//	左向きに当たった(漠然と、もしくは無敵、ファイヤーボール的攻撃)
+			TrampledR,				//	右向きに踏みつけられた
+			TrampledL,				//	左向きに踏みつけられた
+			KickedR,				//	右向きに蹴られた
+			KickedL,				//	左向きに蹴られた
+			AttackedR,				//	右向きに「自機」への攻撃成功
+			AttackedL				//	左向きに「自機」への攻撃成功
+		};
 		//	INT16					stci16nGravity
 		//		重力加速度です。
-		static constexpr INT16	stci16nGravity=2<<(stcui8nDiscardBit-3);
+		static constexpr INT16	stci16nGravity=3<<(stcui8nDiscardBit-4);
 		//	INT16					stci16nYSpeedMaximum
 		//		縦方向の最大速度です。
 		static constexpr INT16	stci16nYSpeedMaximum=4<<stcui8nDiscardBit;
@@ -369,10 +412,13 @@ public:
 		static constexpr INT16	stci16nNeighbor_Upper=8;
 
 		//
-		//		body:CHARACTER
+		//		body:CHARACTER_
 		//
 
 	protected:
+		//	PGAME					pgameOwner
+		//		紐づけされて(親となって)いる「ゲーム構造」情報です。
+		PGAME					pgameOwner;
 		//	IDDIRECTION				idDirection
 		//		「方向」を保持します。
 		IDDIRECTION				idDirection;
@@ -384,11 +430,14 @@ public:
 		//		整数状態での「位置」です。
 		//		当たり判定は整数状態で取るので、キャッシュ的に保持しておきます。
 		VECTOR2					v2iPosition_Upper;
-		//	VECTOR2					v2iPosition_PredictedUpper
+		//	VECTOR2					v2iPositionPrevious_Upper
+		//		整数状態での前フレーム「位置」です。
+		VECTOR2					v2iPositionPrevious_Upper;
+		//	VECTOR2					v2iPredictedPosition_Upper
 		//		整数状態での「仮更新位置」です。
 		//		「壁にめり込む」等の状況を避けるため「位置」、「速度」を調整しますが、
 		//		その際にこの「仮更新位置」が使われます。
-		VECTOR2					v2iPosition_PredictedUpper;
+		VECTOR2					v2iPredictedPosition_Upper;
 		//	VECTOR2					v2dVelocity
 		//		「速度」です。
 		//		この値は6bit小数点値の「固定小数点値」です。
@@ -397,13 +446,62 @@ public:
 		//		「アニメーションカウンター」です。
 		//		意味は状況に応じて変わりましょう。
 		UINT8					ui8iPattern;
+		//	OFWBOOL					eAir
+		//		前フレームが空中状態であったかどうかを保持します。
+		OFWBOOL					eAir;
 	public:
+		VOID					New(const PGAME cpgameowner)noexcept{
+			pgameOwner=cpgameowner;
+			return;
+		}
+		VOID					Delete(VOID)noexcept{
+			return;
+		}
 		//	CVECTOR2&				cv2iGetPosition(VOID)
-		//		自機の「位置」を返します。
+		//		「位置」を返します。
 		constexpr CVECTOR2&		cv2iGetPosition(VOID)const noexcept{
 			return v2iPosition;
 		}
 	protected:
+		//	IDHIT					stidGetHit(const IDDIRECTION ciddirectionthis,CVECTOR2& cv2ithisposition_upper,CVECTOR2& cv2dthisoffsetr_upper,CVECTOR2& cv2nthishithalf_upper,const IDDIRECTION ciddirectionsource,CVECTOR2& cv2isourceposition_upper,CVECTOR2& cv2dsourceoffsetr_upper,CVECTOR2& cv2nsourcehithalf_upper)
+		//		「判定対象『source』から見て『this』にどう当たっているか」を返します。
+		//		「source」から見て右寄りに当たっていれば「IDHIT::HitR」、左寄りに当たっていれば「IDHIT::HitL」、
+		//		そして当たっていなければ「IDHIT::None」で、返される値は3通りです。
+		//		横座標完全一致状態で当たっていた場合は、「this」の向きで「IDHIT::HitR」、「IDHIT::HitL」のどちらを返すか決定します。
+		//		ドット単位オフセット位置「cv2dthisoffsetr_upper」、「cv2dsourceoffsetr_upper」は常に「右方向」指定である事に注意してください。
+		//		方向指定「ciddirectionthis」、「ciddirectionsource」によって適切に解釈されます。
+		//		なお、「VECTOR2::eIsHit」と異なり衝突条件は幅「以下」でなく幅「未満」です。
+		//		よって幅「ゼロ」は「絶対に当たらない」扱いになります。
+		static constexpr IDHIT	stidGetHit(const IDDIRECTION ciddirectionthis,CVECTOR2& cv2ithisposition_upper,CVECTOR2& cv2dthisoffsetr_upper,CVECTOR2& cv2nthishithalf_upper,const IDDIRECTION ciddirectionsource,CVECTOR2& cv2isourceposition_upper,CVECTOR2& cv2dsourceoffsetr_upper,CVECTOR2& cv2nsourcehithalf_upper)noexcept{
+			if(cv2nthishithalf_upper.i16nWidth()&&cv2nsourcehithalf_upper.i16nWidth()){
+				if(
+					CAUTO
+						cv2ithis_upper=cv2ithisposition_upper+stv2dGetOffset_Upper(ciddirectionthis,cv2dthisoffsetr_upper),
+						cv2isource_upper=cv2isourceposition_upper+stv2dGetOffset_Upper(ciddirectionsource,cv2dsourceoffsetr_upper);
+					cv2ithis_upper.eIsHit1024(
+						{
+							INT16(cv2nthishithalf_upper.i16nWidth()-1),
+							INT16(cv2nthishithalf_upper.i16nHeight()-1)
+						},
+						cv2isource_upper,
+						{
+							INT16(cv2nsourcehithalf_upper.i16nWidth()-1),
+							INT16(cv2nsourcehithalf_upper.i16nHeight()-1)
+						}
+					)
+				){
+					CAUTO					ci16doffset=INT16((cv2ithis_upper.i16iX()-cv2isource_upper.i16iX())<<stcui8nDiscardBit);
+
+					switch(ciddirectionthis){
+					case IDDIRECTION::Right:
+						return (0<ci16doffset)?IDHIT::HitR:IDHIT::HitL;
+					case IDDIRECTION::Left:
+						return (0<=ci16doffset)?IDHIT::HitR:IDHIT::HitL;
+					}
+				}
+			}
+			return IDHIT::None;
+		}
 		//	INT16					sti16iGetPosition_Upper(CINT16 ci16iposition)
 		//		「固定小数点値」たる「ci16iposition」を「整数値」に変換して返します。
 		//		「6bit小数点値」であるので、下記のような対応で値を返します。
@@ -450,115 +548,172 @@ public:
 		static constexpr INT16	sti16iGetPositionN(CINT16 ci16iposition_upper)noexcept{
 			return INT16((ci16iposition_upper<<stcui8nDiscardBit)+(1<<(stcui8nDiscardBit-1))-1);
 		}
-		//	INT16					sti16dGetOffsetUpperHalfR(CINT16 ci16nupperhalf)
-		//		判定幅ドット数(の半分)の値「ci16nupperhalf」を、右方向のオフセット値として返します。
+		//	INT16					sti16dGetOffset_Upper(const IDDIRECTION ciddirection,CVECTOR2& cv2doffset_upper)
+		//		右方向ドット単位オフセット位置「cv2doffset_upper」を、「ciddirection」に応じたオフセット位置として返します。
+		static constexpr VECTOR2	stv2dGetOffset_Upper(const IDDIRECTION ciddirection,CVECTOR2& cv2doffsetr_upper)noexcept{
+			return (ciddirection==IDDIRECTION::Right)?stv2dGetOffset_UpperR(cv2doffsetr_upper):stv2dGetOffset_UpperL(cv2doffsetr_upper);
+		}
+		//	VECTOR2					stv2dGetOffset_UpperR(CVECTOR2& cv2doffset_upper)
+		//		右方向ドット単位オフセット位置「cv2doffset_upper」を、右方向のオフセット位置として返します。
 		//		この関数は「値そのもの」を返しますが、
 		//		左右対称とするには正負で「1ドットのズレ」が起きるため、明示化する事にしています。
-		static constexpr INT16	sti16dGetOffsetUpperHalfR(CINT16 ci16nupperhalf)noexcept{
-			return INT16(+ci16nupperhalf+0);
+		static constexpr VECTOR2	stv2dGetOffset_UpperR(CVECTOR2& cv2doffsetr_upper)noexcept{
+			return {
+				sti16dGetOffset_UpperR(cv2doffsetr_upper.i16iX()),
+				cv2doffsetr_upper.i16iY()
+			};
 		}
-		//	INT16					sti16dGetOffsetUpperHalfL(CINT16 ci16nupperhalf)
-		//		判定幅ドット数(の半分)の値「ci16nupperhalf」を、左方向のオフセット値として返します。
+		//	VECTOR2					stv2dGetOffset_UpperL(CVECTOR2& cv2doffset_upper)
+		//		右方向ドット単位オフセット位置「cv2doffset_upper」を、左方向のオフセット位置として返します。
+		//		左右対称とするためX座標には正負で「1ドットのズレ」があります。
+		static constexpr VECTOR2	stv2dGetOffset_UpperL(CVECTOR2& cv2doffsetr_upper)noexcept{
+			return {
+				sti16dGetOffset_UpperL(cv2doffsetr_upper.i16iX()),
+				cv2doffsetr_upper.i16iY()
+			};
+		}
+		//	INT16					sti16dGetOffset_Upper(const IDDIRECTION ciddirection,CINT16 ci16nsize_upper)
+		//		ドット数「ci16nsize_upper」を、「ciddirection」に応じたオフセット値として返します。
+		//		「ドット数」は、場合により「正のオフセット値」であったり「判定幅の半分の値」であったりするでしょう。
+		static constexpr INT16	sti16dGetOffset_Upper(const IDDIRECTION ciddirection,CINT16 ci16nsize_upper)noexcept{
+			return (ciddirection==IDDIRECTION::Right)?sti16dGetOffset_UpperR(ci16nsize_upper):sti16dGetOffset_UpperL(ci16nsize_upper);
+		}
+		//	INT16					sti16dGetOffset_UpperR(CINT16 ci16nsize_upper)
+		//		ドット数「ci16nsize_upper」を、右方向のオフセット値として返します。
+		//		「ドット数」は、場合により「正のオフセット値」であったり「判定幅の半分の値」であったりするでしょう。
+		//		この関数は「値そのもの」を返しますが、
+		//		左右対称とするには正負で「1ドットのズレ」が起きるため、明示化する事にしています。
+		static constexpr INT16	sti16dGetOffset_UpperR(CINT16 ci16nsize_upper)noexcept{
+			return INT16(+ci16nsize_upper+0);
+		}
+		//	INT16					sti16dGetOffset_UpperL(CINT16 ci16nsize_upper)
+		//		ドット数「ci16nsize_upper」を、左方向のオフセット値として返します。
+		//		「ドット数」は、場合により「正のオフセット値」であったり「判定幅の半分の値」であったりするでしょう。
 		//		左右対称とするため正負で「1ドットのズレ」があり、
-		//		この関数は「ci16nupperhalf-1」を返します。
-		static constexpr INT16	sti16dGetOffsetUpperHalfL(CINT16 ci16nupperhalf)noexcept{
-			return INT16(-ci16nupperhalf-1);
+		//		この関数は「-ci16nsize_upper-1」を返します。
+		static constexpr INT16	sti16dGetOffset_UpperL(CINT16 ci16nsize_upper)noexcept{
+			return INT16(-ci16nsize_upper-1);
 		}
 		//	VOID					UpdatePosition(VOID)
 		//		「速度」を足して「位置」を更新し、
 		//		セットで整数状態での「位置」を設定します。
 		constexpr VOID			UpdatePosition(VOID)noexcept{
 			v2iPosition+=v2dVelocity;
+			v2iPositionPrevious_Upper=v2iPosition_Upper;
 			v2iPosition_Upper=stv2iGetPosition_Upper(v2iPosition);
 			return;
 		}
 		//	VOID					PredictPosition_Upper(VOID)
 		//		現状の「位置」と「速度」から整数状態での「仮更新位置」を設定します。
 		constexpr VOID			PredictPosition_Upper(VOID)noexcept{
-			v2iPosition_PredictedUpper=stv2iGetPosition_Upper(v2iPosition+v2dVelocity);
+			v2iPredictedPosition_Upper=stv2iGetPosition_Upper(v2iPosition+v2dVelocity);
 			return;
 		}
-		//	INT16					i16iGetPositionX_UpperR(CINT16 ci16nwidth_upperhalf)
-		//		整数状態での「位置」X座標に、幅ドット数(の半分)の値「ci16nupperhalf」を右方向のオフセットとして加算した結果を返します。
-		constexpr INT16			i16iGetPositionX_UpperR(CINT16 ci16nupperhalf)const noexcept{
-			return INT16(v2iPosition_Upper.i16iX()+sti16dGetOffsetUpperHalfR(ci16nupperhalf));
+		//	INT16					i16iGetPositionXR_Upper(CINT16 ci16nhalf_upper)
+		//		整数状態での「位置」X座標に、幅ドット数(の半分)の値「ci16nhalf_upper」を右方向のオフセットとして加算した結果を返します。
+		constexpr INT16			i16iGetPositionXR_Upper(CINT16 ci16nhalf_upper)const noexcept{
+			return INT16(v2iPosition_Upper.i16iX()+sti16dGetOffset_UpperR(ci16nhalf_upper));
 		}
-		//	INT16					i16iGetPositionX_UpperL(CINT16 ci16nupperhalf)
-		//		整数状態での「位置」X座標に、幅ドット数(の半分)の値「ci16nupperhalf」を左方向のオフセットとして加算した結果を返します。
-		constexpr INT16			i16iGetPositionX_UpperL(CINT16 ci16nupperhalf)const noexcept{
-			return INT16(v2iPosition_Upper.i16iX()+sti16dGetOffsetUpperHalfL(ci16nupperhalf));
+		//	INT16					i16iGetPositionXL_Upper(CINT16 ci16nhalf_upper)
+		//		整数状態での「位置」X座標に、幅ドット数(の半分)の値「ci16nhalf_upper」を左方向のオフセットとして加算した結果を返します。
+		constexpr INT16			i16iGetPositionXL_Upper(CINT16 ci16nhalf_upper)const noexcept{
+			return INT16(v2iPosition_Upper.i16iX()+sti16dGetOffset_UpperL(ci16nhalf_upper));
 		}
-		//	INT16					i16iGetPositionX_UpperCR(VOID)
+		//	INT16					i16iGetPositionXCR_Upper(VOID)
 		//		整数状態での「位置」X座標そのものを右方向補正した結果を返します。
-		constexpr INT16			i16iGetPositionX_UpperCR(VOID)const noexcept{
-			return i16iGetPositionX_UpperR(0);
+		constexpr INT16			i16iGetPositionXCR_Upper(VOID)const noexcept{
+			return i16iGetPositionXR_Upper(0);
 		}
-		//	INT16					i16iGetPositionX_UpperCL(VOID)
+		//	INT16					i16iGetPositionXCL_Upper(VOID)
 		//		整数状態での「位置」X座標そのものを左方向補正した結果を返します。
-		constexpr INT16			i16iGetPositionX_UpperCL(VOID)const noexcept{
-			return i16iGetPositionX_UpperL(0);
+		constexpr INT16			i16iGetPositionXCL_Upper(VOID)const noexcept{
+			return i16iGetPositionXL_Upper(0);
 		}
-		//	INT16					i16iGetPositionX_UpperNeighborR(VOID)
+		//	INT16					i16iGetPositionXNeighborR_Upper(VOID)
 		//		整数状態での「位置」の右隣キャラクタX座標を返します。
-		constexpr INT16			i16iGetPositionX_UpperNeighborR(VOID)const noexcept{
-			return i16iGetPositionX_UpperR(stci16nNeighbor_Upper);
+		constexpr INT16			i16iGetPositionXNeighborR_Upper(VOID)const noexcept{
+			return i16iGetPositionXR_Upper(stci16nNeighbor_Upper);
 		}
-		//	INT16					i16iGetPositionX_UpperNeighborL(VOID)
+		//	INT16					i16iGetPositionXNeighborL_Upper(VOID)
 		//		整数状態での「位置」の左隣キャラクタX座標を返します。
-		constexpr INT16			i16iGetPositionX_UpperNeighborL(VOID)const noexcept{
-			return i16iGetPositionX_UpperL(stci16nNeighbor_Upper);
+		constexpr INT16			i16iGetPositionXNeighborL_Upper(VOID)const noexcept{
+			return i16iGetPositionXL_Upper(stci16nNeighbor_Upper);
 		}
-		//	INT16					i16iGetPositionY_UpperD7(VOID)
+		//	INT16					i16iGetPositionYD7_Upper(VOID)
 		//		整数状態での「位置」Y座標より7ドット下の位置を返します。
 		//		これはキャラクタ範囲に「含まれる」最下位置(足元)の位置です。
-		constexpr INT16			i16iGetPositionY_UpperD7(VOID)const noexcept{
+		constexpr INT16			i16iGetPositionYD7_Upper(VOID)const noexcept{
 			return INT16(v2iPosition_Upper.i16iY()+7);
 		}
-		//	INT16					i16iGetPositionY_UpperD8(VOID)
+		//	INT16					i16iGetPositionYD8_Upper(VOID)
 		//		整数状態での「位置」Y座標より8ドット下の位置を返します。
 		//		これはキャラクタ範囲に「含まれない」足元直下の位置です。
-		constexpr INT16			i16iGetPositionY_UpperD8(VOID)const noexcept{
+		constexpr INT16			i16iGetPositionYD8_Upper(VOID)const noexcept{
 			return INT16(v2iPosition_Upper.i16iY()+8);
 		}
-		//	INT16					i16iGetPositionY_UpperU0(VOID)
+		//	INT16					i16iGetPositionYU0_Upper(VOID)
 		//		整数状態での「位置」Y座標より0ドット上の位置、つまりY座標そのものを返します。
 		//		これはキャラクタ「下半分」の最上位置です。
-		constexpr INT16			i16iGetPositionY_UpperU0(VOID)const noexcept{
+		constexpr INT16			i16iGetPositionYU0_Upper(VOID)const noexcept{
 			return v2iPosition_Upper.i16iY();
 		}
-		//	INT16					i16iGetPositionY_UpperU8(VOID)
+		//	INT16					i16iGetPositionYU1_Upper(VOID)
+		//		整数状態での「位置」Y座標より8ドット上の位置を返します。
+		//		これはキャラクタ範囲に「含まれる」最下位置(足元)の位置からちょうど8ドット上に当たる位置です。
+		constexpr INT16			i16iGetPositionYU1_Upper(VOID)const noexcept{
+			return INT16(v2iPosition_Upper.i16iY()-1);
+		}
+		//	INT16					i16iGetPositionYU8_Upper(VOID)
 		//		整数状態での「位置」Y座標より8ドット上の位置を返します。
 		//		これはキャラクタ範囲に「含まれる」最上位置(頭上)です。
-		constexpr INT16			i16iGetPositionY_UpperU8(VOID)const noexcept{
+		constexpr INT16			i16iGetPositionYU8_Upper(VOID)const noexcept{
 			return INT16(v2iPosition_Upper.i16iY()-8);
 		}
-		//	INT16					i16iGetPositionX_PredictedUpperR(CINT16 ci16nwidth_upperhalf)
-		//		整数状態での「仮更新位置」X座標に、幅ドット数(の半分)の値「ci16nupperhalf」を右方向のオフセットとして加算した結果を返します。
-		constexpr INT16			i16iGetPositionX_PredictedUpperR(CINT16 ci16nupperhalf)const noexcept{
-			return INT16(v2iPosition_PredictedUpper.i16iX()+sti16dGetOffsetUpperHalfR(ci16nupperhalf));
+		//	INT16					i16iGetPositionYU9_Upper(VOID)
+		//		整数状態での「位置」Y座標より9ドット上の位置を返します。
+		//		これはキャラクタ範囲に「含まれない」頭上直上の位置です。
+		constexpr INT16			i16iGetPositionYU9_Upper(VOID)const noexcept{
+			return INT16(v2iPosition_Upper.i16iY()-9);
 		}
-		//	INT16					i16iGetPositionX_PredictedUpperL(CINT16 ci16nupperhalf)
-		//		整数状態での「仮更新位置」X座標に、幅ドット数(の半分)の値「ci16nupperhalf」を左方向のオフセットとして加算した結果を返します。
-		constexpr INT16			i16iGetPositionX_PredictedUpperL(CINT16 ci16nupperhalf)const noexcept{
-			return INT16(v2iPosition_PredictedUpper.i16iX()+sti16dGetOffsetUpperHalfL(ci16nupperhalf));
+		//	INT16					i16iGetPredictedPositionXR_Upper(CINT16 ci16nhalf_upper)
+		//		整数状態での「仮更新位置」X座標に、幅ドット数(の半分)の値「ci16nhalf_upper」を右方向のオフセットとして加算した結果を返します。
+		constexpr INT16			i16iGetPredictedPositionXR_Upper(CINT16 ci16nhalf_upper)const noexcept{
+			return INT16(v2iPredictedPosition_Upper.i16iX()+sti16dGetOffset_UpperR(ci16nhalf_upper));
 		}
-		//	INT16					i16iGetPositionY_PredictedUpperD7(VOID)
+		//	INT16					i16iGetPositionPredictedXL_Upper(CINT16 ci16nhalf_upper)
+		//		整数状態での「仮更新位置」X座標に、幅ドット数(の半分)の値「ci16nhalf_upper」を左方向のオフセットとして加算した結果を返します。
+		constexpr INT16			i16iGetPositionPredictedXL_Upper(CINT16 ci16nhalf_upper)const noexcept{
+			return INT16(v2iPredictedPosition_Upper.i16iX()+sti16dGetOffset_UpperL(ci16nhalf_upper));
+		}
+		//	INT16					i16iGetPredictedPositionYD7_Upper(VOID)
 		//		整数状態での「仮更新位置」Y座標より7ドット下の位置を返します。
 		//		これはキャラクタ範囲に「含まれる」最下位置(足元)の位置です。
-		constexpr INT16			i16iGetPositionY_PredictedUpperD7(VOID)const noexcept{
-			return INT16(v2iPosition_PredictedUpper.i16iY()+7);
+		constexpr INT16			i16iGetPredictedPositionYD7_Upper(VOID)const noexcept{
+			return INT16(v2iPredictedPosition_Upper.i16iY()+7);
 		}
-		//	INT16					i16iGetPositionY_PredictedUpperU1(VOID)
+		//	INT16					i16iGetPredictedPositionYU0_Upper(VOID)
 		//		整数状態での「仮更新位置」Y座標より0ドット上の位置、つまりY座標そのものを返します。
 		//		これはキャラクタ「下半分」の最上位置です。
-		constexpr INT16			i16iGetPositionY_PredictedUpperU0(VOID)const noexcept{
-			return v2iPosition_PredictedUpper.i16iY();
+		constexpr INT16			i16iGetPredictedPositionYU0_Upper(VOID)const noexcept{
+			return v2iPredictedPosition_Upper.i16iY();
 		}
-		//	INT16					i16iGetPositionY_PredictedUpperU8(VOID)
+		//	INT16					i16iGetPredictedPositionYU1_Upper(VOID)
+		//		整数状態での「仮更新位置」Y座標より1ドット上の位置を返します。
+		//		これはキャラクタ範囲に「含まれる」最下位置(足元)の位置からちょうど8ドット上に当たる位置です。
+		constexpr INT16			i16iGetPredictedPositionYU1_Upper(VOID)const noexcept{
+			return INT16(v2iPredictedPosition_Upper.i16iY()-1);
+		}
+		//	INT16					i16iGetPredictedPositionYU8_Upper(VOID)
 		//		整数状態での「仮更新位置」Y座標より8ドット上の位置を返します。
 		//		これはキャラクタ範囲に「含まれる」最上位置(頭上)です。
-		constexpr INT16			i16iGetPositionY_PredictedUpperU8(VOID)const noexcept{
-			return INT16(v2iPosition_PredictedUpper.i16iY()-8);
+		constexpr INT16			i16iGetPredictedPositionYU8_Upper(VOID)const noexcept{
+			return INT16(v2iPredictedPosition_Upper.i16iY()-8);
+		}
+		//	INT16					i16iGetPredictedPositionYU9_Upper(VOID)
+		//		整数状態での「仮更新位置」Y座標より8ドット上の位置を返します。
+		//		これはキャラクタ範囲に「含まれない」頭上直上の位置です。
+		constexpr INT16			i16iGetPredictedPositionYU9_Upper(VOID)const noexcept{
+			return INT16(v2iPredictedPosition_Upper.i16iY()-9);
 		}
 		//	VOID					SetVelocityX_Zero(VOID)
 		//		速度「v2dVelocity」のX成分をゼロに設定します。
@@ -638,43 +793,44 @@ public:
 			v2dVelocity.i16iY()=STD::stxGetMinimum(INT16(v2dVelocity.i16iY()+stci16nGravity),INT16(+stci16nYSpeedMaximum));
 			return;
 		}
-		//	OFWBOOL					eIsCollidingX(CINT16 ci16ncollisionwidth_upperhalf,CINT16 ci16dyoffset)
+		//	OFWBOOL					eIsCollidingX(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset)
 		//		横移動で壁に衝突するかどうかを「仮更新位置」で判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
-		//		「ci16dyoffset」は判定対象とする「足元位置」に対する補正で、
+		//		「ci16dyoffset」は判定対象とする「足元位置」へのタテ位置補正で、
 		//		「正(下)」方向であると「地面」にめり込む事になるので、地形があれば壁衝突判定扱いになります。
 		//		「負(上)」方向であるとめり込みにくくなるので、多少の穴は踏み越える事になります。
-		_INLINE_ OFWBOOL		eIsCollidingX(CINT16 ci16ncollisionwidth_upperhalf,CINT16 ci16dyoffset=0)noexcept{
-			if(0<v2dVelocity.i16iX())return eIsCollidingR(ci16ncollisionwidth_upperhalf,ci16dyoffset);
-			else if(v2dVelocity.i16iX()<0)return eIsCollidingL(ci16ncollisionwidth_upperhalf,ci16dyoffset);
+		_INLINE_ OFWBOOL		eIsCollidingX(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset=0)noexcept{
+			if(0<v2dVelocity.i16iX())return eIsCollidingR(ci16ncollisionwidthhalf_upper,ci16dyoffset);
+			else if(v2dVelocity.i16iX()<0)return eIsCollidingL(ci16ncollisionwidthhalf_upper,ci16dyoffset);
 			return FALSE;
 		}
-		//	OFWBOOL					eIsCollidingR(CINT16 ci16ncollisionwidth_upperhalf,CINT16 ci16dyoffset)
+		//	OFWBOOL					eIsCollidingR(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset)
 		//		右移動で壁に衝突するかどうかを「仮更新位置」で判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
-		//		「ci16dyoffset」は判定対象とする「足元位置」に対する補正で、
+		//		「ci16dyoffset」は判定対象とする「足元位置」へのタテ位置補正で、
 		//		「正(下)」方向であると「地面」にめり込む事になるので、地形があれば壁衝突判定扱いになります。
 		//		「負(上)」方向であるとめり込みにくくなるので、多少の穴は踏み越える事になります。
-		_INLINE_ OFWBOOL		eIsCollidingR(CINT16 ci16ncollisionwidth_upperhalf,CINT16 ci16dyoffset=0)noexcept{
+		_INLINE_ OFWBOOL		eIsCollidingR(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset=0)noexcept{
 			//	INT16					ci16ix
-			//		左右衝突で判定すべき「幅」は、「判定幅ドット数」より1ドット広い値である必要がある。
-			//		なぜならビタ一致で「足場が無くて落下」判定になる必要があるから。
-			CAUTO					ci16ix=i16iGetPositionX_PredictedUpperR(ci16ncollisionwidth_upperhalf);
+			//		「仮更新位置」X座標ベースの「右端」です。
+			//		「仮更新位置」ベースであるので、めり込みが生じている可能性があります。
+			CAUTO					ci16ix=i16iGetPredictedPositionXR_Upper(ci16ncollisionwidthhalf_upper);
 			//	UINT8					map_cui8crd
-			//		右衝突判定に使用する「マップパーツ」を保持しますが、
-			//		ポイントはY座標が「現状値」という事で、
-			//		これを「予測値」にしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
-			CAUTO					map_cui8crd=MAP_stui8cReadPattern({ci16ix,INT16(i16iGetPositionY_UpperD7()+ci16dyoffset)});
+			//		右衝突判定に使用する「足元」右端の「マップパーツ」を保持します。
+			//		「ci16dyoffset」によるタテ位置補正がかかります。
+			//		ポイントはY座標が「現状位置」ベースである事で、
+			//		これを「仮更新位置」ベースにしてしまうと「横壁ぶつかり誤認されてブレーキかかる」等の問題が起きます。
+			CAUTO					map_cui8crd=MAP_stui8cReadPattern({ci16ix,INT16(i16iGetPositionYD7_Upper()+ci16dyoffset)});
 			//	UINT8					map_cui8crm
-			//		右衝突判定に使用する「マップパーツ」を保持しますが、
-			//		ポイントはY座標が「現状値」という事で、
-			//		これを「予測値」にしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
-			CAUTO					map_cui8crm=MAP_stui8cReadPattern({ci16ix,i16iGetPositionY_UpperU0()});
+			//		右衝突判定に使用する「中央」右端の「マップパーツ」を保持します。
+			//		ポイントはY座標が「現状位置」ベースである事で、
+			//		これを「仮更新位置」ベースにしてしまうと「横壁ぶつかり誤認されてブレーキかかる」等の問題が起きます。
+			CAUTO					map_cui8crm=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYU0_Upper()});
 			//	UINT8					map_cui8cru
-			//		右衝突判定に使用する「マップパーツ」を保持しますが、
-			//		ポイントはY座標が「現状値」という事で、
-			//		これを「予測値」にしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
-			CAUTO					map_cui8cru=MAP_stui8cReadPattern({ci16ix,i16iGetPositionY_UpperU8()});
+			//		右衝突判定に使用する「頭上」右端の「マップパーツ」を保持します。
+			//		ポイントはY座標が「現状位置」ベースである事で、
+			//		これを「仮更新位置」ベースにしてしまうと「横壁ぶつかり誤認されてブレーキかかる」等の問題が起きます。
+			CAUTO					map_cui8cru=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYU8_Upper()});
 
 			if(
 				(!MAP_steIsMovable(map_cui8crd))||
@@ -684,39 +840,40 @@ public:
 				//	今のままだと壁にめり込むので補正をかける。
 				//	「左に戻す(減算する)」方向で「ci16ix+1」がキリになるように補正する。
 				v2iPosition.i16iX()=sti16iGetPositionP(
-					v2iPosition_PredictedUpper.i16iX()-((0+(ci16ix+1))&7)
+					v2iPredictedPosition_Upper.i16iX()-((0+(ci16ix+1))&7)
 				);
 				SetVelocityX_Zero();
 				return TRUE;
 			}
 			return FALSE;
 		}
-		//	OFWBOOL					eIsCollidingL(CINT16 ci16ncollisionwidth_upperhalf,CINT16 ci16dyoffset)
+		//	OFWBOOL					eIsCollidingL(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset)
 		//		左移動で壁に衝突するかどうかを「仮更新位置」で判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
-		//		「ci16dyoffset」は判定対象とする「足元位置」に対する補正で、
+		//		「ci16dyoffset」は判定対象とする「足元位置」へのタテ位置補正で、
 		//		「正(下)」方向であると「地面」にめり込む事になるので、地形があれば壁衝突判定扱いになります。
 		//		「負(上)」方向であるとめり込みにくくなるので、多少の穴は踏み越える事になります。
-		_INLINE_ OFWBOOL		eIsCollidingL(CINT16 ci16ncollisionwidth_upperhalf,CINT16 ci16dyoffset=0)noexcept{
-			//	INT16					ci16doffset
-			//		左右衝突で判定すべき「幅」は、「判定幅ドット数」より1ドット広い値である必要がある。
-			//		なぜならビタ一致で「足場が無くて落下」判定になる必要があるから。
-			CAUTO					ci16ix=i16iGetPositionX_PredictedUpperL(ci16ncollisionwidth_upperhalf);
+		_INLINE_ OFWBOOL		eIsCollidingL(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset=0)noexcept{
+			//	INT16					ci16ix
+			//		「仮更新位置」X座標ベースの「左端」です。
+			//		「仮更新位置」ベースであるので、めり込みが生じている可能性があります。
+			CAUTO					ci16ix=i16iGetPositionPredictedXL_Upper(ci16ncollisionwidthhalf_upper);
 			//	UINT8					map_cui8cld
-			//		左衝突判定に使用する「マップパーツ」を保持しますが、
-			//		ポイントはY座標が「現状値」という事で、
-			//		これを「予測値」にしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
-			CAUTO					map_cui8cld=MAP_stui8cReadPattern({ci16ix,INT16(i16iGetPositionY_UpperD7()+ci16dyoffset)});
+			//		左衝突判定に使用する「足元」左端の「マップパーツ」を保持します。
+			//		「ci16dyoffset」によるタテ位置補正がかかります。
+			//		ポイントはY座標が「現状位置」ベースである事で、
+			//		これを「仮更新位置」ベースにしてしまうと「横壁ぶつかり誤認されてブレーキかかる」等の問題が起きます。
+			CAUTO					map_cui8cld=MAP_stui8cReadPattern({ci16ix,INT16(i16iGetPositionYD7_Upper()+ci16dyoffset)});
 			//	UINT8					map_cui8clm
-			//		左衝突判定に使用する「マップパーツ」を保持しますが、
-			//		ポイントはY座標が「現状値」という事で、
-			//		これを「予測値」にしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
-			CAUTO					map_cui8clm=MAP_stui8cReadPattern({ci16ix,i16iGetPositionY_UpperU0()});
+			//		左衝突判定に使用する「中央」左端の「マップパーツ」を保持します。
+			//		ポイントはY座標が「現状位置」ベースである事で、
+			//		これを「仮更新位置」ベースにしてしまうと「横壁ぶつかり誤認されてブレーキかかる」等の問題が起きます。
+			CAUTO					map_cui8clm=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYU0_Upper()});
 			//	UINT8					map_cui8clu
-			//		左衝突判定に使用する「マップパーツ」を保持しますが、
-			//		ポイントはY座標が「現状値」という事で、
-			//		これを「予測値」にしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
-			CAUTO					map_cui8clu=MAP_stui8cReadPattern({ci16ix,i16iGetPositionY_UpperU8()});
+			//		左衝突判定に使用する「頭上」左端の「マップパーツ」を保持します。
+			//		ポイントはY座標が「現状位置」ベースである事で、
+			//		これを「仮更新位置」ベースにしてしまうと「横壁ぶつかり誤認されてブレーキかかる」等の問題が起きます。
+			CAUTO					map_cui8clu=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYU8_Upper()});
 
 			if(
 				(!MAP_steIsMovable(map_cui8cld))||
@@ -726,70 +883,152 @@ public:
 				//	今のままだと壁にめり込むので補正をかける。
 				//	「右に戻す(加算)」方向で「ci16ix-1」がキリになるように補正する。
 				v2iPosition.i16iX()=sti16iGetPositionN(
-					v2iPosition_PredictedUpper.i16iX()+((7-(ci16ix-1))&7)
+					v2iPredictedPosition_Upper.i16iX()+((7-(ci16ix-1))&7)
 				);
 				SetVelocityX_Zero();
 				return TRUE;
 			}
 			return FALSE;
 		}
-		//	OFWBOOL					eIsCollidingD(CINT16 ci16ncollisionwidth_upperhalf)
+		//	OFWBOOL					eIsCollidingD(CINT16 ci16ncollisionwidthhalf_upper)
 		//		下移動で壁に衝突するかどうかを「仮更新位置」で判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
-		_INLINE_ OFWBOOL		eIsCollidingD(CINT16 ci16ncollisionwidth_upperhalf)noexcept{
-			CAUTO					ci16iy=i16iGetPositionY_PredictedUpperD7();
-			//	UINT8					map_cui8crd
-			//		下衝突判定に使用する「マップパーツ」を保持しますが、
-			//		ポイントはX座標が「現状値」という事で、
-			//		これを「予測値」にしてしまうと「横壁ぶつかり誤認されてブレーキかかる」等の問題が起きます。
-			CAUTO					map_cui8crd=MAP_stui8cReadPattern({i16iGetPositionX_UpperR(ci16ncollisionwidth_upperhalf),ci16iy});
-			//	UINT8					map_cui8cld
-			//		下衝突判定に使用する「マップパーツ」を保持しますが、
-			//		ポイントはX座標が「現状値」という事で、
-			//		これを「予測値」にしてしまうと「横壁ぶつかり誤認されてブレーキかかる」等の問題が起きます。
-			CAUTO					map_cui8cld=MAP_stui8cReadPattern({i16iGetPositionX_UpperL(ci16ncollisionwidth_upperhalf),ci16iy});
+		_INLINE_ OFWBOOL		eIsCollidingD(CINT16 ci16ncollisionwidthhalf_upper)noexcept{
+			//	INT16					ci16ixr
+			//		「現状位置」X座標ベースの「右端」です。
+			//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
+			CAUTO					ci16ixr=i16iGetPositionXR_Upper(ci16ncollisionwidthhalf_upper);
+			//	INT16					ci16ixl
+			//		「現状位置」X座標ベースの「左端」です。
+			//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
+			CAUTO					ci16ixl=i16iGetPositionXL_Upper(ci16ncollisionwidthhalf_upper);
+			//	INT16					ci16iyc
+			//		「仮更新位置」Y座標ベースの「中央」です。
+			//		「仮更新位置」であるので、めり込みが生じている可能性があります。
+			CAUTO					ci16iyc=i16iGetPredictedPositionYU1_Upper();
+			//	UINT8					map_cui8crc
+			//		下衝突判定に使用する「中央」右端の「マップパーツ」を保持します。
+			//		ポイントはX座標が「現状位置」ベースである事で、
+			//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
+			CAUTO					map_cui8crc=MAP_stui8cReadPattern({ci16ixr,ci16iyc});
+			//	UINT8					map_cui8clc
+			//		下衝突判定に使用する「中央」左端の「マップパーツ」を保持します。
+			//		ポイントはX座標が「現状位置」ベースである事で、
+			//		これを「仮更新位置」にしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
+			CAUTO					map_cui8clc=MAP_stui8cReadPattern({ci16ixl,ci16iyc});
 
 			if(
-				(!MAP_steIsMovable(map_cui8crd))||
-				(!MAP_steIsMovable(map_cui8cld))
+				(!MAP_steIsMovable(map_cui8crc))||
+				(!MAP_steIsMovable(map_cui8clc))
 			){
-				//	足元は「足場」であった。
+				//	足元と言うより中央が既に「足場」であった。
 				//	「ハシゴ」は素通し扱いする。
 				v2iPosition.i16iY()=sti16iGetPositionP(
-					v2iPosition_PredictedUpper.i16iY()&INT16(~7)
+					(v2iPredictedPosition_Upper.i16iY()&INT16(~7))-8
 				);
 				SetVelocityY_Zero();
+				eAir=FALSE;
 				return TRUE;
+			}else{
+				//	INT16					ci16iyd
+				//		「仮更新位置」Y座標ベースの「足元」です。
+				//		「仮更新位置」であるので、めり込みが生じている可能性があります。
+				CAUTO					ci16iyd=i16iGetPredictedPositionYD7_Upper();
+				//	UINT8					map_cui8crd
+				//		下衝突判定に使用する「足元」右端の「マップパーツ」を保持します。
+				//		ポイントはX座標が「現状位置」ベースである事で、
+				//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
+				CAUTO					map_cui8crd=MAP_stui8cReadPattern({ci16ixr,ci16iyd});
+				//	UINT8					map_cui8cld
+				//		下衝突判定に使用する「足元」左端の「マップパーツ」を保持します。
+				//		ポイントはX座標が「現状位置」ベースである事で、
+				//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
+				CAUTO					map_cui8cld=MAP_stui8cReadPattern({ci16ixl,ci16iyd});
+
+				if(
+					(!MAP_steIsMovable(map_cui8crd))||
+					(!MAP_steIsMovable(map_cui8cld))
+				){
+					//	足元は「足場」であった。
+					//	「ハシゴ」は素通し扱いする。
+					v2iPosition.i16iY()=sti16iGetPositionP(
+						v2iPredictedPosition_Upper.i16iY()&INT16(~7)
+					);
+					SetVelocityY_Zero();
+					eAir=FALSE;
+					return TRUE;
+				}
 			}
+			eAir=TRUE;
 			return FALSE;
 		}
-		//	OFWBOOL					eIsCollidingU(CINT16 ci16ncollisionwidth_upperhalf)
+		//	OFWBOOL					eIsCollidingU(CINT16 ci16ncollisionwidthhalf_upper)
 		//		上移動で壁に衝突するかどうかを「仮更新位置」で判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
-		_INLINE_ OFWBOOL		eIsCollidingU(CINT16 ci16ncollisionwidth_upperhalf)noexcept{
-			CAUTO					ci16iy=i16iGetPositionY_PredictedUpperU8();
-			//	UINT8					map_cui8cru
-			//		上衝突判定に使用する「マップパーツ」を保持しますが、
-			//		ポイントはX座標が「現状値」という事で、
-			//		これを「予測値」にしてしまうと「横壁ぶつかり誤認されてブレーキかかる」等の問題が起きます。
-			CAUTO					map_cui8cru=MAP_stui8cReadPattern({i16iGetPositionX_UpperR(ci16ncollisionwidth_upperhalf),ci16iy});
-			//	UINT8					map_cui8clu
-			//		上衝突判定に使用する「マップパーツ」を保持しますが、
-			//		ポイントはX座標が「現状値」という事で、
-			//		これを「予測値」にしてしまうと「横壁ぶつかり誤認されてブレーキかかる」等の問題が起きます。
-			CAUTO					map_cui8clu=MAP_stui8cReadPattern({i16iGetPositionX_UpperL(ci16ncollisionwidth_upperhalf),ci16iy});
+		_INLINE_ OFWBOOL		eIsCollidingU(CINT16 ci16ncollisionwidthhalf_upper)noexcept{
+			//	INT16					ci16ixr
+			//		「現状位置」X座標ベースの「右端」です。
+			//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて上に飛び出せない」等の問題が起きます。
+			CAUTO					ci16ixr=i16iGetPositionXR_Upper(ci16ncollisionwidthhalf_upper);
+			//	INT16					ci16ixl
+			//		「現状位置」X座標ベースの「左端」です。
+			//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて上に飛び出せない」等の問題が起きます。
+			CAUTO					ci16ixl=i16iGetPositionXL_Upper(ci16ncollisionwidthhalf_upper);
+			//	INT16					ci16iyc
+			//		「仮更新位置」Y座標ベースの「中央」です。
+			//		「仮更新位置」であるので、めり込みが生じている可能性があります。
+			CAUTO					ci16iyc=i16iGetPredictedPositionYU0_Upper();
+			//	UINT8					map_cui8crc
+			//		上衝突判定に使用する「中央」右端の「マップパーツ」を保持します。
+			//		ポイントはX座標が「現状位置」ベースである事で、
+			//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて上に飛び出せない」等の問題が起きます。
+			CAUTO					map_cui8crc=MAP_stui8cReadPattern({ci16ixr,ci16iyc});
+			//	UINT8					map_cui8clc
+			//		上衝突判定に使用する「中央」左端の「マップパーツ」を保持します。
+			//		ポイントはX座標が「現状位置」ベースである事で、
+			//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて上に飛び出せない」等の問題が起きます。
+			CAUTO					map_cui8clc=MAP_stui8cReadPattern({ci16ixl,ci16iyc});
 
+			eAir=TRUE;
 			if(
-				(!MAP_steIsMovable(map_cui8cru))||
-				(!MAP_steIsMovable(map_cui8clu))
+				(!MAP_steIsMovable(map_cui8crc))||
+				(!MAP_steIsMovable(map_cui8clc))
 			){
-				//	頭上は「足場」であった。
+				//	頭上と言うより中央が既に「足場」であった。
 				//	「ハシゴ」は素通し扱いする。
 				v2iPosition.i16iY()=sti16iGetPositionN(
-					(v2iPosition_PredictedUpper.i16iY()&INT16(~7))+8
+					(v2iPredictedPosition_Upper.i16iY()&INT16(~7))+16
 				);
 				SetVelocityY_Zero();
 				return TRUE;
+			}else{
+				//	INT16					ci16iyu
+				//		「仮更新位置」Y座標ベースの「頭上」です。
+				//		「仮更新位置」であるので、めり込みが生じている可能性があります。
+				CAUTO					ci16iyu=i16iGetPredictedPositionYU8_Upper();
+				//	UINT8					map_cui8cru
+				//		上衝突判定に使用する「頭上」右端の「マップパーツ」を保持します。
+				//		ポイントはX座標が「現状位置」ベースである事で、
+				//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて上に飛び出せない」等の問題が起きます。
+				CAUTO					map_cui8cru=MAP_stui8cReadPattern({ci16ixr,ci16iyu});
+				//	UINT8					map_cui8clu
+				//		上衝突判定に使用する「頭上」左端の「マップパーツ」を保持します。
+				//		ポイントはX座標が「現状位置」ベースである事で、
+				//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて上に飛び出せない」等の問題が起きます。
+				CAUTO					map_cui8clu=MAP_stui8cReadPattern({ci16ixl,ci16iyu});
+
+				if(
+					(!MAP_steIsMovable(map_cui8cru))||
+					(!MAP_steIsMovable(map_cui8clu))
+				){
+					//	頭上は「足場」であった。
+					//	「ハシゴ」は素通し扱いする。
+					v2iPosition.i16iY()=sti16iGetPositionN(
+						(v2iPredictedPosition_Upper.i16iY()&INT16(~7))+8
+					);
+					SetVelocityY_Zero();
+					return TRUE;
+				}
 			}
 			return FALSE;
 		}
@@ -823,10 +1062,10 @@ public:
 			Jumping					//	ジャンプ中
 		};
 		//	VECTOR2					stcv2inHitHalf_Upper
-		//		「自機」当たり判定の大きさの半分です。
+		//		当たり判定の大きさの半分です。
 		//		当たり判定は整数で行うため、この値は「固定小数点値」ではありません。
 		//		その気持ちを「_Upper」に込めています。
-		static constexpr AUTO	stcv2inHitHalf_Upper=VECTOR2(4,6);
+		static constexpr VECTOR2	stcv2nHitHalf_Upper={4,6};
 		//	INT16					stci16nAccel
 		//		地上での歩き加速度です。
 		static constexpr INT16	stci16nAccel=1<<(stcui8nDiscardBit-3);
@@ -845,18 +1084,31 @@ public:
 		//	INT16					stci16nStopAir
 		//		空中での(謎)自然停止減速度です。
 		static constexpr INT16	stci16nStopAir=1<<(stcui8nDiscardBit-5);
-		//	INT16					stci16nJumpInitialSpeed
-		//		ジャンプ初速度最小値です。
-		static constexpr INT16	stci16nJumpInitialSpeed=4<<(stcui8nDiscardBit-1);
 		//	UINT8					stcui8nJumpKeeping
 		//		ジャンプボタン押しっぱなしでジャンプ初速度を維持できるフレーム数です。
-		static constexpr UINT8	stcui8nJumpKeeping=12;
-		//	INT16					stci16nCollisionWidth_UpperHalf
+		static constexpr UINT8	stcui8nJumpKeeping=16;
+		//	INT16					stci16nCollisionWidthHalf_Upper
 		//		判定幅ドット数(の半分)です。
 		//		これは座標に対する加算値であり、
 		//		左右対称化のため、右方向「+n」、左方向「-n-1」が座標最大、最小値となります。
 		//		つまり、「+n-(-n-1)+1=2n+2」が実際の判定幅となります。
-		static constexpr INT16	stci16nCollisionWidth_UpperHalf=3;
+		static constexpr INT16	stci16nCollisionWidthHalf_Upper=3;
+		//	VECTOR2					stcv2dTramplingOffsetR_Upper
+		//		「踏み」判定の相対位置です。
+		//		当たり判定は整数で行うため、この値は「固定小数点値」ではありません。
+		//		その気持ちを「_Upper」に込めています。
+		static constexpr VECTOR2	stcv2dTramplingOffsetR_Upper={0,+5};
+		//	VECTOR2					stcv2nTramplingHitHalf_Upper
+		//		「踏み」判定の大きさの半分です。
+		//		当たり判定は整数で行うため、この値は「固定小数点値」ではありません。
+		//		その気持ちを「_Upper」に込めています。
+		static constexpr VECTOR2	stcv2nTramplingHitHalf_Upper={stci16nCollisionWidthHalf_Upper,2};
+		static constexpr VECTOR2	stcv2dKickingOffsetR_Upper={0,+5};
+		static constexpr VECTOR2	stcv2nKickingHitHalf_Upper={stci16nCollisionWidthHalf_Upper,2};
+		static constexpr VECTOR2	stcv2dCrushingOffsetR_Upper={0,0};
+		static constexpr VECTOR2	stcv2nCrushingHitHalf_Upper={stci16nCollisionWidthHalf_Upper,7};
+		static constexpr VECTOR2	stcv2dAttackingOffsetR_Upper={0,0};
+		static constexpr VECTOR2	stcv2nAttackingHitHalf_Upper={stci16nCollisionWidthHalf_Upper,7};
 
 		//
 		//		body:PLAYER
@@ -880,43 +1132,25 @@ public:
 		//	UINT8					ui8iWalkingSound
 		//		歩行音、スリップ音制御用変数です。
 		UINT8					ui8iWalkingSound;
-		//	INT16					i16dCollisionYOffset
-		//		判定対象とする「足元位置」に対する補正で、
+		//	INT16					i16dCollisionOffsetY_Upper
+		//		ヨコ衝突判定時の「足元垂直位置」に対する補正で、
 		//		「正(下)」方向であると「地面」にめり込む事になるので、地形があれば壁衝突判定扱いになります。
 		//		「負(上)」方向であるとめり込みにくくなるので、多少の穴は踏み越える事になります。
-		INT16					i16dCollisionYOffset;
-		//	OFWBOOL					eAir
-		//		「空中状態」であるかどうかを保持します。
-		//		一旦空中状態になったらば、「ハシゴ」は「空白」扱いとしたいのです。
-		OFWBOOL					eAir;
+		INT16					i16dCollisionOffsetY_Upper;
 	public:
-		/*VOID*/				PLAYER(VOID)noexcept{}
-		/*VOID*/				~PLAYER(VOID)noexcept{
-			Delete();
-		}
-		//	VOID					New(VOID)
-		//		初期化処理で、プログラム開始後一度だけの実行で十分──
-		//		という建前なんですが、現状何もしてません。
-		VOID					New(VOID)noexcept{
-			return;
-		}
-		//	VOID					Delete(VOID)
-		//		「終了処理」ですが、現状何もする事はありません。
-		VOID					Delete(VOID)noexcept{
-			return;
-		}
 		//	OFWBOOL					eIsActive(VOID)
 		//		「生きて」いれば「TRUE」を返します。
 		constexpr OFWBOOL		eIsActive(VOID)const noexcept{
 			return (idState!=IDSTATE::None);
 		}
-		//	VOID					Start(const PGAME cpgameowner,CVECTOR2& cv2iposition)
+		//	VOID					Start(const IDTYPE cidtype,CVECTOR2& cv2iposition)
 		//		出現処理です。
 		//		メイン処理から呼び出されます。
-		VOID					Start(const PGAME cpgameowner,const IDTYPE cidtype,CVECTOR2& cv2iposition)noexcept{
+		VOID					Start(const IDTYPE cidtype,CVECTOR2& cv2iposition)noexcept{
 			SetState(IDSTATE::Normal);
 			idDirection=IDDIRECTION::Right;
 			v2iPosition=cv2iposition;
+			v2iPosition_Upper=stv2iGetPosition_Upper(v2iPosition);
 			v2dVelocity=VECTOR2::stv2ImmediateZero();
 			UpdatePosition();
 			//	ザ・余計な分岐。
@@ -934,8 +1168,6 @@ public:
 				ui8iPalette=2;
 				break;
 			}
-			//	一応、「前フレームは空中」扱いで開始する。
-			eAir=TRUE;
 			return;
 		}
 		//	UINT8					ui8nShow(CUINT8 cui8isprite)
@@ -1022,26 +1254,26 @@ public:
 			//	「生きて」ないのでスプライト消費はゼロ。
 			return 0;
 		}
-		//	VOID					Move(const PGAME cpgameowner)
+		//	VOID					Move(VOID)
 		//		移動処理です。
-		VOID					Move(const PGAME cpgameowner)noexcept{
+		VOID					Move(VOID)noexcept{
 			//	UINT8					controller_cui8crl
 			//		コントローラ十字キー入力のうち、左右要素だけ抜き出した値です。
 			//		「=」判定する事で「同時押し」の可能性を除外します。
-			CAUTO					controller_cui8crl=UINT8(cpgameowner->CONTROLLER_ui8cCurrent&(FAMILYBASIC::stcui8cMaskButtonRight|FAMILYBASIC::stcui8cMaskButtonLeft));
+			CAUTO					controller_cui8crl=UINT8(pgameOwner->CONTROLLER_ui8cCurrent&(CONTROLLER_stcui8cRight|CONTROLLER_stcui8cLeft));
 			//	UINT8					controller_cui8cdu
 			//		コントローラ十字キー入力のうち、上下要素だけ抜き出した値です。
 			//		「=」判定する事で「同時押し」の可能性を除外します。
-			CAUTO					controller_cui8cdu=UINT8(cpgameowner->CONTROLLER_ui8cCurrent&(FAMILYBASIC::stcui8cMaskButtonDown|FAMILYBASIC::stcui8cMaskButtonUp));
+			CAUTO					controller_cui8cdu=UINT8(pgameOwner->CONTROLLER_ui8cCurrent&(CONTROLLER_stcui8cDown|CONTROLLER_stcui8cUp));
 			//	UINT8					controller_cejump
-			//		コントローラAボタン押下状態です。
-			//		「押しっぱなし」でなく「初回入力」時だけ値が入ります。
-			CAUTO					controller_cejump=OFWBOOL((cpgameowner->CONTROLLER_ui8cSingle&FAMILYBASIC::stcui8cMaskButtonA)!=0);
-			CAUTO					ci16ixcr=i16iGetPositionX_UpperCR();
-			CAUTO					ci16ixcl=i16iGetPositionX_UpperCL();
-			CAUTO					ci16iyd8=i16iGetPositionY_UpperD8();
-			CAUTO					ci16iym=i16iGetPositionY_UpperU0();
-			CAUTO					ci16iyu=i16iGetPositionY_UpperU8();
+			//		ジャンプ(コントローラA)ボタン押下状態です。
+			//		「押下の瞬間」だけ「TRUE」になります。
+			CAUTO					controller_cejump=OFWBOOL((pgameOwner->CONTROLLER_ui8cSingle&CONTROLLER_stcui8cJump)!=0);
+			CAUTO					ci16ixcr=i16iGetPositionXCR_Upper();
+			CAUTO					ci16ixcl=i16iGetPositionXCL_Upper();
+			CAUTO					ci16iyd8=i16iGetPositionYD8_Upper();
+			CAUTO					ci16iym=i16iGetPositionYU0_Upper();
+			CAUTO					ci16iyu=i16iGetPositionYU8_Upper();
 			CAUTO					cv2icrd8=VECTOR2(ci16ixcr,ci16iyd8);
 			CAUTO					cv2icld8=VECTOR2(ci16ixcl,ci16iyd8);
 			CAUTO					cv2icrm=VECTOR2(ci16ixcr,ci16iym);
@@ -1058,10 +1290,11 @@ public:
 			//		「足元」に「足場」があるかどうかを保持します。
 			//		「ダッシュ最高速だと1キャラ分の穴に絶対に落ちない」という補正がかかると同時に、
 			//		「それ以外の場合なら確実に落ちる」よう、「足元位置」の補正をかけます。
-			CAUTO					cescaffold=[&](VOID)noexcept->OFWBOOL{
-				//	まず「足元位置」補正初期値は「0」に。
+			CAUTO					cescaffold=[&](VOID)noexcept->OFWBOOL
+			{
+				//	まず衝突判定位置補正は「0」に。
 				//	横方向静止状態、もしくは前方に「足場」が無いなら補正「0」のままになります。
-				i16dCollisionYOffset=INT16(0);
+				i16dCollisionOffsetY_Upper=INT16(0);
 				//	補正要不要の判定に向け、今フレームでの整数状態「横位置」変化をチェック。
 				if(
 					//	INT16					ci16nxdiff_upper
@@ -1077,7 +1310,7 @@ public:
 						//	UINT8					map_cui8cforwardd8
 						//		前方1キャラクタ先、「自機」範囲に「含まれない」足元直下の「マップパーツ」を保持します。
 						CAUTO					map_cui8cforwardd8=MAP_stui8cReadPattern({
-							(0<v2dVelocity.i16iX())?i16iGetPositionX_UpperR(stci16nNeighbor_Upper):i16iGetPositionX_UpperL(stci16nNeighbor_Upper),
+							(0<v2dVelocity.i16iX())?i16iGetPositionXR_Upper(stci16nNeighbor_Upper):i16iGetPositionXL_Upper(stci16nNeighbor_Upper),
 							ci16iyd8
 						});
 						eAir?
@@ -1089,13 +1322,13 @@ public:
 						//		フレーム当たり移動速度が1ドットを超えると「踏み越える」可能性が出る一方、
 						//		「自機」中央位置で判定してしまうと「少しの横移動検知」契機で「踏み外す」可能性が出てしまうため、
 						//		移動速度に応じて加減し、「踏み越えず」、「踏み外さない」判定幅ドット数となるようにします。
-						CAUTO					ci16ncollisionwidth_upper=stci16nCollisionWidth_UpperHalf+1-ci16nxdiff_upper;
+						CAUTO					ci16ncollisionwidth_upper=stci16nCollisionWidthHalf_Upper+1-ci16nxdiff_upper;
 
 						//	さらに前方に「足場」があるので、補正が入る可能性あり。
 						if(
 							CAUTO
-								map_cui8crd8=MAP_stui8cReadPattern({i16iGetPositionX_UpperR(ci16ncollisionwidth_upper),ci16iyd8}),
-								map_cui8cld8=MAP_stui8cReadPattern({i16iGetPositionX_UpperL(ci16ncollisionwidth_upper),ci16iyd8});
+								map_cui8crd8=MAP_stui8cReadPattern({i16iGetPositionXR_Upper(ci16ncollisionwidth_upper),ci16iyd8}),
+								map_cui8cld8=MAP_stui8cReadPattern({i16iGetPositionXL_Upper(ci16ncollisionwidth_upper),ci16iyd8});
 							eAir?
 								(!MAP_steIsMovable(map_cui8crd8))||(!MAP_steIsMovable(map_cui8cld8)):
 								(!MAP_steIsSpace(map_cui8crd8))||(!MAP_steIsSpace(map_cui8cld8))
@@ -1106,7 +1339,9 @@ public:
 							//	「足元」に「足場」が無いので補正を入れる。
 							if(STD::stxGetAbs(v2dVelocity.i16iX())<stci16nXDashSpeedMaximum){
 								//	「ダッシュ」最高速度ではなかったので、確実に落ちるよう「足元位置」を補正。
-								i16dCollisionYOffset=INT16(+1);
+								//	ただし既に空中にいた場合は補正しない。
+								//	なぜならタテ16ドットジャストの穴にジャンプで入れなくなるから。
+								if(!eAir)i16dCollisionOffsetY_Upper=INT16(+1);
 							}else{
 								//	「ダッシュ」最高速度だったので絶対に落ちないよう「足場」ありで返す。
 								//	「足場」ありという事は「ビタ」としてもジャンプ含め可。
@@ -1116,8 +1351,8 @@ public:
 					}
 				}
 				{
-					CAUTO					map_cui8crd8=MAP_stui8cReadPattern({i16iGetPositionX_UpperR(stci16nCollisionWidth_UpperHalf),ci16iyd8});
-					CAUTO					map_cui8cld8=MAP_stui8cReadPattern({i16iGetPositionX_UpperL(stci16nCollisionWidth_UpperHalf),ci16iyd8});
+					CAUTO					map_cui8crd8=MAP_stui8cReadPattern({i16iGetPositionXR_Upper(stci16nCollisionWidthHalf_Upper),ci16iyd8});
+					CAUTO					map_cui8cld8=MAP_stui8cReadPattern({i16iGetPositionXL_Upper(stci16nCollisionWidthHalf_Upper),ci16iyd8});
 
 					//	足元位置補正あるにせよ無いにせよ、マップパーツに応じた「足場」有無を返す
 					return eAir?
@@ -1134,25 +1369,25 @@ public:
 
 				if(MAP_steIsScoring(map_cui8ccrm)){
 					MAP_stWritePattern(cv2icrm,MAP_stcui8cNone);
-					cpgameowner->AddScore(1);
+					pgameOwner->AddScore(1);
 					eplayse=TRUE;
 				}
 				if(MAP_steIsScoring(map_cui8cclm)){
 					MAP_stWritePattern(cv2iclm,MAP_stcui8cNone);
-					cpgameowner->AddScore(1);
+					pgameOwner->AddScore(1);
 					eplayse=TRUE;
 				}
 				if(MAP_steIsScoring(map_cui8ccru)){
 					MAP_stWritePattern(cv2icru,MAP_stcui8cNone);
-					cpgameowner->AddScore(1);
+					pgameOwner->AddScore(1);
 					eplayse=TRUE;
 				}
 				if(MAP_steIsScoring(map_cui8cclu)){
 					MAP_stWritePattern(cv2iclu,MAP_stcui8cNone);
-					cpgameowner->AddScore(1);
+					pgameOwner->AddScore(1);
 					eplayse=TRUE;
 				}
-				if(eplayse)FAMILYBASIC::SE0_stPlay(stacui8cSE_Flag);
+				if(eplayse)FAMILYBASIC::SE0_stPlay(SE0_stacui8cPoint);
 			}
 			//	まずは「ハシゴ」重なり(足元「ハシゴ」含む)かそれ以外かを判別する。
 			if(
@@ -1168,32 +1403,32 @@ public:
 					//	[条件3+1]ハシゴ昇降中、または──
 					(idState!=IDSTATE::Jumping)||
 					//	[条件3+2]下入力あり、または──
-					(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonDown)||
+					(controller_cui8cdu==CONTROLLER_stcui8cDown)||
 					//	[条件3+3]上入力あり。
-					(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonUp)
+					(controller_cui8cdu==CONTROLLER_stcui8cUp)
 				)
 			){
 				//	「ハシゴ」重なりであった。
 				//	斜め方向入力は上下入力を優先。
 				if(!(
-					(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonDown)?Move_eLadderY(cpgameowner,FALSE):(
-						(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonUp)?Move_eLadderY(cpgameowner,TRUE):FALSE
+					(controller_cui8cdu==CONTROLLER_stcui8cDown)?Move_eLadderY(FALSE):(
+						(controller_cui8cdu==CONTROLLER_stcui8cUp)?Move_eLadderY(TRUE):FALSE
 					)
 				)){
 					//	「ハシゴ」昇降しなかった(出来なかった)。
-					if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonRight){
-						if(cescaffold)Move_LadderX(cpgameowner,IDDIRECTION::Right);
-						else Move_Walking(cpgameowner,FALSE,IDDIRECTION::Right);
-					}else if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonLeft){
-						if(cescaffold)Move_LadderX(cpgameowner,IDDIRECTION::Left);
-						else Move_Walking(cpgameowner,FALSE,IDDIRECTION::Left);
+					if(controller_cui8crl==CONTROLLER_stcui8cRight){
+						if(cescaffold)Move_LadderX(IDDIRECTION::Right);
+						else Move_Walking(FALSE,IDDIRECTION::Right);
+					}else if(controller_cui8crl==CONTROLLER_stcui8cLeft){
+						if(cescaffold)Move_LadderX(IDDIRECTION::Left);
+						else Move_Walking(FALSE,IDDIRECTION::Left);
 					}else if(idState==IDSTATE::OnLadder){
 						//	「ハシゴ」昇降途中でのニュートラル入力なので停止する。
 						SetVelocityX_Zero();
 						SetVelocityY_Zero();
 					}else{
 						//	横方向移動途中でのニュートラル入力なので慣性移動。
-						Move_Normal(cpgameowner,cescaffold);
+						Move_Normal(cescaffold);
 					}
 				}
 			}else{
@@ -1210,98 +1445,120 @@ public:
 					idState=IDSTATE::Jumping;
 					SetVelocityY_Jump();
 					ui8nJumpKeeping=stcui8nJumpKeeping;
-					FAMILYBASIC::SE0_stPlay(stacui8cSE_Jump);
+					FAMILYBASIC::SE0_stPlay(SE0_stacui8cJump);
 				}
 				//	「ハシゴ」重なり以外の状態での移動。
 				if(idState!=IDSTATE::Jumping){
 					//	通常状態(足元の状況によっては落下するかもしれない)。
-					if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonRight){
-						Move_Walking(cpgameowner,cescaffold,IDDIRECTION::Right);
-					}else if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonLeft){
-						Move_Walking(cpgameowner,cescaffold,IDDIRECTION::Left);
-					}else if(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonDown){
+					if(controller_cui8crl==CONTROLLER_stcui8cRight){
+						Move_Walking(cescaffold,IDDIRECTION::Right);
+					}else if(controller_cui8crl==CONTROLLER_stcui8cLeft){
+						Move_Walking(cescaffold,IDDIRECTION::Left);
+					}else if(controller_cui8cdu==CONTROLLER_stcui8cDown){
 						//	下方向の入力がある(「何か」を降りようとしている)。
 						switch(idDirection){
 						case IDDIRECTION::Right:
 							{
-								CAUTO					ci16ixr1=i16iGetPositionX_UpperNeighborR();
+								CAUTO					ci16ixr1=i16iGetPositionXNeighborR_Upper();
 								CAUTO					map_cui8cr1d8=MAP_stui8cReadPattern({ci16ixr1,ci16iyd8});
 
 								if(MAP_steIsLadder(map_cui8ccrd8)||MAP_steIsLadder(map_cui8cr1d8)){
 									//	少し右方向に行けばハシゴを降りれそうなので右方向移動動作に解釈変更。
-									Move_Walking(cpgameowner,cescaffold,IDDIRECTION::Right);
+									Move_Walking(cescaffold,IDDIRECTION::Right);
 								}else{
-									Move_Normal(cpgameowner,cescaffold);
+									Move_Normal(cescaffold);
 								}
 							}
 							break;
 						case IDDIRECTION::Left:
 							{
-								CAUTO					ci16ixl1=i16iGetPositionX_UpperNeighborL();
+								CAUTO					ci16ixl1=i16iGetPositionXNeighborL_Upper();
 								CAUTO					map_cui8cl1d8=MAP_stui8cReadPattern({ci16ixl1,ci16iyd8});
 
 								if(MAP_steIsLadder(map_cui8ccld8)||MAP_steIsLadder(map_cui8cl1d8)){
 									//	少し左方向に行けばハシゴを降りれそうなので左方向移動動作に解釈変更。
-									Move_Walking(cpgameowner,cescaffold,IDDIRECTION::Left);
+									Move_Walking(cescaffold,IDDIRECTION::Left);
 								}else{
-									Move_Normal(cpgameowner,cescaffold);
+									Move_Normal(cescaffold);
 								}
 							}
 							break;
 						}
-					}else if(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonUp){
-						CAUTO					ci16iyd7=i16iGetPositionY_UpperD7();
+					}else if(controller_cui8cdu==CONTROLLER_stcui8cUp){
+						CAUTO					ci16iyd7=i16iGetPositionYD7_Upper();
 
 						//	上方向の入力がある(「何か」を昇ろうとしている)。
 						switch(idDirection){
 						case IDDIRECTION::Right:
 							{
-								CAUTO					ci16ixr1=i16iGetPositionX_UpperNeighborR();
+								CAUTO					ci16ixr1=i16iGetPositionXNeighborR_Upper();
 								CAUTO					cv2icrd7=VECTOR2(ci16ixcr,ci16iyd7);
 								CAUTO					map_cui8ccrd7=MAP_stui8cReadPattern(cv2icrd7);
 								CAUTO					map_cui8cr1d7=MAP_stui8cReadPattern({ci16ixr1,ci16iyd7});
 
 								if(MAP_steIsLadder(map_cui8ccrd7)||MAP_steIsLadder(map_cui8cr1d7)){
 									//	少し右方向に行けばハシゴを昇れそうなので右方向移動動作に解釈変更。
-									Move_Walking(cpgameowner,cescaffold,IDDIRECTION::Right);
+									Move_Walking(cescaffold,IDDIRECTION::Right);
 								}else{
-									Move_Normal(cpgameowner,cescaffold);
+									Move_Normal(cescaffold);
 								}
 							}
 							break;
 						case IDDIRECTION::Left:
 							{
-								CAUTO					ci16ixl1=i16iGetPositionX_UpperNeighborL();
+								CAUTO					ci16ixl1=i16iGetPositionXNeighborL_Upper();
 								CAUTO					cv2icld7=VECTOR2(ci16ixcl,ci16iyd7);
 								CAUTO					map_cui8ccld7=MAP_stui8cReadPattern(cv2icld7);
 								CAUTO					map_cui8cl1d7=MAP_stui8cReadPattern({ci16ixl1,ci16iyd7});
 
 								if(MAP_steIsLadder(map_cui8ccld7)||MAP_steIsLadder(map_cui8cl1d7)){
 									//	少し左方向に行けばハシゴを昇れそうなので左方向移動動作に解釈変更。
-									Move_Walking(cpgameowner,cescaffold,IDDIRECTION::Left);
+									Move_Walking(cescaffold,IDDIRECTION::Left);
 								}else{
-									Move_Normal(cpgameowner,cescaffold);
+									Move_Normal(cescaffold);
 								}
 							}
 							break;
 						}
 					}else{
 						//	入力は無いので静止状態に(完全停止までに「滑り」を伴うかも知れない)。
-						Move_Normal(cpgameowner,cescaffold);
+						Move_Normal(cescaffold);
 					}
 				}else{
 					//	ジャンプしている。
-					if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonRight){
-						Move_Jumping(cpgameowner,IDDIRECTION::Right);
-					}else if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonLeft){
-						Move_Jumping(cpgameowner,IDDIRECTION::Left);
+					if(controller_cui8crl==CONTROLLER_stcui8cRight){
+						Move_Jumping(IDDIRECTION::Right);
+					}else if(controller_cui8crl==CONTROLLER_stcui8cLeft){
+						Move_Jumping(IDDIRECTION::Left);
 					}else{
-						Move_Jumping(cpgameowner);
+						Move_Jumping();
 					}
 				}
 			}
 			UpdatePosition();
 			return;
+		}
+		IDHIT					ENEMY_idGetHit(const IDDIRECTION ciddirection,CVECTOR2& cv2iposition_upper,CVECTOR2& cv2dtrampledoffsetr_upper,CVECTOR2& cv2ntrampledhithalf_upper,CVECTOR2& cv2dkickedoffsetr_upper,CVECTOR2& cv2nkickedhithalf_upper,CVECTOR2& cv2dcrushedoffsetr_upper,CVECTOR2& cv2ncrushedhithalf_upper,CVECTOR2& cv2dattackedoffsetr_upper,CVECTOR2& cv2nattackedhithalf_upper)noexcept{
+			switch(stidGetHit(
+				idDirection,
+				v2iPosition_Upper,
+				stcv2dTramplingOffsetR_Upper,
+				stcv2nTramplingHitHalf_Upper,
+				ciddirection,
+				cv2iposition_upper,
+				cv2dtrampledoffsetr_upper,
+				cv2ntrampledhithalf_upper
+			)){
+			case IDHIT::HitR:
+				SetVelocityY_Trumple();
+				return IDHIT::KickedR;
+			case IDHIT::HitL:
+				SetVelocityY_Trumple();
+				return IDHIT::KickedL;
+			default:
+				break;
+			}
+			return IDHIT::None;
 		}
 	private:
 		//	VOID					SetState(const IDMODE cidstate)
@@ -1405,47 +1662,60 @@ public:
 		//	VOID					SetVelocityY_Jump(VOID)
 		//		速度「v2dVelocity」のY成分を、ジャンプ仕様に基づいて上方向に設定します。
 		constexpr VOID			SetVelocityY_Jump(VOID)noexcept{
-			v2dVelocity.i16iY()=INT16(-stci16nJumpInitialSpeed-STD::stxGetAbs(v2dVelocity.i16iX()));
+			//	INT16					ci16nminimum
+			//		ジャンプ初速度最小値です。
+			constexpr INT16			ci16nminimum=3<<(stcui8nDiscardBit-1);
+
+			v2dVelocity.i16iY()=-ci16nminimum;
+			//	壁衝突状態ならジャンプ高補正はしない
+			if(v2iPosition_Upper.i16iX()!=v2iPositionPrevious_Upper.i16iX())v2dVelocity.i16iY()-=STD::stxGetAbs(v2dVelocity.i16iX());
+			return;
+		}
+		//	VOID					SetVelocityY_Trumple(VOID)
+		//		速度「v2dVelocity」のY成分を、踏みつけ仕様に基づいて上方向に設定します。
+		constexpr VOID			SetVelocityY_Trumple(VOID)noexcept{
+			//	INT16					ci16nminimum
+			//		踏みつけ跳ね返り初速度最小値です。
+			constexpr INT16			ci16nminimum=4<<(stcui8nDiscardBit-1);
+			//	INT16					ci16naddition
+			//		ジャンプボタン押下時の初速度加算値です。
+			constexpr INT16			ci16naddition=4<<(stcui8nDiscardBit-1);
+
+			v2dVelocity.i16iY()=INT16(-ci16nminimum-((pgameOwner->CONTROLLER_ui8cCurrent&CONTROLLER_stcui8cJump)?ci16naddition:INT16(0)));
 			return;
 		}
 		//	OFWBOOL					eIsCollidingX(VOID)
 		//		横移動で壁に衝突するかどうかを「仮更新位置」で判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
 		_INLINE_ OFWBOOL		eIsCollidingX(VOID)noexcept{
-			return CHARACTER_::eIsCollidingX(stci16nCollisionWidth_UpperHalf,i16dCollisionYOffset);
+			return CHARACTER_::eIsCollidingX(stci16nCollisionWidthHalf_Upper,i16dCollisionOffsetY_Upper);
 		}
 		//	OFWBOOL					eIsCollidingR(VOID)
 		//		右移動で壁に衝突するかどうかを「仮更新位置」で判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
 		OFWBOOL					eIsCollidingR(VOID)noexcept{
-			return CHARACTER_::eIsCollidingR(stci16nCollisionWidth_UpperHalf,i16dCollisionYOffset);
+			return CHARACTER_::eIsCollidingR(stci16nCollisionWidthHalf_Upper,i16dCollisionOffsetY_Upper);
 		}
 		//	OFWBOOL					eIsCollidingL(VOID)
 		//		左移動で壁に衝突するかどうかを「仮更新位置」で判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
-		//		「ci16dyoffset」は判定対象とする足元位置に対する補正で、
-		//		「正(下)」方向であると「地面」にめり込む事になるので、地形があれば壁衝突判定扱いになります。
-		//		「負(上)」方向であるとめり込みにくくなるので、多少の穴は踏み越える事になります。
 		OFWBOOL					eIsCollidingL(VOID)noexcept{
-			return CHARACTER_::eIsCollidingL(stci16nCollisionWidth_UpperHalf,i16dCollisionYOffset);
+			return CHARACTER_::eIsCollidingL(stci16nCollisionWidthHalf_Upper,i16dCollisionOffsetY_Upper);
 		}
 		//	OFWBOOL					eIsCollidingD(VOID)
 		//		下移動で壁に衝突するかどうかを「仮更新位置」で判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
 		OFWBOOL					eIsCollidingD(VOID)noexcept{
-			CAUTO					cecolliding=CHARACTER_::eIsCollidingD(stci16nCollisionWidth_UpperHalf);
-
-			eAir=!cecolliding;
-			return cecolliding;
+			return CHARACTER_::eIsCollidingD(stci16nCollisionWidthHalf_Upper);
 		}
 		//	OFWBOOL					eIsCollidingD_Ladder(VOID)
 		//		下移動で壁に衝突するかどうかを「仮更新位置」で「ハシゴ昇降向け」判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
 		//		足元が「ハシゴ」であるならめり込みを許容します。
 		_INLINE_ OFWBOOL		eIsCollidingD_Ladder(VOID)noexcept{
-			CAUTO					ci16iy=i16iGetPositionY_PredictedUpperD7();
-			CAUTO					map_cui8ccrd=MAP_stui8cReadPattern({i16iGetPositionX_UpperCR(),ci16iy});
-			CAUTO					map_cui8ccld=MAP_stui8cReadPattern({i16iGetPositionX_UpperCL(),ci16iy});
+			CAUTO					ci16iy=i16iGetPredictedPositionYD7_Upper();
+			CAUTO					map_cui8ccrd=MAP_stui8cReadPattern({i16iGetPositionXCR_Upper(),ci16iy});
+			CAUTO					map_cui8ccld=MAP_stui8cReadPattern({i16iGetPositionXCL_Upper(),ci16iy});
 
 			//	足元「ほぼ」点で判定するが、左右対称化のため2ドット判定する。
 			if(MAP_steIsLadder(map_cui8ccrd)||MAP_steIsLadder(map_cui8ccld)){
@@ -1461,7 +1731,7 @@ public:
 			}else if((!MAP_steIsSpace(map_cui8ccrd))||(!MAP_steIsSpace(map_cui8ccld))){
 				//	足元は「足場」であった。
 				v2iPosition.i16iY()=sti16iGetPositionP(
-					v2iPosition_PredictedUpper.i16iY()&INT16(~7)
+					v2iPredictedPosition_Upper.i16iY()&INT16(~7)
 				);
 				SetVelocityY_Zero();
 				return TRUE;
@@ -1475,15 +1745,19 @@ public:
 		//		上移動で壁に衝突するかどうかを「仮更新位置」で判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
 		OFWBOOL					eIsCollidingU(VOID)noexcept{
-			return CHARACTER_::eIsCollidingU(stci16nCollisionWidth_UpperHalf);
+			if(CHARACTER_::eIsCollidingU(stci16nCollisionWidthHalf_Upper)){
+				ui8nJumpKeeping=0;
+				return TRUE;
+			}
+			return FALSE;
 		}
 		//	OFWBOOL					eIsCollidingU_Ladder(VOID)
 		//		上移動で壁に衝突するかどうかを「仮更新位置」で「ハシゴ昇降向け」判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
 		_INLINE_ OFWBOOL		eIsCollidingU_Ladder(VOID)noexcept{
-			CAUTO					ci16iy=i16iGetPositionY_PredictedUpperU8();
-			CAUTO					map_cui8ccru=MAP_stui8cReadPattern({i16iGetPositionX_UpperCR(),ci16iy});
-			CAUTO					map_cui8cclu=MAP_stui8cReadPattern({i16iGetPositionX_UpperCL(),ci16iy});
+			CAUTO					ci16iy=i16iGetPredictedPositionYU8_Upper();
+			CAUTO					map_cui8ccru=MAP_stui8cReadPattern({i16iGetPositionXCR_Upper(),ci16iy});
+			CAUTO					map_cui8cclu=MAP_stui8cReadPattern({i16iGetPositionXCL_Upper(),ci16iy});
 
 			//	頭上「ほぼ」点で判定するが、左右対称化のため2ドット判定する。
 			if(MAP_steIsLadder(map_cui8ccru)||MAP_steIsLadder(map_cui8cclu)){
@@ -1498,18 +1772,18 @@ public:
 			}else if((!MAP_steIsSpace(map_cui8ccru))||(!MAP_steIsSpace(map_cui8cclu))){
 				//	頭上は「足場」であった。
 				v2iPosition.i16iY()=sti16iGetPositionN(
-					(v2iPosition_PredictedUpper.i16iY()&INT16(~7))+8
+					(v2iPredictedPosition_Upper.i16iY()&INT16(~7))+8
 				);
 				SetVelocityY_Zero();
 				return TRUE;
 			}
 			return FALSE;
 		}
-		//	VOID					Move_Normal(const PGAME cpgameowner,COFWBOOL cescaffold)
+		//	VOID					Move_Normal(COFWBOOL cescaffold)
 		//		無入力状態の移動です。
 		//		完全停止している訳ではなく、
 		//		足元に何も無ければ落下し、あったとしても完全停止までに「滑り」を伴う可能性があります。
-		VOID					Move_Normal(const PGAME cpgameowner,COFWBOOL cescaffold)noexcept{
+		VOID					Move_Normal(COFWBOOL cescaffold)noexcept{
 			if(0<v2dVelocity.i16iX()){
 				//	右方向に「慣性」で移動中。
 				if(cescaffold){
@@ -1521,15 +1795,14 @@ public:
 					eIsCollidingR();
 					if(ui8iWalkingSound!=2){
 						ui8iWalkingSound=2;
-						FAMILYBASIC::SE0_stPlay(stacui8cSE_Slip);
+						FAMILYBASIC::SE0_stPlay(SE0_stacui8cSlip);
 					}
 				}else{
-					//	「足場」が無いので落下しながら減速する。
+					//	「足場」が無いのでヨコ方向は漠然と減速する。
+					//	タテ方向は重力加速であるが、「落下」とは限らない。
 					SetVelocityX_StopAirP();
 					SetVelocityY_Gravity();
-					PredictPosition_Upper();
-					eIsCollidingD();
-					eIsCollidingR();
+					Move_eAirCollide();
 				}
 			}else if(v2dVelocity.i16iX()<0){
 				//	左方向に「慣性」で移動中。
@@ -1542,15 +1815,14 @@ public:
 					eIsCollidingL();
 					if(ui8iWalkingSound!=2){
 						ui8iWalkingSound=2;
-						FAMILYBASIC::SE0_stPlay(stacui8cSE_Slip);
+						FAMILYBASIC::SE0_stPlay(SE0_stacui8cSlip);
 					}
 				}else{
-					//	「足場」が無いので落下しながら減速する。
+					//	「足場」が無いのでヨコ方向は漠然と減速する。
+					//	タテ方向は重力加速であるが、「落下」とは限らない。
 					SetVelocityX_StopAirN();
 					SetVelocityY_Gravity();
-					PredictPosition_Upper();
-					eIsCollidingD();
-					eIsCollidingL();
+					Move_eAirCollide();
 				}
 			}else{
 				//	横方向の移動は無い。
@@ -1559,19 +1831,18 @@ public:
 					SetVelocityY_Zero();
 					SetState(IDSTATE::Normal);
 				}else{
-					//	「足場」も無いのでただ落下する。
+					//	「足場」も無いのでただ重力加速するが、「落下」とは限らない。
 					SetVelocityY_Gravity();
-					PredictPosition_Upper();
-					eIsCollidingD();
+					Move_eAirCollide();
 				}
 			}
 			return;
 		}
-		//	VOID					Move_Walking(const PGAME cpgameowner,COFWBOOL cescaffold,const IDDIRECTION ciddirection)
+		//	VOID					Move_Walking(COFWBOOL cescaffold,const IDDIRECTION ciddirection)
 		//		地上で「ciddirection」方向に歩き加速します。
 		//		壁にぶつかれば静止し、足元に何も無ければ落下します。
-		VOID					Move_Walking(const PGAME cpgameowner,COFWBOOL cescaffold,const IDDIRECTION ciddirection)noexcept{
-			CAUTO					controller_cedash=OFWBOOL((cpgameowner->CONTROLLER_ui8cCurrent&FAMILYBASIC::stcui8cMaskButtonB)!=0);
+		VOID					Move_Walking(COFWBOOL cescaffold,const IDDIRECTION ciddirection)noexcept{
+			CAUTO					controller_cedash=OFWBOOL((pgameOwner->CONTROLLER_ui8cCurrent&CONTROLLER_stcui8cDash)!=0);
 
 			switch(ciddirection){
 			case IDDIRECTION::Right:
@@ -1586,16 +1857,15 @@ public:
 					if(eIsCollidingX()){
 					}else{
 						ui8iPattern+=controller_cedash?2:1;
-						Move_Walking_Animate(cpgameowner);
+						Move_Walking_Animate();
 					}
 				}else{
-					//	「足場」が無いので落下しながら加速する。
+					//	「足場」が無いのでヨコ方向は謎の加速をする。
+					//	タテ方向は重力加速であるが、「落下」とは限らない。
 					SetVelocityX_AccelAirP();
 					SetVelocityY_Gravity();
 					if(!controller_cedash)SetVelocityX_DecelAirP();
-					PredictPosition_Upper();
-					eIsCollidingD();
-					eIsCollidingX();
+					Move_eAirCollide();
 				}
 				break;
 			case IDDIRECTION::Left:
@@ -1610,25 +1880,24 @@ public:
 					if(eIsCollidingX()){
 					}else{
 						ui8iPattern+=controller_cedash?2:1;
-						Move_Walking_Animate(cpgameowner);
+						Move_Walking_Animate();
 					}
 				}else{
-					//	「足場」が無いので落下しながら加速する。
+					//	「足場」が無いのでヨコ方向は謎の加速をする。
+					//	タテ方向は重力加速であるが、「落下」とは限らない。
 					SetVelocityX_AccelAirN();
 					SetVelocityY_Gravity();
 					if(!controller_cedash)SetVelocityX_DecelAirN();
-					PredictPosition_Upper();
-					eIsCollidingD();
-					eIsCollidingX();
+					Move_eAirCollide();
 				}
 				break;
 			}
 			return;
 		}
-		//	VOID					Move_Walking_Animate(const PGAME cpgameowner)
+		//	VOID					Move_Walking_Animate(VOID)
 		//		歩きアニメーション共通処理です。
 		//		「歩行音」もここで制御します。
-		VOID					Move_Walking_Animate(const PGAME cpgameowner)noexcept{
+		VOID					Move_Walking_Animate(VOID)noexcept{
 			if(
 				((idDirection==IDDIRECTION::Right)&&(v2dVelocity.i16iX()<0))||
 				((idDirection==IDDIRECTION::Left)&&(0<v2dVelocity.i16iX()))
@@ -1636,34 +1905,34 @@ public:
 				if(12<=ui8iPattern)ui8iPattern=0;
 				if(ui8iWalkingSound!=2){
 					ui8iWalkingSound=2;
-					FAMILYBASIC::SE0_stPlay(stacui8cSE_Slip);
+					FAMILYBASIC::SE0_stPlay(SE0_stacui8cSlip);
 				}
 			}else{
 				if(12<=ui8iPattern){
 					ui8iPattern=0;
 					if(ui8iWalkingSound!=0){
 						ui8iWalkingSound=0;
-						FAMILYBASIC::SE0_stPlay(stacui8cSE_Walk1);
+						FAMILYBASIC::SE0_stPlay(SE0_stacui8cWalk1);
 					}
 				}else if(6<=ui8iPattern){
 					if(ui8iWalkingSound!=1){
 						ui8iWalkingSound=1;
-						FAMILYBASIC::SE0_stPlay(stacui8cSE_Walk0);
+						FAMILYBASIC::SE0_stPlay(SE0_stacui8cWalk0);
 					}
 				}
 			}
 			return;
 		}
-		//	VOID					Move_LadderX(const PGAME cpgameowner,const IDDIRECTION ciddirection)
+		//	VOID					Move_LadderX(const IDDIRECTION ciddirection)
 		//		ハシゴ上で「ciddirection」方向に歩き加速します。
 		//		壁にぶつかれば静止しますが、ハシゴ昇降によって横移動できる場合、ハシゴ昇降移動操作に解釈変更します。
-		VOID					Move_LadderX(const PGAME cpgameowner,const IDDIRECTION ciddirection)noexcept{
+		VOID					Move_LadderX(const IDDIRECTION ciddirection)noexcept{
 			switch(ciddirection){
 			case IDDIRECTION::Right:
 				{
-					CAUTO					ci16ix=i16iGetPositionX_UpperNeighborR();
-					CAUTO					map_cui8crm=MAP_stui8cReadPattern({ci16ix,i16iGetPositionY_UpperU0()});
-					CAUTO					map_cui8cru=MAP_stui8cReadPattern({ci16ix,i16iGetPositionY_UpperU8()});
+					CAUTO					ci16ix=i16iGetPositionXNeighborR_Upper();
+					CAUTO					map_cui8crm=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYU0_Upper()});
+					CAUTO					map_cui8cru=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYU8_Upper()});
 					CAUTO					cemovablem=MAP_steIsMovable(map_cui8crm);
 					CAUTO					cemovableu=MAP_steIsMovable(map_cui8cru);
 
@@ -1675,19 +1944,19 @@ public:
 							(!cemovableu)
 						){
 							//	少しハシゴを降りる右方向に移動できそうなのでハシゴ降り動作に解釈変更。
-							Move_eLadderY(cpgameowner,FALSE);
+							Move_eLadderY(FALSE);
 						}else if(
 							(!cemovablem)&&
 							cemovableu
 						){
 							//	少しハシゴを昇ると右方向に移動できそうなのでハシゴ昇り動作に解釈変更。
-							Move_eLadderY(cpgameowner,TRUE);
+							Move_eLadderY(TRUE);
 						}else{
 							//	壁にぶつかっているか右方向に移動するか。
-							Move_Walking(cpgameowner,TRUE,IDDIRECTION::Right);
+							Move_Walking(TRUE,IDDIRECTION::Right);
 						}
 					}else{
-						CAUTO					map_cui8crd=MAP_stui8cReadPattern({ci16ix,i16iGetPositionY_UpperD8()});
+						CAUTO					map_cui8crd=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYD8_Upper()});
 						CAUTO					cemovabled=MAP_steIsMovable(map_cui8crd);
 
 						//	縦座標は普通に端数あり。
@@ -1697,26 +1966,26 @@ public:
 							(!cemovableu)
 						){
 							//	少しハシゴを降りる右方向に移動できそうなのでハシゴ降り動作に解釈変更。
-							Move_eLadderY(cpgameowner,FALSE);
+							Move_eLadderY(FALSE);
 						}else if(
 							(!cemovabled)&&
 							cemovablem&&
 							cemovableu
 						){
 							//	少しハシゴを昇ると右方向に移動できそうなのでハシゴ昇り動作に解釈変更。
-							Move_eLadderY(cpgameowner,TRUE);
+							Move_eLadderY(TRUE);
 						}else{
 							//	壁にぶつかっているか右方向に移動するか。
-							Move_Walking(cpgameowner,TRUE,IDDIRECTION::Right);
+							Move_Walking(TRUE,IDDIRECTION::Right);
 						}
 					}
 				}
 				break;
 			case IDDIRECTION::Left:
 				{
-					CAUTO					ci16ix=i16iGetPositionX_UpperNeighborL();
-					CAUTO					map_cui8clm=MAP_stui8cReadPattern({ci16ix,i16iGetPositionY_UpperU0()});
-					CAUTO					map_cui8clu=MAP_stui8cReadPattern({ci16ix,i16iGetPositionY_UpperU8()});
+					CAUTO					ci16ix=i16iGetPositionXNeighborL_Upper();
+					CAUTO					map_cui8clm=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYU0_Upper()});
+					CAUTO					map_cui8clu=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYU8_Upper()});
 					CAUTO					cemovablem=MAP_steIsMovable(map_cui8clm);
 					CAUTO					cemovableu=MAP_steIsMovable(map_cui8clu);
 
@@ -1728,19 +1997,19 @@ public:
 							(!cemovableu)
 						){
 							//	少しハシゴを降りる左方向に移動できそうなのでハシゴ降り動作に解釈変更。
-							Move_eLadderY(cpgameowner,FALSE);
+							Move_eLadderY(FALSE);
 						}else if(
 							(!cemovablem)&&
 							cemovableu
 						){
 							//	少しハシゴを昇ると左方向に移動できそうなのでハシゴ昇り動作に解釈変更。
-							Move_eLadderY(cpgameowner,TRUE);
+							Move_eLadderY(TRUE);
 						}else{
 							//	壁にぶつかっているか右方向に移動するか。
-							Move_Walking(cpgameowner,TRUE,IDDIRECTION::Left);
+							Move_Walking(TRUE,IDDIRECTION::Left);
 						}
 					}else{
-						CAUTO					map_cui8cld=MAP_stui8cReadPattern({ci16ix,i16iGetPositionY_UpperD8()});
+						CAUTO					map_cui8cld=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYD8_Upper()});
 						CAUTO					cemovabled=MAP_steIsMovable(map_cui8cld);
 
 						//	縦座標は普通に端数あり。
@@ -1750,17 +2019,17 @@ public:
 							(!cemovableu)
 						){
 							//	少しハシゴを降りる左方向に移動できそうなのでハシゴ降り動作に解釈変更。
-							Move_eLadderY(cpgameowner,FALSE);
+							Move_eLadderY(FALSE);
 						}else if(
 							(!cemovabled)&&
 							cemovablem&&
 							cemovableu
 						){
 							//	少しハシゴを昇ると左方向に移動できそうなのでハシゴ昇り動作に解釈変更。
-							Move_eLadderY(cpgameowner,TRUE);
+							Move_eLadderY(TRUE);
 						}else{
 							//	壁にぶつかっているか右方向に移動するか。
-							Move_Walking(cpgameowner,TRUE,IDDIRECTION::Left);
+							Move_Walking(TRUE,IDDIRECTION::Left);
 						}
 					}
 				}
@@ -1768,22 +2037,22 @@ public:
 			}
 			return;
 		}
-		//	OFWBOOL					Move_eLadderY(const PGAME cpgameowner,COFWBOOL ceup)
+		//	OFWBOOL					Move_eLadderY(COFWBOOL ceup)
 		//		ハシゴ昇降移動を行います。
 		//		返り値は「実際に昇降できたかどうか」で、
 		//		わざわざ区別するのは「昇降出来ていなかったなら左右移動を試みたいから」です。
-		OFWBOOL					Move_eLadderY(const PGAME cpgameowner,COFWBOOL ceup)noexcept{
+		OFWBOOL					Move_eLadderY(COFWBOOL ceup)noexcept{
 			if(ceup){
-				CAUTO					ci16iy=i16iGetPositionY_UpperD7();
-				CAUTO					map_cui8ccrd=MAP_stui8cReadPattern({i16iGetPositionX_UpperCR(),ci16iy});
-				CAUTO					map_cui8ccld=MAP_stui8cReadPattern({i16iGetPositionX_UpperCL(),ci16iy});
+				CAUTO					ci16iy=i16iGetPositionYD7_Upper();
+				CAUTO					map_cui8ccrd=MAP_stui8cReadPattern({i16iGetPositionXCR_Upper(),ci16iy});
+				CAUTO					map_cui8ccld=MAP_stui8cReadPattern({i16iGetPositionXCL_Upper(),ci16iy});
 
 				if(MAP_steIsLadder(map_cui8ccrd)||MAP_steIsLadder(map_cui8ccld)){
 					//	昇る場合は足元最低1ドットの重なりを求める。
 					SetVelocityY_OneU();
 					PredictPosition_Upper();
 					if(!eIsCollidingU_Ladder()){
-						Move_LadderY_Commit(cpgameowner);
+						Move_LadderY_Commit();
 						return TRUE;
 					}
 				}
@@ -1791,16 +2060,16 @@ public:
 				SetVelocityY_OneD();
 				PredictPosition_Upper();
 				if(!eIsCollidingD_Ladder()){
-					Move_LadderY_Commit(cpgameowner);
+					Move_LadderY_Commit();
 					return TRUE;
 				}
 			}
 			return FALSE;
 		}
-		//	VOID					Move_LadderY_Commit(const PGAME cpgameowner)
+		//	VOID					Move_LadderY_Commit(VOID)
 		//		ハシゴ昇降動作として確定させ、
 		//		横位置をハシゴキャラクタに合わせると共に、アニメパターンを更新します。
-		VOID					Move_LadderY_Commit(const PGAME cpgameowner)noexcept{
+		VOID					Move_LadderY_Commit(VOID)noexcept{
 			SetState(IDSTATE::OnLadder);
 			//	ハシゴ上下動時、ハシゴキャラクタに横位置合わせしていく。
 			switch(idDirection){
@@ -1831,17 +2100,17 @@ public:
 			}
 			//	ハシゴアニメーションは16フレーム循環とする。
 			++ui8iPattern;
-			if(ui8iPattern==8)FAMILYBASIC::SE0_stPlay(stacui8cSE_Ladder0);
+			if(ui8iPattern==8)FAMILYBASIC::SE0_stPlay(SE0_stacui8cLadder0);
 			else if(ui8iPattern==16){
 				ui8iPattern=0;
-				FAMILYBASIC::SE0_stPlay(stacui8cSE_Ladder1);
+				FAMILYBASIC::SE0_stPlay(SE0_stacui8cLadder1);
 			}
 			return;
 		}
-		//	VOID					Move_Jumping(const PGAME cpgameowner,const IDDIRECTION ciddirection)
+		//	VOID					Move_Jumping(const IDDIRECTION ciddirection)
 		//		左右方向の入力があるジャンプ移動です。
-		VOID					Move_Jumping(const PGAME cpgameowner,const IDDIRECTION ciddirection)noexcept{
-			CAUTO					controller_cedash=OFWBOOL((cpgameowner->CONTROLLER_ui8cCurrent&FAMILYBASIC::stcui8cMaskButtonB)!=0);
+		VOID					Move_Jumping(const IDDIRECTION ciddirection)noexcept{
+			CAUTO					controller_cedash=OFWBOOL((pgameOwner->CONTROLLER_ui8cCurrent&CONTROLLER_stcui8cDash)!=0);
 
 			switch(ciddirection){
 			case IDDIRECTION::Right:
@@ -1853,25 +2122,25 @@ public:
 				if(!controller_cedash)SetVelocityX_DecelAirN();
 				break;
 			}
-			Move_Jumping_Body(cpgameowner);
+			Move_Jumping_Body();
 			return;
 		}
-		//	VOID					Move_Jumping(const PGAME cpgameowner)
+		//	VOID					Move_Jumping(VOID)
 		//		左右方向の入力が無いジャンプ移動です。
 		//		横方向の「速度」が減速する方向に働きます。
-		VOID					Move_Jumping(const PGAME cpgameowner)noexcept{
+		VOID					Move_Jumping(VOID)noexcept{
 			if(0<v2dVelocity.i16iX()){
 				SetVelocityX_StopAirP();
 			}else if(v2dVelocity.i16iX()<0){
 				SetVelocityX_StopAirN();
 			}
-			Move_Jumping_Body(cpgameowner);
+			Move_Jumping_Body();
 			return;
 		}
-		//	VOID					Move_Jumping_Body(const PGAME cpgameowner)
+		//	VOID					Move_Jumping_Body(VOID)
 		//		ジャンプ移動の共通処理です。
-		VOID					Move_Jumping_Body(const PGAME cpgameowner)noexcept{
-			CAUTO					controller_cejump=OFWBOOL((cpgameowner->CONTROLLER_ui8cCurrent&FAMILYBASIC::stcui8cMaskButtonA)!=0);
+		VOID					Move_Jumping_Body(VOID)noexcept{
+			CAUTO					controller_cejump=OFWBOOL((pgameOwner->CONTROLLER_ui8cCurrent&CONTROLLER_stcui8cJump)!=0);
 
 			if((0<ui8nJumpKeeping)&&controller_cejump){
 				--ui8nJumpKeeping;
@@ -1879,33 +2148,108 @@ public:
 				ui8nJumpKeeping=0;
 				SetVelocityY_Gravity();
 			}
+			if(Move_eAirCollide())SetState(IDSTATE::Walking);
+			return;
+		}
+		//	OFWBOOL					Move_eAirCollide(VOID)
+		//		空中状態での当たり判定処理です。
+		//		下移動で壁にめり込みが発生していたなら「TRUE」を返します。
+		//		タテ16ドットジャストの空きがあり、かつヨコ方向の速度(移動の意思)があった場合、
+		//		空きへの「滑り込み」補正を加えます。
+		OFWBOOL					Move_eAirCollide(VOID)noexcept{
+			//	OFWBOOL					ced
+			//		下移動時に「TRUE」になります。
+			CAUTO					ced=OFWBOOL(0<=v2dVelocity.i16iY());
+
 			PredictPosition_Upper();
-			if(v2dVelocity.i16iY()<0){
-				eIsCollidingU();
-			}else{
-				if(eIsCollidingD())SetState(IDSTATE::Walking);
+			//	[滑り込み条件1]ヨコ方向の速度があるか。
+			if(v2dVelocity.i16iX()!=0)if(
+				//	INT16					ci16iy0
+				//		「現状位置」Y座標ベースの「基準点0」です。
+				//		下移動かどうかで「足元」か「中央」かが分かれます。
+				//		「仮更新位置」ベースにしないのは、Y座標8ドットまたぎ前の位置で「空き」判定したいためです。
+				CAUTO					ci16iy0=ced?i16iGetPositionYD7_Upper():i16iGetPositionYU0_Upper();
+				//	[滑り込み条件2]Y座標8ドットをまたいだかどうか。
+				INT16(ci16iy0&~7)!=INT16((ced?i16iGetPredictedPositionYD7_Upper():i16iGetPredictedPositionYU0_Upper())&~7)
+			){
+				//	OFWBOOL					cer
+				//		右移動時に「TRUE」になります。
+				CAUTO					cer=OFWBOOL(0<v2dVelocity.i16iX());
+
+				if(
+					//	INT16					ci16ix
+					//		「現状位置」X座標ベースの「端」です。
+					//		右移動かどうかで「右端」か「左端」かが分かれます。
+					//		「仮更新位置」ベースにしないのは、めり込んでいない位置基準で「空き」判定したいためです。
+					CAUTO					ci16ix=cer?i16iGetPositionXR_Upper(stci16nCollisionWidthHalf_Upper+1):i16iGetPositionXL_Upper(stci16nCollisionWidthHalf_Upper+1);
+					//	[滑り込み条件3]X座標が壁接触状態かどうか。
+					UINT8(ci16ix&7)==UINT8(cer?0:7)
+				)if(
+					//	INT16					ci16iy1
+					//		「現状位置」Y座標ベースの「基準点1」です。
+					//		下移動かどうかで「中央」か「頭上」かが分かれます。
+					//		「仮更新位置」ベースにしないのは、Y座標8ドットまたぎ前の位置で「空き」判定したいためです。
+					CAUTO					ci16iy1=ced?i16iGetPositionYU1_Upper():i16iGetPositionYU8_Upper();
+					//	[滑り込み条件4]Y座標8ドットまたぎ前の位置ベースで「端」が空いているかどうか。
+					MAP_steIsMovable(MAP_stui8cReadPattern({ci16ix,ci16iy0}))&&
+					MAP_steIsMovable(MAP_stui8cReadPattern({ci16ix,ci16iy1}))
+				)if(
+					//	INT16					ci16iy2
+					//		「現状位置」Y座標ベースの「基準点2」です。
+					//		下移動かどうかで、キャラクタ範囲に「含まれない」、「頭上」か「足元」かが分かれます。
+					//		「仮更新位置」ベースにしないのは、Y座標8ドットまたぎ前の位置で「空き」判定したいためです。
+					CAUTO					ci16iy2=ced?i16iGetPositionYU9_Upper():i16iGetPositionYD8_Upper();
+					//	[滑り込み条件5]Y座標8ドットまたぎ前の位置ベースで、
+					//	キャラクタ範囲に「含まれない」部分が「壁」であるか、
+					//	つまり補正無しだと滑り込みにくい状態であるかどうか。
+					!MAP_steIsMovable(MAP_stui8cReadPattern({ci16ix,ci16iy2}))
+				){
+					v2iPosition_Upper.i16iX()+=cer?INT16(+1):INT16(-1);
+					v2iPosition.i16iX()=sti16iGetPositionP(v2iPosition_Upper.i16iX());
+					PredictPosition_Upper();
+					return Move_eAirCollide_DU(ced);
+				}
 			}
 			eIsCollidingX();
-			return;
+			return Move_eAirCollide_DU(ced);
+		}
+		//	OFWBOOL					Move_eAirCollide_DU(VOID)
+		//		空中状態での上下当たり判定処理です。
+		//		下移動で壁にめり込みが発生していたなら「TRUE」を返します。
+		_INLINE_ OFWBOOL		Move_eAirCollide_DU(COFWBOOL ced)noexcept{
+			if(ced){
+				return eIsCollidingD();
+			}else{
+				eIsCollidingU();
+				return FALSE;
+			}
 		}
 	};
 
 	//
-	//		class:ENEMY
+	//		class:ENEMY_
 	//
 
 	class ENEMY_:public CHARACTER_{
 	public:
 
 		//
+		//		primitive
+		//
+
+		//	FP_START
+		using					FP_START=VOID(*)(const PENEMY_ cpenmythis)noexcept;
+		//	FPUI8N_SHOW
+		using					FPUI8N_SHOW=UINT8(*)(const PCENEMY_ cpcenmythis,CUINT8 cui8isprite)noexcept;
+		//	FP_MOVE
+		using					FP_MOVE=VOID(*)(const PENEMY_ cpenmythis)noexcept;
+		//	FP_SETDIRECTION
+		using					FP_SETDIRECTION=VOID(*)(const PENEMY_ cpenmythis,const IDDIRECTION ciddirection)noexcept;
+
+		//
 		//		const
 		//
 
-		//	enum class IDTYPE
-		//		「種別」を示す定数です。
-		enum class IDTYPE:UINT8{
-			ShellCreeper			//	カメさぬ
-		};
 		//	enum class IDSTATE
 		//		「状態」を示す定数です。
 		enum class IDSTATE:UINT8{
@@ -1918,120 +2262,260 @@ public:
 		};
 
 		//
-		//		body:ENEMY
+		//		class
+		//
+
+		//	VTBL
+		class VTBL;
+		using					CVTBL=const VTBL;
+		using					PVTBL=VTBL*;
+		using					PCVTBL=CVTBL*;
+
+		//
+		//		class:VTBL
+		//
+
+		class VTBL{
+		public:
+			FP_START				fp_startThis;
+			FPUI8N_SHOW				fpui8n_showThis;
+			FP_MOVE					fp_moveThis;
+			FP_SETDIRECTION			fp_setdirectionThis;
+		public:
+			constexpr /*VOID*/		VTBL(VOID)noexcept:
+				fp_startThis(
+					[](const PENEMY_ cpenmythis)noexcept{
+						return;
+					}
+				),
+				fpui8n_showThis(
+					[](const PCENEMY_ cpcenmythis,CUINT8 cui8isprite)noexcept->UINT8
+					{
+						return 0;
+					}
+				),
+				fp_moveThis(
+					[](const PENEMY_ cpenmythis)noexcept{
+						return;
+					}
+				),
+				fp_setdirectionThis(
+					[](const PENEMY_ cpenmythis,const IDDIRECTION ciddirection)noexcept{
+						return;
+					}
+				)
+			{}
+			constexpr /*VOID*/		VTBL(const FP_START cfp_startthis,const FPUI8N_SHOW cfpui8n_showthis,const FP_MOVE cfp_movethis,const FP_SETDIRECTION cfp_setdirectionthis)noexcept:
+				fp_startThis(cfp_startthis),
+				fpui8n_showThis(cfpui8n_showthis),
+				fp_moveThis(cfp_movethis),
+				fp_setdirectionThis(cfp_setdirectionthis)
+			{}
+		};
+
+		//
+		//		body:ENEMY_
 		//
 
 	private:
-		//	IDTYPE					idType
-		//		「種別」を保持します。
-		IDTYPE					idType;
+		VTBL					vtblThis;
+	protected:
 		//	IDSTATE					idState
 		//		「状態」を保持します。
 		IDSTATE					idState;
 	public:
-		/*VOID*/				ENEMY_(VOID)noexcept{}
-		/*VOID*/				~ENEMY_(VOID)noexcept{
-			Delete();
-		}
-		//	VOID					New(VOID)
-		//		初期化処理で、プログラム開始後一度だけの実行で十分──
-		//		という建前なんですが、現状何もしてません。
-		VOID					New(VOID)noexcept{
-			return;
-		}
-		//	VOID					Delete(VOID)
-		//		「終了処理」ですが、現状何もする事はありません。
-		VOID					Delete(VOID)noexcept{
-			return;
-		}
 		//	OFWBOOL					eIsActive(VOID)
 		//		「idType」を生存フラグ解釈して、「生きて」いれば「TRUE」を返します。
 		constexpr OFWBOOL		eIsActive(VOID)const noexcept{
 			return (idState!=IDSTATE::None);
 		}
-		//	VOID					Start(const PGAME cpgameowner,const IDTYPE cidtype,CVECTOR2& cv2iposition,const IDDIRECTION ciddirection)
-		//		「敵」出現処理です。
-		//		メイン処理から呼び出される他、「撃ち落とされた際の爆発状態への移行」時にもクラス内から呼び出されます。
-		//		「cpgameowner」が引数として渡っているのは、「自機の方向を調べる」等のサービスを提供するためです。
-		VOID					Start(const PGAME cpgameowner,const IDTYPE cidtype,CVECTOR2& cv2iposition=VECTOR2::stv2ImmediateZero(),const IDDIRECTION ciddirection=IDDIRECTION::Left)noexcept{
-			idType=cidtype;
-			switch(idType){
-			case IDTYPE::ShellCreeper:
-				idState=IDSTATE::Normal;
-				v2iPosition=cv2iposition;
-				UpdatePosition();
-				SetDirection(cpgameowner,ciddirection);
-				ui8iPattern=0;
-				break;
-			}
-			return;
-		}
 		//	UINT8					ui8nShow(CUINT8 cui8isprite)
-		//		「敵」表示処理です。
+		//		表示処理です。
 		//		スプライト番号「cui8isprite」以降で表示する事を求めています。
 		//		「移動処理」と分けているのは、「表示を垂直帰線期間中に確実に完了させる」ためです。
 		//		返り値はスプライト枚数の使用実績です。
 		UINT8					ui8nShow(CUINT8 cui8isprite)const noexcept{
-			switch(idType){
-			case IDTYPE::ShellCreeper:
-				switch(idState){
-				case IDSTATE::Normal:
-					FAMILYBASIC::SPRITE_stWrite16(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),((ui8iPattern>>2)&4)+184,7,idDirection==IDDIRECTION::Right);
-					return 1;
-				default:
-					break;
-				}
-			}
-			//	「生きて」ないのでスプライト消費はゼロ。
-			return 0;
+			return vtblThis.fpui8n_showThis(this,cui8isprite);
 		}
-		//	VOID					Move(const PGAME cpgameowner)
-		//		「敵」移動処理です。
+		//	VOID					Move(VOID)
+		//		移動処理です。
 		//		移動の他、当たり判定等もここで行います。
-		//		「cpgameowner」が引数として渡っているのは、新規「敵」生成や、
-		//		「自機の方向を調べる」等のサービスを提供するためです。
-		VOID					Move(const PGAME cpgameowner)noexcept{
-			CAUTO					ci16iyd8=INT16(v2iPosition_Upper.i16iY()+8);
-
-			switch(idType){
-			case IDTYPE::ShellCreeper:
-				{
-					CAUTO					ci16ixr0=INT16(v2iPosition_Upper.i16iX()+sti16dGetOffsetUpperHalfR(3));
-					CAUTO					ci16ixl0=INT16(v2iPosition_Upper.i16iX()+sti16dGetOffsetUpperHalfL(3));
-					CAUTO					map_cui8cr0d8=MAP_stui8cReadPattern({ci16ixr0,ci16iyd8});
-					CAUTO					map_cui8cl0d8=MAP_stui8cReadPattern({ci16ixl0,ci16iyd8});
-					//	OFWBOOL					cescaffold
-					//		足元に「足場」があるかどうかを保持します。
-					CAUTO					cescaffold=(!MAP_steIsMovable(map_cui8cr0d8))||(!MAP_steIsMovable(map_cui8cl0d8));
-
-					switch(idDirection){
-					case IDDIRECTION::Right:
-						break;
-					case IDDIRECTION::Left:
-						break;
-					}
-					++ui8iPattern;
-				}
-				break;
+		VOID					Move(VOID)noexcept{
+			vtblThis.fp_moveThis(this);
+			UpdatePosition();
 			return;
-			}
+		}
+	protected:
+		//	VOID					stStart(const PENEMY_ cpenmythis,CVTBL& cvtblthis,CVECTOR2& cv2iposition,const IDDIRECTION ciddirection)
+		//		出現処理です。
+		//		導出クラスから呼び出される事だけを想定するため、「protected」属性です。
+		static _INLINE_ VOID	stStart(const PENEMY_ cpenmythis,CVTBL& cvtblthis,CVECTOR2& cv2iposition,const IDDIRECTION ciddirection)noexcept{
+			cpenmythis->Start(cvtblthis,cv2iposition,ciddirection);
+			return;
+		}
+		//	VOID					SetDirection(const IDDIRECTION ciddirection)
+		//		方向転換処理です。
+		VOID					SetDirection(const IDDIRECTION ciddirection)noexcept{
+			vtblThis.fp_setdirectionThis(this,ciddirection);
+			idDirection=ciddirection;
+			return;
+		}
+		_INLINE_ IDHIT			idGetHit(CVECTOR2& cv2dtrampledoffsetr_upper,CVECTOR2& cv2ntrampledhithalf_upper,CVECTOR2& cv2dkickedoffsetr_upper,CVECTOR2& cv2nkickedhithalf_upper,CVECTOR2& cv2dcrushedoffsetr_upper,CVECTOR2& cv2ncrushedhithalf_upper,CVECTOR2& cv2dattackedoffsetr_upper,CVECTOR2& cv2nattackedhithalf_upper)const noexcept{
+			return pgameOwner->ENEMY_idGetHit(idDirection,v2iPredictedPosition_Upper,cv2dtrampledoffsetr_upper,cv2ntrampledhithalf_upper,cv2dkickedoffsetr_upper,cv2nkickedhithalf_upper,cv2dcrushedoffsetr_upper,cv2ncrushedhithalf_upper,cv2dattackedoffsetr_upper,cv2nattackedhithalf_upper);
 		}
 	private:
-		//	VOID					SetDirection(const PGAME cpgameowner,const IDDIRECTION ciddirection)
-		VOID					SetDirection(const PGAME cpgameowner,const IDDIRECTION ciddirection)noexcept{
-			switch(idType){
-			case IDTYPE::ShellCreeper:
-				switch(ciddirection){
-				case IDDIRECTION::Right:
-					v2dVelocity=VECTOR2(+1,0)<<(stcui8nDiscardBit-1);
-					break;
-				case IDDIRECTION::Left:
-					v2dVelocity=VECTOR2(-1,0)<<(stcui8nDiscardBit-1);
-					break;
+		//	VOID					Start(CVTBL& cvtblthis,CVECTOR2& cv2iposition,const IDDIRECTION ciddirection)
+		//		出現処理です。
+		//		導出クラス「『疑似』仮想関数テーブル」による初期化を行います。
+		VOID					Start(CVTBL& cvtblthis,CVECTOR2& cv2iposition,const IDDIRECTION ciddirection)noexcept{
+			vtblThis=cvtblthis;
+			idState=IDSTATE::Normal;
+			v2iPosition=cv2iposition;
+			v2iPosition_Upper=stv2iGetPosition_Upper(v2iPosition);
+			UpdatePosition();
+			SetDirection(ciddirection);
+			ui8iPattern=0;
+			vtblThis.fp_startThis(this);
+			return;
+		}
+	};
+
+	//
+	//		class:SHELLCREEPER
+	//
+
+	class SHELLCREEPER:public ENEMY_{
+	public:
+
+		//
+		//		const
+		//
+
+		//	INT16					stci16nCollisionWidth_UpperHalf
+		//		判定幅ドット数(の半分)です。
+		//		これは座標に対する加算値であり、
+		//		左右対称化のため、右方向「+n」、左方向「-n-1」が座標最大、最小値となります。
+		//		つまり、「+n-(-n-1)+1=2n+2」が実際の判定幅となります。
+		static constexpr INT16	stci16nCollisionWidth_UpperHalf=5;
+		//	VECTOR2					stcv2dTrampledOffsetR_Upper
+		//		「踏まれ」判定の相対位置です。
+		//		当たり判定は整数で行うため、この値は「固定小数点値」ではありません。
+		//		その気持ちを「_Upper」に込めています。
+		static constexpr VECTOR2	stcv2dTrampledOffsetR_Upper={0,-3};
+		//	VECTOR2					stcv2nTrampledHitHalf_Upper
+		//		「踏まれ」判定の大きさの半分です。
+		//		当たり判定は整数で行うため、この値は「固定小数点値」ではありません。
+		//		その気持ちを「_Upper」に込めています。
+		static constexpr VECTOR2	stcv2nTrampledHitHalf_Upper={stci16nCollisionWidth_UpperHalf,2};
+		static constexpr VECTOR2	stcv2dKickedOffsetR_Upper={0,-2};
+		static constexpr VECTOR2	stcv2nKickedHitHalf_Upper={stci16nCollisionWidth_UpperHalf,5};
+		static constexpr VECTOR2	stcv2dCrushedOffsetR_Upper={0,-2};
+		static constexpr VECTOR2	stcv2nCrushedHitHalf_Upper={stci16nCollisionWidth_UpperHalf,5};
+		static constexpr VECTOR2	stcv2dAttackedOffsetR_Upper={0,-2};
+		static constexpr VECTOR2	stcv2nAttackedHitHalf_Upper={stci16nCollisionWidth_UpperHalf,5};
+
+		//
+		//		body:SHELLCREEPER
+		//
+
+	private:
+	public:
+		//	VOID					stStart(const PENEMY_ cpenmythis,CVECTOR2& cv2iposition,const IDDIRECTION ciddirection)
+		//		「カメさぬ」は出現するのです。
+		static VOID				stStart(const PENEMY_ cpenmythis,CVECTOR2& cv2iposition,const IDDIRECTION ciddirection)noexcept{
+			ENEMY_::stStart(cpenmythis,{
+				[](const PENEMY_ cpenmythis)noexcept{
+					PSHELLCREEPER(cpenmythis)->Start_Self();
+					return;
+				},
+				[](const PCENEMY_ cpcenmythis,CUINT8 cui8isprite)noexcept->UINT8
+				{
+					return PSHELLCREEPER(cpcenmythis)->ui8nShow_Self(cui8isprite);
+				},
+				[](const PENEMY_ cpenmythis)noexcept{
+					PSHELLCREEPER(cpenmythis)->Move_Self();
+					return;
+				},
+				[](const PENEMY_ cpenmythis,const IDDIRECTION ciddirection)noexcept{
+					PSHELLCREEPER(cpenmythis)->SetDirection_Self(ciddirection);
+					return;
 				}
+			},cv2iposition,ciddirection);
+			return;
+		}
+	private:
+		VOID					Start_Self(VOID)noexcept{
+			return;
+		}
+		UINT8					ui8nShow_Self(CUINT8 cui8isprite)noexcept{
+			switch(idState){
+			case IDSTATE::Normal:
+				FAMILYBASIC::SPRITE_stWrite16(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),((ui8iPattern>>2)&4)+184,7,idDirection==IDDIRECTION::Right);
+				return 1;
+			default:
 				break;
 			}
-			idDirection=ciddirection;
+			return 0;
+		}
+		VOID					Move_Self(VOID)noexcept{
+			CAUTO					ci16ixr0=INT16(v2iPosition_Upper.i16iX()+sti16dGetOffset_UpperR(stci16nCollisionWidth_UpperHalf));
+			CAUTO					ci16ixl0=INT16(v2iPosition_Upper.i16iX()+sti16dGetOffset_UpperL(stci16nCollisionWidth_UpperHalf));
+			CAUTO					ci16iyd8=i16iGetPositionYD8_Upper();
+			CAUTO					map_cui8cr0d8=MAP_stui8cReadPattern({ci16ixr0,ci16iyd8});
+			CAUTO					map_cui8cl0d8=MAP_stui8cReadPattern({ci16ixl0,ci16iyd8});
+			//	OFWBOOL					cescaffold
+			//		足元に「足場」があるかどうかを保持します。
+			CAUTO					cescaffold=(!MAP_steIsMovable(map_cui8cr0d8))||(!MAP_steIsMovable(map_cui8cl0d8));
+
+			switch(idState){
+			case IDSTATE::Normal:
+				Move_Normal(cescaffold);
+				break;
+			default:
+				break;
+			}
+		}
+		VOID					Move_Normal(COFWBOOL cescaffold)noexcept{
+			if(cescaffold){
+				//	「足場」あり
+				SetVelocityY_Zero();
+				PredictPosition_Upper();
+				++ui8iPattern;
+			}else{
+				//	「足場」無し
+				SetVelocityY_Gravity();
+				PredictPosition_Upper();
+				eIsCollidingD(stci16nCollisionWidth_UpperHalf);
+			}
+			switch(idDirection){
+			case IDDIRECTION::Right:
+				if(eIsCollidingR(stci16nCollisionWidth_UpperHalf))SetDirection(IDDIRECTION::Left);
+				break;
+			case IDDIRECTION::Left:
+				if(eIsCollidingL(stci16nCollisionWidth_UpperHalf))SetDirection(IDDIRECTION::Right);
+				break;
+			}
+			idGetHit(
+				stcv2dTrampledOffsetR_Upper,
+				stcv2nTrampledHitHalf_Upper,
+				VECTOR2::stv2ImmediateZero(),
+				VECTOR2::stv2ImmediateZero(),
+				stcv2dCrushedOffsetR_Upper,
+				stcv2nCrushedHitHalf_Upper,
+				stcv2dAttackedOffsetR_Upper,
+				stcv2nAttackedHitHalf_Upper
+			);
+			return;
+		}
+		VOID					SetDirection_Self(const IDDIRECTION ciddirection)noexcept{
+			switch(ciddirection){
+			case IDDIRECTION::Right:
+				v2dVelocity=VECTOR2(+1,0)<<(stcui8nDiscardBit-1);
+				break;
+			case IDDIRECTION::Left:
+				v2dVelocity=VECTOR2(-1,0)<<(stcui8nDiscardBit-1);
+				break;
+			}
 			return;
 		}
 	};
@@ -2060,7 +2544,7 @@ private:
 	//	PLAYER					PLAYER_plyrThis
 	//		「自機状態」を保持する構造体です。
 	PLAYER					PLAYER_plyrThis;
-	//	ENEMY					ENEMY_aenmyThis[]
+	//	ENEMY_					ENEMY_aenmyThis[]
 	//		「敵状態」を保持する構造体の配列です。
 	ENEMY_					ENEMY_aenmyThis[ENEMY_stcui8nInstanceMaximum];
 	//	VECTOR2					SCROLL_v2iPosition
@@ -2077,14 +2561,14 @@ public:
 	VOID					New(VOID)noexcept{
 		idMode=IDMODE::Start;
 		CONTROLLER_ui8cCurrent=0;
-		PLAYER_plyrThis.New();
-		for(AUTO& enmycurrent:ENEMY_aenmyThis)enmycurrent.New();
+		PLAYER_plyrThis.New(this);
+		for(AUTO& enmycurrent:ENEMY_aenmyThis)enmycurrent.New(this);
 		return;
 	}
 	//	VOID					Delete(VOID)
 	//		ゲームとしての終了処理ですが、現状呼び出される事はありません。
 	VOID					Delete(VOID)noexcept{
-		for(AUTO& enmycurrent:ENEMY_aenmyThis)enmycurrent.Delete();
+		for(UINT8 ui8ienemy=ENEMY_stcui8nInstanceMaximum;0<ui8ienemy;--ui8ienemy)ENEMY_aenmyThis[ui8ienemy-1].Delete();
 		PLAYER_plyrThis.Delete();
 		return;
 	}
@@ -2107,16 +2591,17 @@ public:
 	}
 	//	VOID					Start(VOID)
 	//		ゲーム開始処理です。
-	//		初期化処理の後の他、ゲームオーバーになった後にも実行されます。
+	//		初期化処理の後の他、ゲームオーバー後の再開時にも実行されます。
 	VOID					Start(VOID)noexcept{
 		idMode=IDMODE::Normal;
 		ui16nScore=0;
 		//	「自機」初期化
-		PLAYER_plyrThis.Start(this,PLAYER::IDTYPE::Mario,VECTOR2(4,1024-16)<<stcui8nDiscardBit);
-		ENEMY_aenmyThis[0].Start(this,ENEMY_::IDTYPE::ShellCreeper,VECTOR2(96,1024-16)<<stcui8nDiscardBit);
+		PLAYER_plyrThis.Start(PLAYER::IDTYPE::Mario,VECTOR2((24<<3)+4,(87<<3))<<stcui8nDiscardBit);
+		SHELLCREEPER::stStart(&ENEMY_aenmyThis[0],VECTOR2((26<<3),(89<<3))<<stcui8nDiscardBit,CHARACTER_::IDDIRECTION::Right);
+		SHELLCREEPER::stStart(&ENEMY_aenmyThis[1],VECTOR2((28<<3),(89<<3))<<stcui8nDiscardBit,CHARACTER_::IDDIRECTION::Right);
+		SHELLCREEPER::stStart(&ENEMY_aenmyThis[2],VECTOR2((30<<3),(89<<3))<<stcui8nDiscardBit,CHARACTER_::IDDIRECTION::Right);
+		SHELLCREEPER::stStart(&ENEMY_aenmyThis[3],VECTOR2((32<<3),(89<<3))<<stcui8nDiscardBit,CHARACTER_::IDDIRECTION::Right);
 		//	「背景」初期化
-		FAMILYBASIC::SPRITE_stSetSize(FAMILYBASIC::IDSIZE::n1024);
-		FAMILYBASIC::BG1_stSetSize(FAMILYBASIC::IDSIZE::n1024);
 		SCROLL_v2iPosition=VECTOR2(0,1024-212)<<stcui8nDiscardBit;
 		FAMILYBASIC::BG1_stCopyAttribute({0,0},MAP_stcv2nSize,MAP_stacui16cAttribute);
 		//	点数系初期化
@@ -2133,19 +2618,22 @@ public:
 	//		「登場人物全てを満遍なくちょっとずつ動かす事」がポイントです。
 	VOID					Normal(VOID)noexcept{
 		CONTROLLER_Update();
-		//	表示(垂直帰線期間中に完了できるよう冒頭に持ってくる)
+		//	「表示」処理は垂直帰線期間中に完了できるよう冒頭に持ってきます。
 		Show();
-		//	「自機」移動
+		//	「敵」移動は「踏みつけ」等の当たり判定を伴い、
+		//	それによる「自機」運動への影響が起きたりするんで、
+		//	「自機」めり込み判定などが行われる「自機」移動前に実行します。
+		for(AUTO& enmycurrent:ENEMY_aenmyThis)enmycurrent.Move();
+		//	「自機」移動は「敵」移動の後で実行し、
+		//	「踏みつけ」跳ね返りによるめり込みの回避等を行えるようにします。
 		{
 			CAUTO					cui16nscore=ui16nScore;
 
-			PLAYER_plyrThis.Move(this);
+			PLAYER_plyrThis.Move();
 			SCROLL_v2iPosition=PLAYER_plyrThis.cv2iGetPosition()-(VECTOR2(128,112)<<stcui8nDiscardBit);
 			//	点数に変動があった場合だけ表示
 			if(cui16nscore!=ui16nScore)ShowScore();
 		}
-		//	「敵」移動
-		for(AUTO& enmycurrent:ENEMY_aenmyThis)enmycurrent.Move(this);
 		//	ゲームオーバー判定
 		if(!PLAYER_plyrThis.eIsActive()){
 			FAMILYBASIC::BG0_stPrint({11,12},"GAME  OVER",0);
@@ -2280,6 +2768,9 @@ private:
 		if(9999<ui16nScore)ui16nScore=9999;
 		return;
 	}
+	_INLINE_ CHARACTER_::IDHIT	ENEMY_idGetHit(const CHARACTER_::IDDIRECTION ciddirection,CVECTOR2& cv2isource,CVECTOR2& cv2doffset_trampled,CVECTOR2& cv2nsize_trampled,CVECTOR2& cv2doffset_kicked,CVECTOR2& cv2nsize_kicked,CVECTOR2& cv2doffset_crushed,CVECTOR2& cv2nsize_crushed,CVECTOR2& cv2doffset_attacked,CVECTOR2& cv2nsize_attacked)noexcept{
+		return PLAYER_plyrThis.ENEMY_idGetHit(ciddirection,cv2isource,cv2doffset_trampled,cv2nsize_trampled,cv2doffset_kicked,cv2nsize_kicked,cv2doffset_crushed,cv2nsize_crushed,cv2doffset_attacked,cv2nsize_attacked);
+	}
 	//	VOID					CONTROLLER_Update(VOID)
 	//		コントローラから状態をゲットして、
 	//		通常状態他、「押下」のみ状態を設定します。
@@ -2306,10 +2797,10 @@ static GAME				stgameThis;
 
 VOID					USER_New(VOID)noexcept{
 	FAMILYBASIC::stNew();
+	FAMILYBASIC::SPRITE_stSetSize(FAMILYBASIC::IDSIZE::n1024);
+	FAMILYBASIC::BG1_stSetSize(FAMILYBASIC::IDSIZE::n1024);
 	FAMILYBASIC::PALETTE_stWriteSet2(0,2,1,0);
-	//	左右ループさせたくないので、スプライトは縦横512ドット空間に設定
-	FAMILYBASIC::SPRITE_stSetSize(FAMILYBASIC::IDSIZE::n512);
-	FAMILYBASIC::BG0_stPrint({0,0},"LESSON 09:MAP(2)",0);
+	FAMILYBASIC::BG0_stPrint({0,0},"LESSON 10:MAP(3)",0);
 	FAMILYBASIC::BG0_stPrint({0,1},"SCORE",0);
 	stgameThis.New();
 	return;
