@@ -98,7 +98,7 @@ public:
 			"#CHANNEL=PCM3",
 			#=============	   0
 			"#SPEED=1",
-			" 6A ,PT=-4,PG=33,PN=0,PM=0,VL=224,VM=255",
+			" 6A ,PT=-4,$PCM_Sqr17L,PN=0,PM=0,VL=224,VM=255",
 			"-F  ,PT=-4   ",
 		];
 	)");
@@ -109,7 +109,7 @@ public:
 			"#CHANNEL=PCM3",
 			#=============	   0
 			"#SPEED=1",
-			" 7C ,PT=+8,PG=1,PN=0,PM=0,VL=240,VM=255",
+			" 7C ,PT=+8,$PCM_Sqr11L,PN=0,PM=0,VL=240,VM=255",
 			"-G# ,PT=+8   ",
 		];
 	)");
@@ -121,7 +121,7 @@ public:
 			"#CHANNEL=FM7",
 			#=============	   0
 			"#SPEED=1",
-			" 3C ,PG=126,PN=0,PM=0,VL=255,VM=255",
+			" 3C ,$FM_Noise,PN=0,PM=0,VL=255,VM=255",
 			"#SPEED=1",
 			"-           ",
 		];

@@ -72,35 +72,45 @@ namespace m68k::i71::sub{
 			0x1000,
 			0x0000
 		};
-		static constexpr UINT8	PALETTE_staacSetSprite[][4][4]={
+		static constexpr UINT16	PALETTE_stacui16cColor[]={
+			common::ui16cGetColor(0x616161),common::ui16cGetColor(0x000088),common::ui16cGetColor(0x1f0d99),common::ui16cGetColor(0x371379),common::ui16cGetColor(0x561260),common::ui16cGetColor(0x5d0010),common::ui16cGetColor(0x520e00),common::ui16cGetColor(0x3a2308),
+			common::ui16cGetColor(0x21350c),common::ui16cGetColor(0x0d410e),common::ui16cGetColor(0x174417),common::ui16cGetColor(0x003a1f),common::ui16cGetColor(0x002f57),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),
+			common::ui16cGetColor(0xaaaaaa),common::ui16cGetColor(0x0d4dc4),common::ui16cGetColor(0x4b24de),common::ui16cGetColor(0x6912cf),common::ui16cGetColor(0x9014ad),common::ui16cGetColor(0x9d1c48),common::ui16cGetColor(0x923404),common::ui16cGetColor(0x735005),
+			common::ui16cGetColor(0x5d6913),common::ui16cGetColor(0x167a11),common::ui16cGetColor(0x138008),common::ui16cGetColor(0x127649),common::ui16cGetColor(0x1c6691),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),
+			common::ui16cGetColor(0xfcfcfc),common::ui16cGetColor(0x639afc),common::ui16cGetColor(0x8a7efc),common::ui16cGetColor(0xb06afc),common::ui16cGetColor(0xdd6df2),common::ui16cGetColor(0xe771ab),common::ui16cGetColor(0xe38658),common::ui16cGetColor(0xcc9e22),
+			common::ui16cGetColor(0xa8b100),common::ui16cGetColor(0x72c100),common::ui16cGetColor(0x5acd4e),common::ui16cGetColor(0x34c28e),common::ui16cGetColor(0x4fbece),common::ui16cGetColor(0x424242),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),
+			common::ui16cGetColor(0xfcfcfc),common::ui16cGetColor(0xbed4fc),common::ui16cGetColor(0xcacafc),common::ui16cGetColor(0xd9c4fc),common::ui16cGetColor(0xecc1fc),common::ui16cGetColor(0xfac3e7),common::ui16cGetColor(0xf7cec3),common::ui16cGetColor(0xe2cda7),
+			common::ui16cGetColor(0xdadb9c),common::ui16cGetColor(0xc8e39e),common::ui16cGetColor(0xbfe5b8),common::ui16cGetColor(0xb2ebc8),common::ui16cGetColor(0xb7e5eb),common::ui16cGetColor(0xacacac),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000)
+		};
+		static constexpr UINT8	PALETTE_staacSetSprite[][4][3]={
 			{
-				{0x3f,0x36,0x16,0x02},
-				{0x3f,0x27,0x30,0x19},
-				{0x3f,0x35,0x25,0x17},
-				{0x3f,0x30,0x27,0x16}
+				{0x36,0x16,0x02},
+				{0x27,0x30,0x19},
+				{0x35,0x25,0x17},
+				{0x30,0x27,0x16}
 			},{
-				{0x3f,0x30,0x16,0x01},
-				{0x3f,0x10,0x00,0x01},
-				{0x3f,0x30,0x29,0x09},
-				{0x3f,0x30,0x16,0x07}
+				{0x30,0x16,0x01},
+				{0x10,0x00,0x01},
+				{0x30,0x29,0x09},
+				{0x30,0x16,0x07}
 			},{
-				{0x3f,0x30,0x26,0x12},
-				{0x3f,0x30,0x15,0x12},
-				{0x3f,0x30,0x12,0x16},
-				{0x3f,0x30,0x26,0x19}
+				{0x30,0x26,0x12},
+				{0x30,0x15,0x12},
+				{0x30,0x12,0x16},
+				{0x30,0x26,0x19}
 			}
 		};
-		static constexpr UINT8	PALETTE_staacSetBG[][4][4]={
+		static constexpr UINT8	PALETTE_staacSetBG[][4][3]={
 			{
-				{0x3f,0x2c,0x15,0x07},
-				{0x3f,0x27,0x21,0x12},
-				{0x3f,0x29,0x36,0x17},
-				{0x3f,0x30,0x26,0x07}
+				{0x2c,0x15,0x07},
+				{0x27,0x21,0x12},
+				{0x29,0x36,0x17},
+				{0x30,0x26,0x07}
 			},{
-				{0x3f,0x30,0x21,0x02},
-				{0x3f,0x30,0x27,0x18},
-				{0x3f,0x30,0x27,0x16},
-				{0x3f,0x29,0x36,0x17}
+				{0x30,0x21,0x02},
+				{0x30,0x27,0x18},
+				{0x30,0x27,0x16},
+				{0x29,0x36,0x17}
 			}
 		};
 
@@ -136,16 +146,18 @@ namespace m68k::i71::sub{
 	private:
 		static inline ST		st;
 	public:
-		static VOID				stNew(VOID)noexcept;
+		static VOID				stNew(COFWBOOL ceshow=TRUE)noexcept;
 		static VOID				stDelete(VOID)noexcept;
+		static VOID				stShow(COFWBOOL ceshow)noexcept;
 		static _INLINE_ UINT16	stui16GetRandom(VOID)noexcept{
 			return OS::LFSR_stui16Read();
 		}
-		static VOID				PALETTE_stWrite(CUINT8 cui8ipalette,CUINT8 cui8inescolor0,CUINT8 cui8inescolor1,CUINT8 cui8inescolor2,CUINT8 cui8inescolor3)noexcept;
-		static _INLINE_ VOID	PALETTE_stWrite(CUINT8 cui8ipalette,CUINT8 (&acui8inescolor)[4])noexcept{
-			PALETTE_stWrite(cui8ipalette,acui8inescolor[0],acui8inescolor[1],acui8inescolor[2],acui8inescolor[3]);
+		static VOID				PALETTE_stWrite(CUINT8 cui8ipalette,CUINT8 cui8inescolor0,CUINT8 cui8inescolor1,CUINT8 cui8inescolor2)noexcept;
+		static _INLINE_ VOID	PALETTE_stWrite(CUINT8 cui8ipalette,CUINT8 (&acui8inescolor)[3])noexcept{
+			PALETTE_stWrite(cui8ipalette,acui8inescolor[0],acui8inescolor[1],acui8inescolor[2]);
 			return;
 		}
+		static VOID				PALETTE_stWriteBack(CUINT8 cui8inescolor)noexcept;
 		static VOID				PALETTE_stWriteSet(CUINT8 cui8isetsprite,CUINT8 setcui8ibg)noexcept;
 		static VOID				PALETTE_stWriteSet2(CUINT8 cui8isetsprite0,CUINT8 cui8isetsprite1,CUINT8 cui8isetbg0,CUINT8 cui8isetbg1)noexcept;
 		static VOID				SPRITE_stSetOffset(CVECTOR2& cv2doffset)noexcept;

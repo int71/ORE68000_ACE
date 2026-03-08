@@ -181,3 +181,38 @@
                 ・プログラム更新検知時、ファイルオープン(正確には更新時刻取得)で
                   失敗する場合があったのを修正(リトライ実施)
                 ・サンプル「lesson08.o68k」追加
+1.3.2026.03:    ・パレット設定関数「FAMILYBASIC::PALETTE_stWrite」の引数を4色か
+                  ら3色に変更
+                ・バックドロップ(最背面)パレット設定関数
+                  「FAMILYBASIC::PALETTE_stWriteBack」を追加
+                ・マクロ「__O68K_MAKESEQUENCE」で下記音色名を使えるよう変更
+                  <FM音源部>
+                  ノイズ:
+                    通常:                   $FM_Noise
+                  <PCM音源部>
+                  矩形波(デューティ比3:1):
+                    通常:                   $PCM_Sqr31
+                    長リリース:             $PCM_Sqr31L
+                    遅アタック:             $PCM_Sqr31S
+                    長リリース+遅アタック:  $PCM_Sqr31LS
+                  矩形波(デューティ比1:1):
+                    通常:                   $PCM_Sqr11
+                    長リリース:             $PCM_Sqr11L
+                    遅アタック:             $PCM_Sqr11S
+                    長リリース+遅アタック:  $PCM_Sqr11LS
+                  矩形波(デューティ比1:3):
+                    通常:                   $PCM_Sqr13
+                    長リリース:             $PCM_Sqr13L
+                    遅アタック:             $PCM_Sqr13S
+                    長リリース+遅アタック:  $PCM_Sqr13LS
+                  矩形波(デューティ比1:7):
+                    通常:                   $PCM_Sqr17
+                    長リリース:             $PCM_Sqr17L
+                    遅アタック:             $PCM_Sqr17S
+                    長リリース+遅アタック:  $PCM_Sqr17LS
+                  三角波:
+                    通常:                   $PCM_Delta
+                    長リリース:             $PCM_DeltaL
+                    遅アタック:             $PCM_DeltaS
+                    長リリース+遅アタック:  $PCM_DeltaLS
+                ・上記更新に伴い、「lesson*.o68k」を更新

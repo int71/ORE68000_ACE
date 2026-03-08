@@ -71,7 +71,7 @@ public:
 			"#CHANNEL=PCM3",
 			#=============	   0
 			"#SPEED=1",
-			" 6A ,PT=-4,PG=33,PN=0,PM=0,VL=255,VM=255",
+			" 6A ,PT=-4,$PCM_Sqr17L,PN=0,PM=0,VL=255,VM=255",
 			"-F  ,PT=-4   ",
 		];
 	)");
@@ -83,7 +83,7 @@ public:
 			"#CHANNEL=FM7",
 			#=============	   0
 			"#SPEED=1",
-			" 3C ,PG=126,PN=0,PM=0,VL=255,VM=255",
+			" 3C ,$FM_Noise,PN=0,PM=0,VL=255,VM=255",
 			"#SPEED=1",
 			"-           ",
 		];

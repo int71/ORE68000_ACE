@@ -85,9 +85,9 @@ public:
 			#=======================================	   0
 			"#SPEED=1",
 			"$_INIT      /$_INIT      /$_INIT      ",
-			"     PG=1,PN=0,PM=0,VL=127,VM=255/            /            ",
-			"            /     PG=1,PN=0,PM=0,VL=127,VM=255/            ",
-			"            /            /     PG=48,PN=0,PM=0,VL=255,VM=255",
+			"     $PCM_Sqr11L,PN=0,PM=0,VL=127,VM=255/            /            ",
+			"            /     $PCM_Sqr11L,PN=0,PM=0,VL=127,VM=255/            ",
+			"            /            /     $PCM_Delta,PN=0,PM=0,VL=255,VM=255",
 			"            /            /            ",
 			"#SPEED=5",
 			"#LABEL=LoopStart",
@@ -234,15 +234,15 @@ public:
 	//	UINT8					stacui8cSE_Flag[]
 	//		「旗ゲット音」の演奏データです。
 	static constexpr _ORDERED_("SE0-00") UINT8	stacui8cSE_Flag[]=__O68K_MAKESEQUENCE(R"(
-	[
-		"#CHANNEL=PCM3",
-		#=============	   0
-		"#SPEED=4",
-		" 5B ,PG=1,PN=0,PM=0,VL=224,VM=255",
-		"  G         ",
-		"#SPEED=32",
-		"-           ",
-	];
+		[
+			"#CHANNEL=PCM3",
+			#=============	   0
+			"#SPEED=4",
+			" 5B ,$PCM_Sqr11L,PN=0,PM=0,VL=224,VM=255",
+			"  G         ",
+			"#SPEED=32",
+			"-           ",
+		];
 	)");
 	//	UINT8					stacui8cSE_Jump
 	//		「ジャンプ音」の演奏データです。
@@ -252,7 +252,7 @@ public:
 			"#CHANNEL=PCM3",
 			#=============	   0
 			"#SPEED=1",
-			" 4C ,PT=+2,PG=33,PN=0,PM=0,VL=224,VM=255",
+			" 4C ,PT=+2,$PCM_Sqr13L,PN=0,PM=0,VL=224,VM=255",
 			"#SPEED=32",
 			"-D  ,PT=+64",
 		];
@@ -264,7 +264,7 @@ public:
 			"#CHANNEL=PCM3",
 			#=============	   0
 			"#SPEED=1",
-			" 6C ,PT=+1,PG=33,PN=0,PM=0,VL=208,VM=255",
+			" 6C ,PT=+1,$PCM_Sqr13L,PN=0,PM=0,VL=208,VM=255",
 			"#SPEED=4",
 			"-D# ,PT=+4",
 			"#SPEED=1",
@@ -280,7 +280,7 @@ public:
 			"#CHANNEL=PCM3",
 			#=============	   0
 			"#SPEED=1",
-			" 3E ,PG=33,PN=0,PM=0,VL=224,VM=255",
+			" 3E ,$PCM_Sqr13L,PN=0,PM=0,VL=224,VM=255",
 			"-E",
 		];
 	)");
@@ -291,7 +291,7 @@ public:
 			"#CHANNEL=PCM3",
 			#=============	   0
 			"#SPEED=1",
-			" 3G ,PG=33,PN=0,PM=0,VL=224,VM=255",
+			" 3G ,$PCM_Sqr13L,PN=0,PM=0,VL=224,VM=255",
 			"-G",
 		];
 	)");
@@ -302,7 +302,7 @@ public:
 			"#CHANNEL=PCM3",
 			#=============	   0
 			"#SPEED=1",
-			" 3C ,PT=+1,PG=33,PN=0,PM=0,VL=212,VM=255",
+			" 3C ,PT=+1,$PCM_Sqr13L,PN=0,PM=0,VL=212,VM=255",
 			"-C# ,PT=+1",
 		];
 	)");
@@ -313,7 +313,7 @@ public:
 			"#CHANNEL=PCM3",
 			#=============	   0
 			"#SPEED=1",
-			" 3G ,PT=+1 ,PG=33,PN=0,PM=0,VL=212,VM=255",
+			" 3G ,PT=+1 ,$PCM_Sqr13L,PN=0,PM=0,VL=212,VM=255",
 			"-G# ,PT=+1",
 		];
 	)");
@@ -1271,7 +1271,7 @@ private:
 	PLAYER					PLAYER_plyrThis;
 	//	VECTOR2					SCROLL_v2iPosition
 	//		スクロール位置です。
-	VECTOR2					SCROLL_v2iPosition;
+	VECTOR2					SCROLL_v2iPosition_Upper;
 public:
 	/*VOID*/				GAME(VOID)noexcept{}
 	/*VOID*/				~GAME(VOID)noexcept{
@@ -1320,7 +1320,7 @@ public:
 		//	「背景」初期化
 		FAMILYBASIC::SPRITE_stSetSize(FAMILYBASIC::IDSIZE::n1024);
 		FAMILYBASIC::BG1_stSetSize(FAMILYBASIC::IDSIZE::n1024);
-		SCROLL_v2iPosition=VECTOR2(0,1024-212)<<stcui8nDiscardBit;
+		SCROLL_v2iPosition_Upper=VECTOR2(0,1024-212)<<stcui8nDiscardBit;
 		FAMILYBASIC::BG1_stCopyAttribute({0,0},stcv2nMap,stacui16cMap);
 		//	点数系初期化
 		FAMILYBASIC::BG0_stPrint({11,12},"          ",0);
@@ -1343,7 +1343,7 @@ public:
 			CAUTO					cui16nscore=ui16nScore;
 
 			PLAYER_plyrThis.Move(this);
-			SCROLL_v2iPosition=PLAYER_plyrThis.cv2iGetPosition()-(VECTOR2(128,112)<<stcui8nDiscardBit);
+			SCROLL_v2iPosition_Upper=PLAYER_plyrThis.cv2iGetPosition()-(VECTOR2(128,112)<<stcui8nDiscardBit);
 			//	点数に変動があった場合だけ表示
 			if(cui16nscore!=ui16nScore)ShowScore();
 		}
@@ -1375,8 +1375,8 @@ private:
 		UINT8					ui8isprite=0;
 
 		//	背景
-		FAMILYBASIC::SPRITE_stSetOffset(SCROLL_v2iPosition>>stcui8nDiscardBit);
-		FAMILYBASIC::BG1_stSetOffset(SCROLL_v2iPosition>>stcui8nDiscardBit);
+		FAMILYBASIC::SPRITE_stSetOffset(SCROLL_v2iPosition_Upper>>stcui8nDiscardBit);
+		FAMILYBASIC::BG1_stSetOffset(SCROLL_v2iPosition_Upper>>stcui8nDiscardBit);
 		//	自機
 		PLAYER_plyrThis.ui8nShow(ui8isprite);
 		//	残りは消去

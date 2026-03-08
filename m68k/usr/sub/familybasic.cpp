@@ -26,25 +26,11 @@ using namespace m68k::i71::sub;
 
 //	public
 
-VOID					FAMILYBASIC::stNew(VOID)noexcept{
-	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
-	using					IDLAYER=VIDEO_DRIVER::IDLAYER;
-
+VOID					FAMILYBASIC::stNew(
+	COFWBOOL				ceshow
+)noexcept{
 	VIDEO_DRIVER::stSetCRT256x212P();
-	VIDEO_DRIVER::stWrite(
-		IDREGISTERW::Composite1,
-		(/*表示面7(最前)*/	IDLAYER::Text<<0xc)|
-		(/*表示面6*/		IDLAYER::BG0<<0x8)|
-		(/*表示面5*/		IDLAYER::SpritePriority0<<0x4)|
-		(/*表示面4*/		IDLAYER::BG1<<0x0)
-	);
-	VIDEO_DRIVER::stWrite(
-		IDREGISTERW::Composite0,
-		(/*表示面3*/		IDLAYER::SpritePriority1<<0xc)|
-		(/*表示面2*/		IDLAYER::BG2<<0x8)|
-		(/*表示面1*/		IDLAYER::SpritePriority2<<0x4)|
-		(/*表示面0(最奥)*/	IDLAYER::BG3<<0x0)
-	);
+	stShow(ceshow);
 	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_SPRITE_stcui16iAddress,PATTERN::IDPATTERN::SPRITE_SYSTEM);
 	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG0_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
 	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG1_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
@@ -69,6 +55,8 @@ VOID					FAMILYBASIC::stNew(VOID)noexcept{
 	BG1_stFillAttribute({0,0},{128,128},0x8020);
 	BG2_stFillAttribute({0,0},{128,128},0x8020);
 	BG3_stFillAttribute({0,0},{128,128},0x8020);
+	PALETTE_stWriteBack(0x3f);
+	PALETTE_stWriteSet(0,1);
 	OS::BGM_stSetMask(
 		SOUND_DRIVER::stcui16cChannelMaskPCM0|
 		SOUND_DRIVER::stcui16cChannelMaskPCM1|
@@ -88,31 +76,68 @@ VOID					FAMILYBASIC::stDelete(VOID)noexcept{
 	return;
 }
 
+VOID					FAMILYBASIC::stShow(
+	COFWBOOL				ceshow
+)noexcept{
+	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
+	using					IDLAYER=VIDEO_DRIVER::IDLAYER;
+
+	if(ceshow){
+		VIDEO_DRIVER::stWrite(
+			IDREGISTERW::Composite1,
+			(/*表示面7(最前)*/	IDLAYER::Text<<0xc)|
+			(/*表示面6*/		IDLAYER::BG0<<0x8)|
+			(/*表示面5*/		IDLAYER::SpritePriority0<<0x4)|
+			(/*表示面4*/		IDLAYER::BG1<<0x0)
+		);
+		VIDEO_DRIVER::stWrite(
+			IDREGISTERW::Composite0,
+			(/*表示面3*/		IDLAYER::SpritePriority1<<0xc)|
+			(/*表示面2*/		IDLAYER::BG2<<0x8)|
+			(/*表示面1*/		IDLAYER::SpritePriority2<<0x4)|
+			(/*表示面0(最奥)*/	IDLAYER::BG3<<0x0)
+		);
+	}else{
+		VIDEO_DRIVER::stWrite(
+			IDREGISTERW::Composite1,
+			(/*表示面7(最前)*/	IDLAYER::None<<0xc)|
+			(/*表示面6*/		IDLAYER::None<<0x8)|
+			(/*表示面5*/		IDLAYER::None<<0x4)|
+			(/*表示面4*/		IDLAYER::None<<0x0)
+		);
+		VIDEO_DRIVER::stWrite(
+			IDREGISTERW::Composite0,
+			(/*表示面3*/		IDLAYER::None<<0xc)|
+			(/*表示面2*/		IDLAYER::None<<0x8)|
+			(/*表示面1*/		IDLAYER::None<<0x4)|
+			(/*表示面0(最奥)*/	IDLAYER::None<<0x0)
+		);
+	}
+	return;
+}
+
 VOID					FAMILYBASIC::PALETTE_stWrite(
 	CUINT8					cui8ipalette,
 	CUINT8					cui8inescolor0,
 	CUINT8					cui8inescolor1,
-	CUINT8					cui8inescolor2,
-	CUINT8					cui8inescolor3
+	CUINT8					cui8inescolor2
 )noexcept{
-	static constexpr UINT16	stacui16ccolornes[]={
-		common::ui16cGetColor(0x616161),common::ui16cGetColor(0x000088),common::ui16cGetColor(0x1f0d99),common::ui16cGetColor(0x371379),common::ui16cGetColor(0x561260),common::ui16cGetColor(0x5d0010),common::ui16cGetColor(0x520e00),common::ui16cGetColor(0x3a2308),
-		common::ui16cGetColor(0x21350c),common::ui16cGetColor(0x0d410e),common::ui16cGetColor(0x174417),common::ui16cGetColor(0x003a1f),common::ui16cGetColor(0x002f57),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),
-		common::ui16cGetColor(0xaaaaaa),common::ui16cGetColor(0x0d4dc4),common::ui16cGetColor(0x4b24de),common::ui16cGetColor(0x6912cf),common::ui16cGetColor(0x9014ad),common::ui16cGetColor(0x9d1c48),common::ui16cGetColor(0x923404),common::ui16cGetColor(0x735005),
-		common::ui16cGetColor(0x5d6913),common::ui16cGetColor(0x167a11),common::ui16cGetColor(0x138008),common::ui16cGetColor(0x127649),common::ui16cGetColor(0x1c6691),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),
-		common::ui16cGetColor(0xfcfcfc),common::ui16cGetColor(0x639afc),common::ui16cGetColor(0x8a7efc),common::ui16cGetColor(0xb06afc),common::ui16cGetColor(0xdd6df2),common::ui16cGetColor(0xe771ab),common::ui16cGetColor(0xe38658),common::ui16cGetColor(0xcc9e22),
-		common::ui16cGetColor(0xa8b100),common::ui16cGetColor(0x72c100),common::ui16cGetColor(0x5acd4e),common::ui16cGetColor(0x34c28e),common::ui16cGetColor(0x4fbece),common::ui16cGetColor(0x424242),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),
-		common::ui16cGetColor(0xfcfcfc),common::ui16cGetColor(0xbed4fc),common::ui16cGetColor(0xcacafc),common::ui16cGetColor(0xd9c4fc),common::ui16cGetColor(0xecc1fc),common::ui16cGetColor(0xfac3e7),common::ui16cGetColor(0xf7cec3),common::ui16cGetColor(0xe2cda7),
-		common::ui16cGetColor(0xdadb9c),common::ui16cGetColor(0xc8e39e),common::ui16cGetColor(0xbfe5b8),common::ui16cGetColor(0xb2ebc8),common::ui16cGetColor(0xb7e5eb),common::ui16cGetColor(0xacacac),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000)
-	};
 	CUINT16					acui16ccolor[]={
-		stacui16ccolornes[cui8inescolor0],
-		stacui16ccolornes[cui8inescolor1],
-		stacui16ccolornes[cui8inescolor2],
-		stacui16ccolornes[cui8inescolor3]
+		PALETTE_stacui16cColor[cui8inescolor0],
+		PALETTE_stacui16cColor[cui8inescolor1],
+		PALETTE_stacui16cColor[cui8inescolor2]
 	};
 
-	VIDEO_DRIVER::PALETTE_stWrite(cui8ipalette<<4,acui16ccolor,4);
+	VIDEO_DRIVER::PALETTE_stWrite((cui8ipalette<<4)+1,acui16ccolor,3);
+	return;
+}
+
+VOID					FAMILYBASIC::PALETTE_stWriteBack(
+	CUINT8					cui8inescolor
+)noexcept{
+	CAUTO					cui16ccolor=PALETTE_stacui16cColor[cui8inescolor];
+
+	VIDEO_DRIVER::PALETTE_stWrite(0,&cui16ccolor,1);
 	return;
 }
 

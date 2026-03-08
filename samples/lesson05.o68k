@@ -90,9 +90,9 @@ public:
 			#=======================================	   0
 			"#SPEED=1",
 			"$_INIT      /$_INIT      /$_INIT      ",
-			"     PG=1,PN=0,PM=0,VL=127,VM=255/            /            ",
-			"            /     PG=1,PN=0,PM=0,VL=127,VM=255/            ",
-			"            /            /     PG=48,PN=0,PM=0,VL=255,VM=255",
+			"     $PCM_Sqr11L,PN=0,PM=0,VL=127,VM=255/            /            ",
+			"            /     $PCM_Sqr11L,PN=0,PM=0,VL=127,VM=255/            ",
+			"            /            /     $PCM_Delta,PN=0,PM=0,VL=255,VM=255",
 			"            /            /            ",
 			"#SPEED=5",
 			"#LABEL=LoopStart",
@@ -244,7 +244,7 @@ public:
 			"#CHANNEL=PCM3",
 			#=============	   0
 			"#SPEED=1",
-			" 3C ,PT=+1,PG=33,PN=0,PM=0,VL=255,VM=255",
+			" 3C ,PT=+1,$PCM_Sqr17L,PN=0,PM=0,VL=255,VM=255",
 			"-C# ,PT=+1   ",
 		];
 	)");
@@ -255,7 +255,7 @@ public:
 			"#CHANNEL=PCM4",
 			#=============	   0
 			"#SPEED=4",
-			" 3G ,PG=17,PN=0,PM=0,VL=255,VM=255",
+			" 3G ,$PCM_Sqr13L,PN=0,PM=0,VL=255,VM=255",
 			" 4D         ",
 			"#SPEED=1",
 			"-           ",

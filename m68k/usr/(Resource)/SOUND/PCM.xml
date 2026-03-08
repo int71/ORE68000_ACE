@@ -10,9 +10,9 @@
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="Square(50%)"/>
+			<Name value="Square3:1"/>
 			<ReleaseRate value="11"/>
-			<Sample value="0:Square(50%)"/>
+			<Sample value="0:Square3:1"/>
 			<TotalLevel value="8"/>
 		</_00>
 		<_01>
@@ -24,38 +24,38 @@
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="Square(50%)/Long"/>
+			<Name value="Square3:1(LongRR)"/>
 			<ReleaseRate value="7"/>
-			<Sample value="0:Square(50%)"/>
+			<Sample value="0:Square3:1"/>
 			<TotalLevel value="8"/>
 		</_01>
 		<_02>
-			<AttackRate value="0"/>
+			<AttackRate value="15"/>
 			<Decay1Rate value="31"/>
-			<Decay2Rate value="31"/>
-			<DecayLevel value="15"/>
+			<Decay2Rate value="0"/>
+			<DecayLevel value="0"/>
 			<DetuneFine value="0"/>
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="NULL"/>
-			<ReleaseRate value="15"/>
-			<Sample value="NULL"/>
-			<TotalLevel value="127"/>
+			<Name value="Square3:1(SlowAR)"/>
+			<ReleaseRate value="11"/>
+			<Sample value="0:Square3:1"/>
+			<TotalLevel value="8"/>
 		</_02>
 		<_03>
-			<AttackRate value="0"/>
+			<AttackRate value="15"/>
 			<Decay1Rate value="31"/>
-			<Decay2Rate value="31"/>
-			<DecayLevel value="15"/>
+			<Decay2Rate value="0"/>
+			<DecayLevel value="0"/>
 			<DetuneFine value="0"/>
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="NULL"/>
-			<ReleaseRate value="15"/>
-			<Sample value="NULL"/>
-			<TotalLevel value="127"/>
+			<Name value="Square3:1(LongRR/SlowAR)"/>
+			<ReleaseRate value="7"/>
+			<Sample value="0:Square3:1"/>
+			<TotalLevel value="8"/>
 		</_03>
 		<_04>
 			<AttackRate value="0"/>
@@ -234,9 +234,9 @@
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="Square(25%)"/>
+			<Name value="Square1:1"/>
 			<ReleaseRate value="11"/>
-			<Sample value="1:Square(25%)"/>
+			<Sample value="1:Square1:1"/>
 			<TotalLevel value="8"/>
 		</_10>
 		<_11>
@@ -248,38 +248,38 @@
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="Square(25%)/Long"/>
+			<Name value="Square1:1(LongRR)"/>
 			<ReleaseRate value="7"/>
-			<Sample value="1:Square(25%)"/>
+			<Sample value="1:Square1:1"/>
 			<TotalLevel value="8"/>
 		</_11>
 		<_12>
-			<AttackRate value="0"/>
+			<AttackRate value="15"/>
 			<Decay1Rate value="31"/>
-			<Decay2Rate value="31"/>
-			<DecayLevel value="15"/>
+			<Decay2Rate value="0"/>
+			<DecayLevel value="0"/>
 			<DetuneFine value="0"/>
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="NULL"/>
-			<ReleaseRate value="15"/>
-			<Sample value="NULL"/>
-			<TotalLevel value="127"/>
+			<Name value="Square1:1(SlowAR)"/>
+			<ReleaseRate value="11"/>
+			<Sample value="1:Square1:1"/>
+			<TotalLevel value="8"/>
 		</_12>
 		<_13>
-			<AttackRate value="0"/>
+			<AttackRate value="15"/>
 			<Decay1Rate value="31"/>
-			<Decay2Rate value="31"/>
-			<DecayLevel value="15"/>
+			<Decay2Rate value="0"/>
+			<DecayLevel value="0"/>
 			<DetuneFine value="0"/>
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="NULL"/>
-			<ReleaseRate value="15"/>
-			<Sample value="NULL"/>
-			<TotalLevel value="127"/>
+			<Name value="Square1:1(LongRR/SlowAR)"/>
+			<ReleaseRate value="7"/>
+			<Sample value="1:Square1:1"/>
+			<TotalLevel value="8"/>
 		</_13>
 		<_14>
 			<AttackRate value="0"/>
@@ -458,9 +458,9 @@
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="Square(12.5%)"/>
+			<Name value="Square1:3"/>
 			<ReleaseRate value="11"/>
-			<Sample value="2:Square(12.5%)"/>
+			<Sample value="2:Square1:3"/>
 			<TotalLevel value="8"/>
 		</_20>
 		<_21>
@@ -472,38 +472,38 @@
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="Square(12.5%)/Long"/>
+			<Name value="Square1:3(LongRR)"/>
 			<ReleaseRate value="7"/>
-			<Sample value="2:Square(12.5%)"/>
+			<Sample value="2:Square1:3"/>
 			<TotalLevel value="8"/>
 		</_21>
 		<_22>
-			<AttackRate value="0"/>
+			<AttackRate value="15"/>
 			<Decay1Rate value="31"/>
-			<Decay2Rate value="31"/>
-			<DecayLevel value="15"/>
+			<Decay2Rate value="0"/>
+			<DecayLevel value="0"/>
 			<DetuneFine value="0"/>
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="NULL"/>
-			<ReleaseRate value="15"/>
-			<Sample value="NULL"/>
-			<TotalLevel value="127"/>
+			<Name value="Square1:3(SlowAR)"/>
+			<ReleaseRate value="11"/>
+			<Sample value="2:Square1:3"/>
+			<TotalLevel value="8"/>
 		</_22>
 		<_23>
-			<AttackRate value="0"/>
+			<AttackRate value="15"/>
 			<Decay1Rate value="31"/>
-			<Decay2Rate value="31"/>
-			<DecayLevel value="15"/>
+			<Decay2Rate value="0"/>
+			<DecayLevel value="0"/>
 			<DetuneFine value="0"/>
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="NULL"/>
-			<ReleaseRate value="15"/>
-			<Sample value="NULL"/>
-			<TotalLevel value="127"/>
+			<Name value="Square1:3(LongRR/SlowAR)"/>
+			<ReleaseRate value="7"/>
+			<Sample value="2:Square1:3"/>
+			<TotalLevel value="8"/>
 		</_23>
 		<_24>
 			<AttackRate value="0"/>
@@ -682,9 +682,9 @@
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="Delta"/>
+			<Name value="Square1:7"/>
 			<ReleaseRate value="11"/>
-			<Sample value="3:Delta"/>
+			<Sample value="3:Square1:7"/>
 			<TotalLevel value="8"/>
 		</_30>
 		<_31>
@@ -696,38 +696,38 @@
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="Delta/Long"/>
+			<Name value="Square1:7(LongRR)"/>
 			<ReleaseRate value="7"/>
-			<Sample value="3:Delta"/>
+			<Sample value="3:Square1:7"/>
 			<TotalLevel value="8"/>
 		</_31>
 		<_32>
-			<AttackRate value="0"/>
+			<AttackRate value="15"/>
 			<Decay1Rate value="31"/>
-			<Decay2Rate value="31"/>
-			<DecayLevel value="15"/>
+			<Decay2Rate value="0"/>
+			<DecayLevel value="0"/>
 			<DetuneFine value="0"/>
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="NULL"/>
-			<ReleaseRate value="15"/>
-			<Sample value="NULL"/>
-			<TotalLevel value="127"/>
+			<Name value="Square1:7(SlowAR)"/>
+			<ReleaseRate value="11"/>
+			<Sample value="3:Square1:7"/>
+			<TotalLevel value="8"/>
 		</_32>
 		<_33>
-			<AttackRate value="0"/>
+			<AttackRate value="15"/>
 			<Decay1Rate value="31"/>
-			<Decay2Rate value="31"/>
-			<DecayLevel value="15"/>
+			<Decay2Rate value="0"/>
+			<DecayLevel value="0"/>
 			<DetuneFine value="0"/>
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="NULL"/>
-			<ReleaseRate value="15"/>
-			<Sample value="NULL"/>
-			<TotalLevel value="127"/>
+			<Name value="Square1:7(LongRR/SlowAR)"/>
+			<ReleaseRate value="7"/>
+			<Sample value="3:Square1:7"/>
+			<TotalLevel value="8"/>
 		</_33>
 		<_34>
 			<AttackRate value="0"/>
@@ -898,60 +898,60 @@
 			<TotalLevel value="127"/>
 		</_3F>
 		<_40>
-			<AttackRate value="0"/>
+			<AttackRate value="27"/>
 			<Decay1Rate value="31"/>
-			<Decay2Rate value="31"/>
-			<DecayLevel value="15"/>
+			<Decay2Rate value="0"/>
+			<DecayLevel value="0"/>
 			<DetuneFine value="0"/>
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="NULL"/>
-			<ReleaseRate value="15"/>
-			<Sample value="NULL"/>
-			<TotalLevel value="127"/>
+			<Name value="Delta"/>
+			<ReleaseRate value="11"/>
+			<Sample value="4:Delta"/>
+			<TotalLevel value="8"/>
 		</_40>
 		<_41>
-			<AttackRate value="0"/>
+			<AttackRate value="27"/>
 			<Decay1Rate value="31"/>
-			<Decay2Rate value="31"/>
-			<DecayLevel value="15"/>
+			<Decay2Rate value="0"/>
+			<DecayLevel value="0"/>
 			<DetuneFine value="0"/>
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="NULL"/>
-			<ReleaseRate value="15"/>
-			<Sample value="NULL"/>
-			<TotalLevel value="127"/>
+			<Name value="Delta(LongRR)"/>
+			<ReleaseRate value="7"/>
+			<Sample value="4:Delta"/>
+			<TotalLevel value="8"/>
 		</_41>
 		<_42>
-			<AttackRate value="0"/>
+			<AttackRate value="15"/>
 			<Decay1Rate value="31"/>
-			<Decay2Rate value="31"/>
-			<DecayLevel value="15"/>
+			<Decay2Rate value="0"/>
+			<DecayLevel value="0"/>
 			<DetuneFine value="0"/>
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="NULL"/>
-			<ReleaseRate value="15"/>
-			<Sample value="NULL"/>
-			<TotalLevel value="127"/>
+			<Name value="Delta(SlowAR)"/>
+			<ReleaseRate value="11"/>
+			<Sample value="4:Delta"/>
+			<TotalLevel value="8"/>
 		</_42>
 		<_43>
-			<AttackRate value="0"/>
+			<AttackRate value="15"/>
 			<Decay1Rate value="31"/>
-			<Decay2Rate value="31"/>
-			<DecayLevel value="15"/>
+			<Decay2Rate value="0"/>
+			<DecayLevel value="0"/>
 			<DetuneFine value="0"/>
 			<DetuneRough value="0"/>
 			<KeyScale value="0"/>
 			<Multiply value="1"/>
-			<Name value="NULL"/>
-			<ReleaseRate value="15"/>
-			<Sample value="NULL"/>
-			<TotalLevel value="127"/>
+			<Name value="Delta(LongRR/SlowAR)"/>
+			<ReleaseRate value="7"/>
+			<Sample value="4:Delta"/>
+			<TotalLevel value="8"/>
 		</_43>
 		<_44>
 			<AttackRate value="0"/>
@@ -1796,8 +1796,9 @@
 	</PCM_Program>
 	<PCM_Sample>
 		<Image>
-			<_000 value="09PT09PT09MtLS0tLS0tLdPT09MtLS0tLS0tLS0tLS3T0y0tLS0tLS0tLS0tLS0t"/>
-			<_001 value="APHi08S1ppeIl6a1xNPi8QAPHi08S1ppeGlaSzwtHg8AAAAAAAAAAAAAAAAAAAAA"/>
+			<_000 value="09PT09PT09PT09PTLS0tLdPT09PT09PTLS0tLS0tLS3T09PTLS0tLS0tLS0tLS0t"/>
+			<_001 value="09MtLS0tLS0tLS0tLS0tLQDx4tPEtaaXiJemtcTT4vEADx4tPEtaaXhpWks8LR4P"/>
+			<_002 value="AAAAAAAAAAAAAAAAAAAAAA=="/>
 		</Image>
 		<_00>
 			<Deceleration value="8"/>
@@ -1811,10 +1812,10 @@
 			<ExternalOriginalNoteFine value="0"/>
 			<ExternalOriginalOctave value="4"/>
 			<InternalBit value="8"/>
-			<InternalMemory value="(-45,-45,-45,-45,-45,-45,-45,-45,45,45,45,45,45,45,45,45)"/>
+			<InternalMemory value="(-45,-45,-45,-45,-45,-45,-45,-45,-45,-45,-45,-45,45,45,45,45)"/>
 			<Interpolation value="None"/>
 			<Mode value="Internal"/>
-			<Name value="0:Square(50%)"/>
+			<Name value="0:Square3:1"/>
 			<SampleLength value="16"/>
 			<SampleLoopLength value="16"/>
 			<SampleStart value="0"/>
@@ -1832,10 +1833,10 @@
 			<ExternalOriginalNoteFine value="0"/>
 			<ExternalOriginalOctave value="4"/>
 			<InternalBit value="8"/>
-			<InternalMemory value="(-45,-45,-45,-45,45,45,45,45,45,45,45,45,45,45,45,45)"/>
+			<InternalMemory value="(-45,-45,-45,-45,-45,-45,-45,-45,45,45,45,45,45,45,45,45)"/>
 			<Interpolation value="None"/>
 			<Mode value="Internal"/>
-			<Name value="1:Square(25%)"/>
+			<Name value="1:Square1:1"/>
 			<SampleLength value="16"/>
 			<SampleLoopLength value="16"/>
 			<SampleStart value="16"/>
@@ -1853,16 +1854,37 @@
 			<ExternalOriginalNoteFine value="0"/>
 			<ExternalOriginalOctave value="4"/>
 			<InternalBit value="8"/>
-			<InternalMemory value="(-45,-45,45,45,45,45,45,45,45,45,45,45,45,45,45,45)"/>
+			<InternalMemory value="(-45,-45,-45,-45,45,45,45,45,45,45,45,45,45,45,45,45)"/>
 			<Interpolation value="None"/>
 			<Mode value="Internal"/>
-			<Name value="2:Square(12.5%)"/>
+			<Name value="2:Square1:3"/>
 			<SampleLength value="16"/>
 			<SampleLoopLength value="16"/>
 			<SampleStart value="32"/>
 			<ToneAdjust value="0"/>
 		</_02>
 		<_03>
+			<Deceleration value="8"/>
+			<DenoisePhaseKeep value="TRUE"/>
+			<ExternalAmplitude value="0"/>
+			<ExternalFrequency value="0"/>
+			<ExternalLength value="1"/>
+			<ExternalLoopLength value="1"/>
+			<ExternalOffset value="0"/>
+			<ExternalOriginalNote value="9"/>
+			<ExternalOriginalNoteFine value="0"/>
+			<ExternalOriginalOctave value="4"/>
+			<InternalBit value="8"/>
+			<InternalMemory value="(-45,-45,45,45,45,45,45,45,45,45,45,45,45,45,45,45)"/>
+			<Interpolation value="None"/>
+			<Mode value="Internal"/>
+			<Name value="3:Square1:7"/>
+			<SampleLength value="16"/>
+			<SampleLoopLength value="16"/>
+			<SampleStart value="48"/>
+			<ToneAdjust value="0"/>
+		</_03>
+		<_04>
 			<Deceleration value="7"/>
 			<DenoisePhaseKeep value="TRUE"/>
 			<ExternalAmplitude value="0"/>
@@ -1877,13 +1899,13 @@
 			<InternalMemory value="(0,-15,-30,-45,-60,-75,-90,-105,-120,-105,-90,-75,-60,-45,-30,-15,0,15,30,45,60,75,90,105,120,105,90,75,60,45,30,15)"/>
 			<Interpolation value="None"/>
 			<Mode value="Internal"/>
-			<Name value="3:Delta"/>
+			<Name value="4:Delta"/>
 			<SampleLength value="32"/>
 			<SampleLoopLength value="32"/>
-			<SampleStart value="48"/>
+			<SampleStart value="64"/>
 			<ToneAdjust value="0"/>
-		</_03>
-		<_04>
+		</_04>
+		<_05>
 			<Deceleration value="8"/>
 			<DenoisePhaseKeep value="TRUE"/>
 			<ExternalAmplitude value="0"/>
@@ -1901,8 +1923,8 @@
 			<Name value="NULL"/>
 			<SampleLength value="16"/>
 			<SampleLoopLength value="16"/>
-			<SampleStart value="80"/>
+			<SampleStart value="96"/>
 			<ToneAdjust value="0"/>
-		</_04>
+		</_05>
 	</PCM_Sample>
 </VST_ORE68000>

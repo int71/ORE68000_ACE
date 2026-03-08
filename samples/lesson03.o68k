@@ -30,9 +30,9 @@ my($_INIT)='  C ,PG=127';
 	#=======================================	   0
 	"#SPEED=1",
 	"$_INIT      /$_INIT      /$_INIT      ",
-	"     PG=1,PN=0,PM=0,VL=127,VM=255/            /            ",
-	"            /     PG=1,PN=0,PM=0,VL=127,VM=255/            ",
-	"            /            /     PG=48,PN=0,PM=0,VL=255,VM=255",
+	"     $PCM_Sqr11,PN=0,PM=0,VL=127,VM=255/            /            ",
+	"            /     $PCM_Sqr11,PN=0,PM=0,VL=127,VM=255/            ",
+	"            /            /     $PCM_Delta,PN=0,PM=0,VL=255,VM=255",
 	"            /            /            ",
 	"#SPEED=5",
 	"#LABEL=LoopStart",
@@ -181,7 +181,7 @@ static constexpr UINT8	stacui8cSE00[]=__O68K_MAKESEQUENCE(R"(
 	"#CHANNEL=PCM3",
 	#=============	   0
 	"#SPEED=4",
-	" 5B ,PG=1,PN=0,PM=0,VL=255,VM=255",
+	" 5B ,$PCM_Sqr11L,PN=0,PM=0,VL=255,VM=255",
 	"  G         ",
 	"#SPEED=1",
 	"-           ",
@@ -225,10 +225,10 @@ VOID					USER_Main(VOID)noexcept{
 		eKeyDownPrevious=cekeydown;
 		if(cekeydown){
 			FAMILYBASIC::SE0_stPlay(stacui8cSE00);
-			FAMILYBASIC::PALETTE_stWrite(0,0x30,0x36,0x16,0x02);
+			FAMILYBASIC::PALETTE_stWriteBack(0x30);
 			return;
 		}
 	}
-	FAMILYBASIC::PALETTE_stWrite(0,0x3f,0x36,0x16,0x02);
+	FAMILYBASIC::PALETTE_stWriteBack(0x3f);
 	return;
 }

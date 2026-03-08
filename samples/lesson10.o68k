@@ -113,9 +113,9 @@ public:
 			#=======================================	   0
 			"#SPEED=1",
 			"$_INIT      /$_INIT      /$_INIT      ",
-			"     PG=1,PN=0,PM=0,VL=127,VM=255/            /            ",
-			"            /     PG=1,PN=0,PM=0,VL=127,VM=255/            ",
-			"            /            /     PG=48,PN=0,PM=0,VL=255,VM=255",
+			"     $PCM_Sqr11L,PN=0,PM=0,VL=127,VM=255/            /            ",
+			"            /     $PCM_Sqr11L,PN=0,PM=0,VL=127,VM=255/            ",
+			"            /            /     $PCM_Delta,PN=0,PM=0,VL=255,VM=255",
 			"            /            /            ",
 			"#SPEED=5",
 			"#LABEL=LoopStart",
@@ -262,15 +262,15 @@ public:
 	//	UINT8					SE0_stacui8cPoint[]
 	//		「旗ゲット音」の演奏データです。
 	static constexpr _ORDERED_("SE0-00") UINT8	SE0_stacui8cPoint[]=__O68K_MAKESEQUENCE(R"(
-	[
-		"#CHANNEL=PCM3",
-		#=============	   0
-		"#SPEED=4",
-		" 5B ,PG=1,PN=0,PM=0,VL=224,VM=255",
-		"  G         ",
-		"#SPEED=32",
-		"-           ",
-	];
+		[
+			"#CHANNEL=PCM3",
+			#=============	   0
+			"#SPEED=4",
+			" 5B ,$PCM_Sqr11L,PN=0,PM=0,VL=224,VM=255",
+			"  G         ",
+			"#SPEED=32",
+			"-           ",
+		];
 	)");
 	//	UINT8					SE0_stacui8cJump
 	//		「ジャンプ音」の演奏データです。
@@ -280,7 +280,7 @@ public:
 			"#CHANNEL=PCM3",
 			#=============	   0
 			"#SPEED=1",
-			" 4C ,PT=+2,PG=33,PN=0,PM=0,VL=224,VM=255",
+			" 4C ,PT=+2,$PCM_Sqr13L,PN=0,PM=0,VL=224,VM=255",
 			"#SPEED=32",
 			"-D  ,PT=+64",
 		];
@@ -292,7 +292,7 @@ public:
 			"#CHANNEL=PCM3",
 			#=============	   0
 			"#SPEED=1",
-			" 6C ,PT=+1,PG=33,PN=0,PM=0,VL=208,VM=255",
+			" 6C ,PT=+1,$PCM_Sqr13L,PN=0,PM=0,VL=208,VM=255",
 			"#SPEED=4",
 			"-D# ,PT=+4",
 			"#SPEED=1",
@@ -308,7 +308,7 @@ public:
 			"#CHANNEL=PCM3",
 			#=============	   0
 			"#SPEED=1",
-			" 3E ,PG=33,PN=0,PM=0,VL=224,VM=255",
+			" 3E ,$PCM_Sqr13L,PN=0,PM=0,VL=224,VM=255",
 			"-E",
 		];
 	)");
@@ -319,7 +319,7 @@ public:
 			"#CHANNEL=PCM3",
 			#=============	   0
 			"#SPEED=1",
-			" 3G ,PG=33,PN=0,PM=0,VL=224,VM=255",
+			" 3G ,$PCM_Sqr13L,PN=0,PM=0,VL=224,VM=255",
 			"-G",
 		];
 	)");
@@ -330,7 +330,7 @@ public:
 			"#CHANNEL=PCM3",
 			#=============	   0
 			"#SPEED=1",
-			" 3C ,PT=+1,PG=33,PN=0,PM=0,VL=212,VM=255",
+			" 3C ,PT=+1,$PCM_Sqr13L,PN=0,PM=0,VL=212,VM=255",
 			"-C# ,PT=+1",
 		];
 	)");
@@ -341,7 +341,7 @@ public:
 			"#CHANNEL=PCM3",
 			#=============	   0
 			"#SPEED=1",
-			" 3G ,PT=+1 ,PG=33,PN=0,PM=0,VL=212,VM=255",
+			" 3G ,PT=+1 ,$PCM_Sqr13L,PN=0,PM=0,VL=212,VM=255",
 			"-G# ,PT=+1",
 		];
 	)");
@@ -2396,7 +2396,7 @@ public:
 		//		これは座標に対する加算値であり、
 		//		左右対称化のため、右方向「+n」、左方向「-n-1」が座標最大、最小値となります。
 		//		つまり、「+n-(-n-1)+1=2n+2」が実際の判定幅となります。
-		static constexpr INT16	stci16nCollisionWidth_UpperHalf=5;
+		static constexpr INT16	stci16nCollisionWidthHalf_Upper=5;
 		//	VECTOR2					stcv2dTrampledOffsetR_Upper
 		//		「踏まれ」判定の相対位置です。
 		//		当たり判定は整数で行うため、この値は「固定小数点値」ではありません。
@@ -2406,13 +2406,13 @@ public:
 		//		「踏まれ」判定の大きさの半分です。
 		//		当たり判定は整数で行うため、この値は「固定小数点値」ではありません。
 		//		その気持ちを「_Upper」に込めています。
-		static constexpr VECTOR2	stcv2nTrampledHitHalf_Upper={stci16nCollisionWidth_UpperHalf,2};
+		static constexpr VECTOR2	stcv2nTrampledHitHalf_Upper={stci16nCollisionWidthHalf_Upper,2};
 		static constexpr VECTOR2	stcv2dKickedOffsetR_Upper={0,-2};
-		static constexpr VECTOR2	stcv2nKickedHitHalf_Upper={stci16nCollisionWidth_UpperHalf,5};
+		static constexpr VECTOR2	stcv2nKickedHitHalf_Upper={stci16nCollisionWidthHalf_Upper,5};
 		static constexpr VECTOR2	stcv2dCrushedOffsetR_Upper={0,-2};
-		static constexpr VECTOR2	stcv2nCrushedHitHalf_Upper={stci16nCollisionWidth_UpperHalf,5};
+		static constexpr VECTOR2	stcv2nCrushedHitHalf_Upper={stci16nCollisionWidthHalf_Upper,5};
 		static constexpr VECTOR2	stcv2dAttackedOffsetR_Upper={0,-2};
-		static constexpr VECTOR2	stcv2nAttackedHitHalf_Upper={stci16nCollisionWidth_UpperHalf,5};
+		static constexpr VECTOR2	stcv2nAttackedHitHalf_Upper={stci16nCollisionWidthHalf_Upper,5};
 
 		//
 		//		body:SHELLCREEPER
@@ -2458,8 +2458,8 @@ public:
 			return 0;
 		}
 		VOID					Move_Self(VOID)noexcept{
-			CAUTO					ci16ixr0=INT16(v2iPosition_Upper.i16iX()+sti16dGetOffset_UpperR(stci16nCollisionWidth_UpperHalf));
-			CAUTO					ci16ixl0=INT16(v2iPosition_Upper.i16iX()+sti16dGetOffset_UpperL(stci16nCollisionWidth_UpperHalf));
+			CAUTO					ci16ixr0=INT16(v2iPosition_Upper.i16iX()+sti16dGetOffset_UpperR(stci16nCollisionWidthHalf_Upper));
+			CAUTO					ci16ixl0=INT16(v2iPosition_Upper.i16iX()+sti16dGetOffset_UpperL(stci16nCollisionWidthHalf_Upper));
 			CAUTO					ci16iyd8=i16iGetPositionYD8_Upper();
 			CAUTO					map_cui8cr0d8=MAP_stui8cReadPattern({ci16ixr0,ci16iyd8});
 			CAUTO					map_cui8cl0d8=MAP_stui8cReadPattern({ci16ixl0,ci16iyd8});
@@ -2485,14 +2485,14 @@ public:
 				//	「足場」無し
 				SetVelocityY_Gravity();
 				PredictPosition_Upper();
-				eIsCollidingD(stci16nCollisionWidth_UpperHalf);
+				eIsCollidingD(stci16nCollisionWidthHalf_Upper);
 			}
 			switch(idDirection){
 			case IDDIRECTION::Right:
-				if(eIsCollidingR(stci16nCollisionWidth_UpperHalf))SetDirection(IDDIRECTION::Left);
+				if(eIsCollidingR(stci16nCollisionWidthHalf_Upper))SetDirection(IDDIRECTION::Left);
 				break;
 			case IDDIRECTION::Left:
-				if(eIsCollidingL(stci16nCollisionWidth_UpperHalf))SetDirection(IDDIRECTION::Right);
+				if(eIsCollidingL(stci16nCollisionWidthHalf_Upper))SetDirection(IDDIRECTION::Right);
 				break;
 			}
 			idGetHit(
@@ -2549,7 +2549,7 @@ private:
 	ENEMY_					ENEMY_aenmyThis[ENEMY_stcui8nInstanceMaximum];
 	//	VECTOR2					SCROLL_v2iPosition
 	//		スクロール位置です。
-	VECTOR2					SCROLL_v2iPosition;
+	VECTOR2					SCROLL_v2iPosition_Upper;
 public:
 	/*VOID*/				GAME(VOID)noexcept{}
 	/*VOID*/				~GAME(VOID)noexcept{
@@ -2602,7 +2602,7 @@ public:
 		SHELLCREEPER::stStart(&ENEMY_aenmyThis[2],VECTOR2((30<<3),(89<<3))<<stcui8nDiscardBit,CHARACTER_::IDDIRECTION::Right);
 		SHELLCREEPER::stStart(&ENEMY_aenmyThis[3],VECTOR2((32<<3),(89<<3))<<stcui8nDiscardBit,CHARACTER_::IDDIRECTION::Right);
 		//	「背景」初期化
-		SCROLL_v2iPosition=VECTOR2(0,1024-212)<<stcui8nDiscardBit;
+		SCROLL_v2iPosition_Upper=VECTOR2(0,1024-212)<<stcui8nDiscardBit;
 		FAMILYBASIC::BG1_stCopyAttribute({0,0},MAP_stcv2nSize,MAP_stacui16cAttribute);
 		//	点数系初期化
 		FAMILYBASIC::BG0_stPrint({11,12},"          ",0);
@@ -2630,7 +2630,7 @@ public:
 			CAUTO					cui16nscore=ui16nScore;
 
 			PLAYER_plyrThis.Move();
-			SCROLL_v2iPosition=PLAYER_plyrThis.cv2iGetPosition()-(VECTOR2(128,112)<<stcui8nDiscardBit);
+			SCROLL_v2iPosition_Upper=PLAYER_plyrThis.cv2iGetPosition()-(VECTOR2(128,112)<<stcui8nDiscardBit);
 			//	点数に変動があった場合だけ表示
 			if(cui16nscore!=ui16nScore)ShowScore();
 		}
@@ -2710,8 +2710,8 @@ private:
 		UINT8					ui8isprite=0;
 
 		//	背景
-		FAMILYBASIC::SPRITE_stSetOffset(SCROLL_v2iPosition>>stcui8nDiscardBit);
-		FAMILYBASIC::BG1_stSetOffset(SCROLL_v2iPosition>>stcui8nDiscardBit);
+		FAMILYBASIC::SPRITE_stSetOffset(SCROLL_v2iPosition_Upper>>stcui8nDiscardBit);
+		FAMILYBASIC::BG1_stSetOffset(SCROLL_v2iPosition_Upper>>stcui8nDiscardBit);
 		//	自機
 		ui8isprite+=PLAYER_plyrThis.ui8nShow(ui8isprite);
 		//	敵
