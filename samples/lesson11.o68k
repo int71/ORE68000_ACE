@@ -42,13 +42,13 @@ public:
 		Normal,
 		GameOver
 	};
-	//	UINT8					stcui8nDiscardBit
+	//	UINT8					FIXEDL_stcui8nBit
 	//		「固定小数点値」中の何ビットを「小数点値」扱いにするかを示します。
 	//		ここでは16bit中6bitを「小数点値」扱いにします。
-	static constexpr UINT8	stcui8nDiscardBit=6;
+	static constexpr UINT8	FIXEDL_stcui8nBit=6;
 	//	INT16					stci16iOne
 	//		整数「1」に相当する固定小数点値です。
-	static constexpr INT16	stci16iOne=1<<stcui8nDiscardBit;
+	static constexpr INT16	stci16iOne=1<<FIXEDL_stcui8nBit;
 	//	INT16					stci16cDiscardMask
 	//		「小数点値」部分のマスクです。
 	static constexpr INT16	stci16cDiscardMask=stci16iOne-1;
@@ -436,10 +436,10 @@ public:
 		};
 		//	INT16					stci16nGravity
 		//		重力加速度です。
-		static constexpr INT16	stci16nGravity=3<<(stcui8nDiscardBit-4);
+		static constexpr INT16	stci16nGravity=3<<(FIXEDL_stcui8nBit-4);
 		//	INT16					stci16nYSpeedMaximum
 		//		縦方向の最大速度です。
-		static constexpr INT16	stci16nYSpeedMaximum=4<<stcui8nDiscardBit;
+		static constexpr INT16	stci16nYSpeedMaximum=4<<FIXEDL_stcui8nBit;
 		//	INT16					stci16nNeighbor_Upper
 		//		「何か幅」でなく「隣のキャラクタ」である意図を明示するための定数です。
 		static constexpr INT16	stci16nNeighbor_Upper=8;
@@ -503,7 +503,7 @@ public:
 		//		横座標完全一致状態で当たっていた場合は、「this」の向きで「IDHIT::HitR」、「IDHIT::HitL」のどちらを返すか決定します。
 		//		ドット単位オフセット位置「cv2dthisoffsetr_upper」、「cv2dsourceoffsetr_upper」は常に「右方向」指定である事に注意してください。
 		//		方向指定「ciddirectionthis」、「ciddirectionsource」によって適切に解釈されます。
-		//		なお、「VECTOR2::eIsHit」と異なり衝突条件は幅「以下」でなく幅「未満」です。
+		//		なお、「VECTOR2::FIXED_eIsHit」と異なり衝突条件は幅「以下」でなく幅「未満」です。
 		//		よって幅「ゼロ」は「絶対に当たらない」扱いになります。
 		static constexpr IDHIT	stidGetHit(const IDDIRECTION ciddirectionthis,CVECTOR2& cv2ithisposition_upper,CVECTOR2& cv2dthisoffsetr_upper,CVECTOR2& cv2nthishithalf_upper,const IDDIRECTION ciddirectionsource,CVECTOR2& cv2isourceposition_upper,CVECTOR2& cv2dsourceoffsetr_upper,CVECTOR2& cv2nsourcehithalf_upper)noexcept{
 			if(cv2nthishithalf_upper.i16nWidth()&&cv2nsourcehithalf_upper.i16nWidth()){
@@ -511,7 +511,7 @@ public:
 					CAUTO
 						cv2ithis_upper=cv2ithisposition_upper+stv2dGetOffset_Upper(ciddirectionthis,cv2dthisoffsetr_upper),
 						cv2isource_upper=cv2isourceposition_upper+stv2dGetOffset_Upper(ciddirectionsource,cv2dsourceoffsetr_upper);
-					cv2ithis_upper.eIsHit1024(
+					cv2ithis_upper.FIXED1024_eIsHit(
 						{
 							INT16(cv2nthishithalf_upper.i16nWidth()-1),
 							INT16(cv2nthishithalf_upper.i16nHeight()-1)
@@ -523,7 +523,7 @@ public:
 						}
 					)
 				){
-					CAUTO					ci16doffset=INT16((cv2ithis_upper.i16iX()-cv2isource_upper.i16iX())<<stcui8nDiscardBit);
+					CAUTO					ci16doffset=INT16((cv2ithis_upper.i16iX()-cv2isource_upper.i16iX())<<FIXEDL_stcui8nBit);
 
 					switch(ciddirectionthis){
 					case IDDIRECTION::Right:
@@ -545,7 +545,7 @@ public:
 		//			0x0040～0x007f:+1
 		//			0x0080～0x00bf:+2
 		static constexpr INT16	sti16iGetPosition_Upper(CINT16 ci16iposition)noexcept{
-			return INT16(ci16iposition>>stcui8nDiscardBit);
+			return INT16(ci16iposition>>FIXEDL_stcui8nBit);
 		}
 		//	VECTOR2					stv2iGetPosition_Upper(CVECTOR2& cv2iposition)
 		//		「固定小数点値」座標たる「cv2iposition」を「整数値」座標に変換して返します。
@@ -566,7 +566,7 @@ public:
 		//			+1:0x0060
 		//			+2:0x00a0
 		static constexpr INT16	sti16iGetPositionP(CINT16 ci16iposition_upper)noexcept{
-			return INT16((ci16iposition_upper<<stcui8nDiscardBit)+(1<<(stcui8nDiscardBit-1))+0);
+			return INT16((ci16iposition_upper<<FIXEDL_stcui8nBit)+(1<<(FIXEDL_stcui8nBit-1))+0);
 		}
 		//	INT16					sti16iGetPositionN(CINT16 ci16iposition_upper)
 		//		「整数値」たる「ci16iposition_upper」を「固定小数点値」、
@@ -579,29 +579,29 @@ public:
 		//			+1:0x005f
 		//			+2:0x009f
 		static constexpr INT16	sti16iGetPositionN(CINT16 ci16iposition_upper)noexcept{
-			return INT16((ci16iposition_upper<<stcui8nDiscardBit)+(1<<(stcui8nDiscardBit-1))-1);
+			return INT16((ci16iposition_upper<<FIXEDL_stcui8nBit)+(1<<(FIXEDL_stcui8nBit-1))-1);
 		}
 		//	INT16					sti16dGetOffset_Upper(const IDDIRECTION ciddirection,CVECTOR2& cv2doffset_upper)
 		//		右方向ドット単位オフセット位置「cv2doffset_upper」を、「ciddirection」に応じたオフセット位置として返します。
 		static constexpr VECTOR2	stv2dGetOffset_Upper(const IDDIRECTION ciddirection,CVECTOR2& cv2doffsetr_upper)noexcept{
-			return (ciddirection==IDDIRECTION::Right)?stv2dGetOffset_UpperR(cv2doffsetr_upper):stv2dGetOffset_UpperL(cv2doffsetr_upper);
+			return (ciddirection==IDDIRECTION::Right)?stv2dGetOffsetR_Upper(cv2doffsetr_upper):stv2dGetOffsetL_Upper(cv2doffsetr_upper);
 		}
-		//	VECTOR2					stv2dGetOffset_UpperR(CVECTOR2& cv2doffset_upper)
+		//	VECTOR2					stv2dGetOffsetR_Upper(CVECTOR2& cv2doffset_upper)
 		//		右方向ドット単位オフセット位置「cv2doffset_upper」を、右方向のオフセット位置として返します。
 		//		この関数は「値そのもの」を返しますが、
 		//		左右対称とするには正負で「1ドットのズレ」が起きるため、明示化する事にしています。
-		static constexpr VECTOR2	stv2dGetOffset_UpperR(CVECTOR2& cv2doffsetr_upper)noexcept{
+		static constexpr VECTOR2	stv2dGetOffsetR_Upper(CVECTOR2& cv2doffsetr_upper)noexcept{
 			return {
-				sti16dGetOffset_UpperR(cv2doffsetr_upper.i16iX()),
+				sti16dGetOffsetR_Upper(cv2doffsetr_upper.i16iX()),
 				cv2doffsetr_upper.i16iY()
 			};
 		}
-		//	VECTOR2					stv2dGetOffset_UpperL(CVECTOR2& cv2doffset_upper)
+		//	VECTOR2					stv2dGetOffsetL_Upper(CVECTOR2& cv2doffset_upper)
 		//		右方向ドット単位オフセット位置「cv2doffset_upper」を、左方向のオフセット位置として返します。
 		//		左右対称とするためX座標には正負で「1ドットのズレ」があります。
-		static constexpr VECTOR2	stv2dGetOffset_UpperL(CVECTOR2& cv2doffsetr_upper)noexcept{
+		static constexpr VECTOR2	stv2dGetOffsetL_Upper(CVECTOR2& cv2doffsetr_upper)noexcept{
 			return {
-				sti16dGetOffset_UpperL(cv2doffsetr_upper.i16iX()),
+				sti16dGetOffsetL_Upper(cv2doffsetr_upper.i16iX()),
 				cv2doffsetr_upper.i16iY()
 			};
 		}
@@ -609,22 +609,22 @@ public:
 		//		ドット数「ci16nsize_upper」を、「ciddirection」に応じたオフセット値として返します。
 		//		「ドット数」は、場合により「正のオフセット値」であったり「判定幅の半分の値」であったりするでしょう。
 		static constexpr INT16	sti16dGetOffset_Upper(const IDDIRECTION ciddirection,CINT16 ci16nsize_upper)noexcept{
-			return (ciddirection==IDDIRECTION::Right)?sti16dGetOffset_UpperR(ci16nsize_upper):sti16dGetOffset_UpperL(ci16nsize_upper);
+			return (ciddirection==IDDIRECTION::Right)?sti16dGetOffsetR_Upper(ci16nsize_upper):sti16dGetOffsetL_Upper(ci16nsize_upper);
 		}
-		//	INT16					sti16dGetOffset_UpperR(CINT16 ci16nsize_upper)
+		//	INT16					sti16dGetOffsetR_Upper(CINT16 ci16nsize_upper)
 		//		ドット数「ci16nsize_upper」を、右方向のオフセット値として返します。
 		//		「ドット数」は、場合により「正のオフセット値」であったり「判定幅の半分の値」であったりするでしょう。
 		//		この関数は「値そのもの」を返しますが、
 		//		左右対称とするには正負で「1ドットのズレ」が起きるため、明示化する事にしています。
-		static constexpr INT16	sti16dGetOffset_UpperR(CINT16 ci16nsize_upper)noexcept{
+		static constexpr INT16	sti16dGetOffsetR_Upper(CINT16 ci16nsize_upper)noexcept{
 			return INT16(+ci16nsize_upper+0);
 		}
-		//	INT16					sti16dGetOffset_UpperL(CINT16 ci16nsize_upper)
+		//	INT16					sti16dGetOffsetL_Upper(CINT16 ci16nsize_upper)
 		//		ドット数「ci16nsize_upper」を、左方向のオフセット値として返します。
 		//		「ドット数」は、場合により「正のオフセット値」であったり「判定幅の半分の値」であったりするでしょう。
 		//		左右対称とするため正負で「1ドットのズレ」があり、
 		//		この関数は「-ci16nsize_upper-1」を返します。
-		static constexpr INT16	sti16dGetOffset_UpperL(CINT16 ci16nsize_upper)noexcept{
+		static constexpr INT16	sti16dGetOffsetL_Upper(CINT16 ci16nsize_upper)noexcept{
 			return INT16(-ci16nsize_upper-1);
 		}
 		//	VOID					UpdatePosition(VOID)
@@ -636,21 +636,21 @@ public:
 			v2iPosition_Upper=stv2iGetPosition_Upper(v2iPosition);
 			return;
 		}
-		//	VOID					PredictPosition_Upper(VOID)
+		//	VOID					PredictPosition(VOID)
 		//		現状の「位置」と「速度」から整数状態での「仮更新位置」を設定します。
-		constexpr VOID			PredictPosition_Upper(VOID)noexcept{
+		constexpr VOID			PredictPosition(VOID)noexcept{
 			v2iPredictedPosition_Upper=stv2iGetPosition_Upper(v2iPosition+v2dVelocity);
 			return;
 		}
 		//	INT16					i16iGetPositionXR_Upper(CINT16 ci16nhalf_upper)
 		//		整数状態での「位置」X座標に、幅ドット数(の半分)の値「ci16nhalf_upper」を右方向のオフセットとして加算した結果を返します。
 		constexpr INT16			i16iGetPositionXR_Upper(CINT16 ci16nhalf_upper)const noexcept{
-			return INT16(v2iPosition_Upper.i16iX()+sti16dGetOffset_UpperR(ci16nhalf_upper));
+			return INT16(v2iPosition_Upper.i16iX()+sti16dGetOffsetR_Upper(ci16nhalf_upper));
 		}
 		//	INT16					i16iGetPositionXL_Upper(CINT16 ci16nhalf_upper)
 		//		整数状態での「位置」X座標に、幅ドット数(の半分)の値「ci16nhalf_upper」を左方向のオフセットとして加算した結果を返します。
 		constexpr INT16			i16iGetPositionXL_Upper(CINT16 ci16nhalf_upper)const noexcept{
-			return INT16(v2iPosition_Upper.i16iX()+sti16dGetOffset_UpperL(ci16nhalf_upper));
+			return INT16(v2iPosition_Upper.i16iX()+sti16dGetOffsetL_Upper(ci16nhalf_upper));
 		}
 		//	INT16					i16iGetPositionXCR_Upper(VOID)
 		//		整数状態での「位置」X座標そのものを右方向補正した結果を返します。
@@ -662,14 +662,14 @@ public:
 		constexpr INT16			i16iGetPositionXCL_Upper(VOID)const noexcept{
 			return i16iGetPositionXL_Upper(0);
 		}
-		//	INT16					i16iGetPositionXNeighborR_Upper(VOID)
+		//	INT16					i16iGetNeighborPositionXR_Upper(VOID)
 		//		整数状態での「位置」の右隣キャラクタX座標を返します。
-		constexpr INT16			i16iGetPositionXNeighborR_Upper(VOID)const noexcept{
+		constexpr INT16			i16iGetNeighborPositionXR_Upper(VOID)const noexcept{
 			return i16iGetPositionXR_Upper(stci16nNeighbor_Upper);
 		}
-		//	INT16					i16iGetPositionXNeighborL_Upper(VOID)
+		//	INT16					i16iGetNeighborPositionXL_Upper(VOID)
 		//		整数状態での「位置」の左隣キャラクタX座標を返します。
-		constexpr INT16			i16iGetPositionXNeighborL_Upper(VOID)const noexcept{
+		constexpr INT16			i16iGetNeighborPositionXL_Upper(VOID)const noexcept{
 			return i16iGetPositionXL_Upper(stci16nNeighbor_Upper);
 		}
 		//	INT16					i16iGetPositionYD7_Upper(VOID)
@@ -711,12 +711,12 @@ public:
 		//	INT16					i16iGetPredictedPositionXR_Upper(CINT16 ci16nhalf_upper)
 		//		整数状態での「仮更新位置」X座標に、幅ドット数(の半分)の値「ci16nhalf_upper」を右方向のオフセットとして加算した結果を返します。
 		constexpr INT16			i16iGetPredictedPositionXR_Upper(CINT16 ci16nhalf_upper)const noexcept{
-			return INT16(v2iPredictedPosition_Upper.i16iX()+sti16dGetOffset_UpperR(ci16nhalf_upper));
+			return INT16(v2iPredictedPosition_Upper.i16iX()+sti16dGetOffsetR_Upper(ci16nhalf_upper));
 		}
 		//	INT16					i16iGetPositionPredictedXL_Upper(CINT16 ci16nhalf_upper)
 		//		整数状態での「仮更新位置」X座標に、幅ドット数(の半分)の値「ci16nhalf_upper」を左方向のオフセットとして加算した結果を返します。
 		constexpr INT16			i16iGetPositionPredictedXL_Upper(CINT16 ci16nhalf_upper)const noexcept{
-			return INT16(v2iPredictedPosition_Upper.i16iX()+sti16dGetOffset_UpperL(ci16nhalf_upper));
+			return INT16(v2iPredictedPosition_Upper.i16iX()+sti16dGetOffsetL_Upper(ci16nhalf_upper));
 		}
 		//	INT16					i16iGetPredictedPositionYD7_Upper(VOID)
 		//		整数状態での「仮更新位置」Y座標より7ドット下の位置を返します。
@@ -757,13 +757,13 @@ public:
 		//	VOID					SetVelocityX_OneR(VOID)
 		//		速度「v2dVelocity」のX成分を固定小数点値「+1.0(右1ドット/フレーム)」に設定します。
 		constexpr VOID			SetVelocityX_OneR(VOID)noexcept{
-			v2dVelocity.i16iX()=INT16(+1<<stcui8nDiscardBit);
+			v2dVelocity.i16iX()=INT16(+1<<FIXEDL_stcui8nBit);
 			return;
 		}
 		//	VOID					SetVelocityX_OneL(VOID)
 		//		速度「v2dVelocity」のX成分を固定小数点値「-1.0(左1ドット/フレーム)」に設定します。
 		constexpr VOID			SetVelocityX_OneL(VOID)noexcept{
-			v2dVelocity.i16iX()=INT16(-1<<stcui8nDiscardBit);
+			v2dVelocity.i16iX()=INT16(-1<<FIXEDL_stcui8nBit);
 			return;
 		}
 		//	VOID					SetVelocityX_AccelR(CINT16 ci16naccel,CINT16 ci16nspeedmaximum)
@@ -811,13 +811,13 @@ public:
 		//	VOID					SetVelocityY_OneD(VOID)
 		//		速度「v2dVelocity」のY成分を固定小数点値「+1.0(下1ドット/フレーム)」に設定します。
 		constexpr VOID			SetVelocityY_OneD(VOID)noexcept{
-			v2dVelocity.i16iY()=INT16(+1<<stcui8nDiscardBit);
+			v2dVelocity.i16iY()=INT16(+1<<FIXEDL_stcui8nBit);
 			return;
 		}
 		//	VOID					SetVelocityY_OneU(VOID)
 		//		速度「v2dVelocity」のY成分を固定小数点値「-1.0(上1ドット/フレーム)」に設定します。
 		constexpr VOID			SetVelocityY_OneU(VOID)noexcept{
-			v2dVelocity.i16iY()=INT16(-1<<stcui8nDiscardBit);
+			v2dVelocity.i16iY()=INT16(-1<<FIXEDL_stcui8nBit);
 			return;
 		}
 		//	VOID					SetVelocityY_Gravity(VOID)
@@ -826,44 +826,44 @@ public:
 			v2dVelocity.i16iY()=STD::stxGetMinimum(INT16(v2dVelocity.i16iY()+stci16nGravity),INT16(+stci16nYSpeedMaximum));
 			return;
 		}
-		//	OFWBOOL					eIsCollidingX(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset)
+		//	OFWBOOL					eIsCollidingX(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset_upper)
 		//		横移動で壁に衝突するかどうかを「仮更新位置」で判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
-		//		「ci16dyoffset」は判定対象とする「足元位置」へのタテ位置補正で、
+		//		「ci16dyoffset_upper」は判定対象とする「足元位置」へのタテ位置補正で、
 		//		「正(下)」方向であると「地面」にめり込む事になるので、地形があれば壁衝突判定扱いになります。
 		//		「負(上)」方向であるとめり込みにくくなるので、多少の穴は踏み越える事になります。
-		_INLINE_ OFWBOOL		eIsCollidingX(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset=0)noexcept{
-			if(0<v2dVelocity.i16iX())return eIsCollidingR(ci16ncollisionwidthhalf_upper,ci16dyoffset);
-			else if(v2dVelocity.i16iX()<0)return eIsCollidingL(ci16ncollisionwidthhalf_upper,ci16dyoffset);
+		_INLINE_ OFWBOOL		eIsCollidingX(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset_upper=0)noexcept{
+			if(0<v2dVelocity.i16iX())return eIsCollidingR(ci16ncollisionwidthhalf_upper,ci16dyoffset_upper);
+			else if(v2dVelocity.i16iX()<0)return eIsCollidingL(ci16ncollisionwidthhalf_upper,ci16dyoffset_upper);
 			return FALSE;
 		}
-		//	OFWBOOL					eIsCollidingR(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset)
+		//	OFWBOOL					eIsCollidingR(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset_upper)
 		//		右移動で壁に衝突するかどうかを「仮更新位置」で判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
-		//		「ci16dyoffset」は判定対象とする「足元位置」へのタテ位置補正で、
+		//		「ci16dyoffset_upper」は判定対象とする「足元位置」へのタテ位置補正で、
 		//		「正(下)」方向であると「地面」にめり込む事になるので、地形があれば壁衝突判定扱いになります。
 		//		「負(上)」方向であるとめり込みにくくなるので、多少の穴は踏み越える事になります。
-		_INLINE_ OFWBOOL		eIsCollidingR(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset=0)noexcept{
-			//	INT16					ci16ix
+		_INLINE_ OFWBOOL		eIsCollidingR(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset_upper=0)noexcept{
+			//	INT16					ci16ix_upper
 			//		「仮更新位置」X座標ベースの「右端」です。
 			//		「仮更新位置」ベースであるので、めり込みが生じている可能性があります。
-			CAUTO					ci16ix=i16iGetPredictedPositionXR_Upper(ci16ncollisionwidthhalf_upper);
+			CAUTO					ci16ix_upper=i16iGetPredictedPositionXR_Upper(ci16ncollisionwidthhalf_upper);
 			//	UINT8					map_cui8crd
 			//		右衝突判定に使用する「足元」右端の「マップパーツ」を保持します。
-			//		「ci16dyoffset」によるタテ位置補正がかかります。
+			//		「ci16dyoffset_upper」によるタテ位置補正がかかります。
 			//		ポイントはY座標が「現状位置」ベースである事で、
 			//		これを「仮更新位置」ベースにしてしまうと「横壁ぶつかり誤認されてブレーキかかる」等の問題が起きます。
-			CAUTO					map_cui8crd=MAP_stui8cReadPattern({ci16ix,INT16(i16iGetPositionYD7_Upper()+ci16dyoffset)});
+			CAUTO					map_cui8crd=MAP_stui8cReadPattern({ci16ix_upper,INT16(i16iGetPositionYD7_Upper()+ci16dyoffset_upper)});
 			//	UINT8					map_cui8crm
 			//		右衝突判定に使用する「中央」右端の「マップパーツ」を保持します。
 			//		ポイントはY座標が「現状位置」ベースである事で、
 			//		これを「仮更新位置」ベースにしてしまうと「横壁ぶつかり誤認されてブレーキかかる」等の問題が起きます。
-			CAUTO					map_cui8crm=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYU0_Upper()});
+			CAUTO					map_cui8crm=MAP_stui8cReadPattern({ci16ix_upper,i16iGetPositionYU0_Upper()});
 			//	UINT8					map_cui8cru
 			//		右衝突判定に使用する「頭上」右端の「マップパーツ」を保持します。
 			//		ポイントはY座標が「現状位置」ベースである事で、
 			//		これを「仮更新位置」ベースにしてしまうと「横壁ぶつかり誤認されてブレーキかかる」等の問題が起きます。
-			CAUTO					map_cui8cru=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYU8_Upper()});
+			CAUTO					map_cui8cru=MAP_stui8cReadPattern({ci16ix_upper,i16iGetPositionYU8_Upper()});
 
 			if(
 				(!MAP_steIsMovable(map_cui8crd))||
@@ -871,42 +871,42 @@ public:
 				(!MAP_steIsMovable(map_cui8cru))
 			){
 				//	今のままだと壁にめり込むので補正をかける。
-				//	「左に戻す(減算する)」方向で「ci16ix+1」がキリになるように補正する。
+				//	「左に戻す(減算する)」方向で「ci16ix_upper+1」がキリになるように補正する。
 				v2iPosition.i16iX()=sti16iGetPositionP(
-					v2iPredictedPosition_Upper.i16iX()-((0+(ci16ix+1))&7)
+					v2iPredictedPosition_Upper.i16iX()-((0+(ci16ix_upper+1))&7)
 				);
 				SetVelocityX_Zero();
 				return TRUE;
 			}
 			return FALSE;
 		}
-		//	OFWBOOL					eIsCollidingL(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset)
+		//	OFWBOOL					eIsCollidingL(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset_upper)
 		//		左移動で壁に衝突するかどうかを「仮更新位置」で判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
-		//		「ci16dyoffset」は判定対象とする「足元位置」へのタテ位置補正で、
+		//		「ci16dyoffset_upper」は判定対象とする「足元位置」へのタテ位置補正で、
 		//		「正(下)」方向であると「地面」にめり込む事になるので、地形があれば壁衝突判定扱いになります。
 		//		「負(上)」方向であるとめり込みにくくなるので、多少の穴は踏み越える事になります。
-		_INLINE_ OFWBOOL		eIsCollidingL(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset=0)noexcept{
-			//	INT16					ci16ix
+		_INLINE_ OFWBOOL		eIsCollidingL(CINT16 ci16ncollisionwidthhalf_upper,CINT16 ci16dyoffset_upper=0)noexcept{
+			//	INT16					ci16ix_upper
 			//		「仮更新位置」X座標ベースの「左端」です。
 			//		「仮更新位置」ベースであるので、めり込みが生じている可能性があります。
-			CAUTO					ci16ix=i16iGetPositionPredictedXL_Upper(ci16ncollisionwidthhalf_upper);
+			CAUTO					ci16ix_upper=i16iGetPositionPredictedXL_Upper(ci16ncollisionwidthhalf_upper);
 			//	UINT8					map_cui8cld
 			//		左衝突判定に使用する「足元」左端の「マップパーツ」を保持します。
-			//		「ci16dyoffset」によるタテ位置補正がかかります。
+			//		「ci16dyoffset_upper」によるタテ位置補正がかかります。
 			//		ポイントはY座標が「現状位置」ベースである事で、
 			//		これを「仮更新位置」ベースにしてしまうと「横壁ぶつかり誤認されてブレーキかかる」等の問題が起きます。
-			CAUTO					map_cui8cld=MAP_stui8cReadPattern({ci16ix,INT16(i16iGetPositionYD7_Upper()+ci16dyoffset)});
+			CAUTO					map_cui8cld=MAP_stui8cReadPattern({ci16ix_upper,INT16(i16iGetPositionYD7_Upper()+ci16dyoffset_upper)});
 			//	UINT8					map_cui8clm
 			//		左衝突判定に使用する「中央」左端の「マップパーツ」を保持します。
 			//		ポイントはY座標が「現状位置」ベースである事で、
 			//		これを「仮更新位置」ベースにしてしまうと「横壁ぶつかり誤認されてブレーキかかる」等の問題が起きます。
-			CAUTO					map_cui8clm=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYU0_Upper()});
+			CAUTO					map_cui8clm=MAP_stui8cReadPattern({ci16ix_upper,i16iGetPositionYU0_Upper()});
 			//	UINT8					map_cui8clu
 			//		左衝突判定に使用する「頭上」左端の「マップパーツ」を保持します。
 			//		ポイントはY座標が「現状位置」ベースである事で、
 			//		これを「仮更新位置」ベースにしてしまうと「横壁ぶつかり誤認されてブレーキかかる」等の問題が起きます。
-			CAUTO					map_cui8clu=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYU8_Upper()});
+			CAUTO					map_cui8clu=MAP_stui8cReadPattern({ci16ix_upper,i16iGetPositionYU8_Upper()});
 
 			if(
 				(!MAP_steIsMovable(map_cui8cld))||
@@ -914,9 +914,9 @@ public:
 				(!MAP_steIsMovable(map_cui8clu))
 			){
 				//	今のままだと壁にめり込むので補正をかける。
-				//	「右に戻す(加算)」方向で「ci16ix-1」がキリになるように補正する。
+				//	「右に戻す(加算)」方向で「ci16ix_upper-1」がキリになるように補正する。
 				v2iPosition.i16iX()=sti16iGetPositionN(
-					v2iPredictedPosition_Upper.i16iX()+((7-(ci16ix-1))&7)
+					v2iPredictedPosition_Upper.i16iX()+((7-(ci16ix_upper-1))&7)
 				);
 				SetVelocityX_Zero();
 				return TRUE;
@@ -927,28 +927,28 @@ public:
 		//		下移動で壁に衝突するかどうかを「仮更新位置」で判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
 		_INLINE_ OFWBOOL		eIsCollidingD(CINT16 ci16ncollisionwidthhalf_upper)noexcept{
-			//	INT16					ci16ixr
+			//	INT16					ci16ixr_upper
 			//		「現状位置」X座標ベースの「右端」です。
 			//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
-			CAUTO					ci16ixr=i16iGetPositionXR_Upper(ci16ncollisionwidthhalf_upper);
-			//	INT16					ci16ixl
+			CAUTO					ci16ixr_upper=i16iGetPositionXR_Upper(ci16ncollisionwidthhalf_upper);
+			//	INT16					ci16ixl_upper
 			//		「現状位置」X座標ベースの「左端」です。
 			//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
-			CAUTO					ci16ixl=i16iGetPositionXL_Upper(ci16ncollisionwidthhalf_upper);
-			//	INT16					ci16iyc
+			CAUTO					ci16ixl_upper=i16iGetPositionXL_Upper(ci16ncollisionwidthhalf_upper);
+			//	INT16					ci16iyc_upper
 			//		「仮更新位置」Y座標ベースの「中央」です。
 			//		「仮更新位置」であるので、めり込みが生じている可能性があります。
-			CAUTO					ci16iyc=i16iGetPredictedPositionYU1_Upper();
+			CAUTO					ci16iyc_upper=i16iGetPredictedPositionYU1_Upper();
 			//	UINT8					map_cui8crc
 			//		下衝突判定に使用する「中央」右端の「マップパーツ」を保持します。
 			//		ポイントはX座標が「現状位置」ベースである事で、
 			//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
-			CAUTO					map_cui8crc=MAP_stui8cReadPattern({ci16ixr,ci16iyc});
+			CAUTO					map_cui8crc=MAP_stui8cReadPattern({ci16ixr_upper,ci16iyc_upper});
 			//	UINT8					map_cui8clc
 			//		下衝突判定に使用する「中央」左端の「マップパーツ」を保持します。
 			//		ポイントはX座標が「現状位置」ベースである事で、
 			//		これを「仮更新位置」にしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
-			CAUTO					map_cui8clc=MAP_stui8cReadPattern({ci16ixl,ci16iyc});
+			CAUTO					map_cui8clc=MAP_stui8cReadPattern({ci16ixl_upper,ci16iyc_upper});
 
 			if(
 				(!MAP_steIsMovable(map_cui8crc))||
@@ -963,20 +963,20 @@ public:
 				eAir=FALSE;
 				return TRUE;
 			}else{
-				//	INT16					ci16iyd
+				//	INT16					ci16iyd_upper
 				//		「仮更新位置」Y座標ベースの「足元」です。
 				//		「仮更新位置」であるので、めり込みが生じている可能性があります。
-				CAUTO					ci16iyd=i16iGetPredictedPositionYD7_Upper();
+				CAUTO					ci16iyd_upper=i16iGetPredictedPositionYD7_Upper();
 				//	UINT8					map_cui8crd
 				//		下衝突判定に使用する「足元」右端の「マップパーツ」を保持します。
 				//		ポイントはX座標が「現状位置」ベースである事で、
 				//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
-				CAUTO					map_cui8crd=MAP_stui8cReadPattern({ci16ixr,ci16iyd});
+				CAUTO					map_cui8crd=MAP_stui8cReadPattern({ci16ixr_upper,ci16iyd_upper});
 				//	UINT8					map_cui8cld
 				//		下衝突判定に使用する「足元」左端の「マップパーツ」を保持します。
 				//		ポイントはX座標が「現状位置」ベースである事で、
 				//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて下に落ちない」等の問題が起きます。
-				CAUTO					map_cui8cld=MAP_stui8cReadPattern({ci16ixl,ci16iyd});
+				CAUTO					map_cui8cld=MAP_stui8cReadPattern({ci16ixl_upper,ci16iyd_upper});
 
 				if(
 					(!MAP_steIsMovable(map_cui8crd))||
@@ -999,28 +999,28 @@ public:
 		//		上移動で壁に衝突するかどうかを「仮更新位置」で判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
 		_INLINE_ OFWBOOL		eIsCollidingU(CINT16 ci16ncollisionwidthhalf_upper)noexcept{
-			//	INT16					ci16ixr
+			//	INT16					ci16ixr_upper
 			//		「現状位置」X座標ベースの「右端」です。
 			//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて上に飛び出せない」等の問題が起きます。
-			CAUTO					ci16ixr=i16iGetPositionXR_Upper(ci16ncollisionwidthhalf_upper);
-			//	INT16					ci16ixl
+			CAUTO					ci16ixr_upper=i16iGetPositionXR_Upper(ci16ncollisionwidthhalf_upper);
+			//	INT16					ci16ixl_upper
 			//		「現状位置」X座標ベースの「左端」です。
 			//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて上に飛び出せない」等の問題が起きます。
-			CAUTO					ci16ixl=i16iGetPositionXL_Upper(ci16ncollisionwidthhalf_upper);
-			//	INT16					ci16iyc
+			CAUTO					ci16ixl_upper=i16iGetPositionXL_Upper(ci16ncollisionwidthhalf_upper);
+			//	INT16					ci16iyc_upper
 			//		「仮更新位置」Y座標ベースの「中央」です。
 			//		「仮更新位置」であるので、めり込みが生じている可能性があります。
-			CAUTO					ci16iyc=i16iGetPredictedPositionYU0_Upper();
+			CAUTO					ci16iyc_upper=i16iGetPredictedPositionYU0_Upper();
 			//	UINT8					map_cui8crc
 			//		上衝突判定に使用する「中央」右端の「マップパーツ」を保持します。
 			//		ポイントはX座標が「現状位置」ベースである事で、
 			//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて上に飛び出せない」等の問題が起きます。
-			CAUTO					map_cui8crc=MAP_stui8cReadPattern({ci16ixr,ci16iyc});
+			CAUTO					map_cui8crc=MAP_stui8cReadPattern({ci16ixr_upper,ci16iyc_upper});
 			//	UINT8					map_cui8clc
 			//		上衝突判定に使用する「中央」左端の「マップパーツ」を保持します。
 			//		ポイントはX座標が「現状位置」ベースである事で、
 			//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて上に飛び出せない」等の問題が起きます。
-			CAUTO					map_cui8clc=MAP_stui8cReadPattern({ci16ixl,ci16iyc});
+			CAUTO					map_cui8clc=MAP_stui8cReadPattern({ci16ixl_upper,ci16iyc_upper});
 
 			eAir=TRUE;
 			if(
@@ -1035,20 +1035,20 @@ public:
 				SetVelocityY_Zero();
 				return TRUE;
 			}else{
-				//	INT16					ci16iyu
+				//	INT16					ci16iyu_upper
 				//		「仮更新位置」Y座標ベースの「頭上」です。
 				//		「仮更新位置」であるので、めり込みが生じている可能性があります。
-				CAUTO					ci16iyu=i16iGetPredictedPositionYU8_Upper();
+				CAUTO					ci16iyu_upper=i16iGetPredictedPositionYU8_Upper();
 				//	UINT8					map_cui8cru
 				//		上衝突判定に使用する「頭上」右端の「マップパーツ」を保持します。
 				//		ポイントはX座標が「現状位置」ベースである事で、
 				//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて上に飛び出せない」等の問題が起きます。
-				CAUTO					map_cui8cru=MAP_stui8cReadPattern({ci16ixr,ci16iyu});
+				CAUTO					map_cui8cru=MAP_stui8cReadPattern({ci16ixr_upper,ci16iyu_upper});
 				//	UINT8					map_cui8clu
 				//		上衝突判定に使用する「頭上」左端の「マップパーツ」を保持します。
 				//		ポイントはX座標が「現状位置」ベースである事で、
 				//		これを「仮更新位置」ベースにしてしまうと「地面ぶつかり誤認されて上に飛び出せない」等の問題が起きます。
-				CAUTO					map_cui8clu=MAP_stui8cReadPattern({ci16ixl,ci16iyu});
+				CAUTO					map_cui8clu=MAP_stui8cReadPattern({ci16ixl_upper,ci16iyu_upper});
 
 				if(
 					(!MAP_steIsMovable(map_cui8cru))||
@@ -1101,22 +1101,22 @@ public:
 		static constexpr VECTOR2	stcv2nHitHalf_Upper={4,6};
 		//	INT16					stci16nAccel
 		//		地上での歩き加速度です。
-		static constexpr INT16	stci16nAccel=1<<(stcui8nDiscardBit-3);
+		static constexpr INT16	stci16nAccel=1<<(FIXEDL_stcui8nBit-3);
 		//	INT16					stci16nXSpeedMaximum
 		//		横方向の最大速度です。
-		static constexpr INT16	stci16nXSpeedMaximum=1<<stcui8nDiscardBit;
+		static constexpr INT16	stci16nXSpeedMaximum=1<<FIXEDL_stcui8nBit;
 		//	INT16					stci16nXDashSpeedMaximum
 		//		横方向の最大ダッシュ速度です。
-		static constexpr INT16	stci16nXDashSpeedMaximum=4<<(stcui8nDiscardBit-1);
+		static constexpr INT16	stci16nXDashSpeedMaximum=4<<(FIXEDL_stcui8nBit-1);
 		//	INT16					stci16nAccelAir
 		//		空中での(謎)加速度です。
-		static constexpr INT16	stci16nAccelAir=1<<(stcui8nDiscardBit-4);
+		static constexpr INT16	stci16nAccelAir=1<<(FIXEDL_stcui8nBit-4);
 		//	INT16					stci16nStop
 		//		地上での自然停止減速度です。
-		static constexpr INT16	stci16nStop=1<<(stcui8nDiscardBit-4);
+		static constexpr INT16	stci16nStop=1<<(FIXEDL_stcui8nBit-4);
 		//	INT16					stci16nStopAir
 		//		空中での(謎)自然停止減速度です。
-		static constexpr INT16	stci16nStopAir=1<<(stcui8nDiscardBit-5);
+		static constexpr INT16	stci16nStopAir=1<<(FIXEDL_stcui8nBit-5);
 		//	UINT8					stcui8nJumpKeeping
 		//		ジャンプボタン押しっぱなしでジャンプ初速度を維持できるフレーム数です。
 		static constexpr UINT8	stcui8nJumpKeeping=16;
@@ -1209,20 +1209,20 @@ public:
 		//		「移動処理」と分けているのは、「表示を垂直帰線期間中に確実に完了させる」ためです。
 		//		返り値はスプライト枚数の使用実績です。
 		UINT8					ui8nShow(CUINT8 cui8isprite)const noexcept{
-			CAUTO					cv2iposition=v2iPosition_Upper-VECTOR2(8,8);
+			CAUTO					cv2iposition_upper=v2iPosition_Upper-VECTOR2(8,8);
 
 			switch(idState){
 			case IDSTATE::Normal:
 				if((v2dVelocity.i16iX()!=0)&&(!eAir)){
 					//	スリップ中
-					FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+					FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition_upper,
 						ui8iPatternBase+16,
 						ui8iPalette,
 						OFWBOOL(idDirection==IDDIRECTION::Right)
 					);
 				}else{
 					//	立ち止まり中
-					FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+					FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition_upper,
 						ui8iPatternBase+4,
 						ui8iPalette,
 						OFWBOOL(idDirection==IDDIRECTION::Right)
@@ -1234,14 +1234,14 @@ public:
 				case IDDIRECTION::Right:
 					if(v2dVelocity.i16iX()<0){
 						//	速度が逆方向なんでスリップ表示
-						FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+						FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition_upper,
 							ui8iPatternBase+16,
 							ui8iPalette,
 							FALSE
 						);
 					}else{
 						//	通常歩き表示
-						FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+						FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition_upper,
 							ui8iPatternBase+ui8iPattern+0,
 							ui8iPalette,
 							TRUE
@@ -1251,14 +1251,14 @@ public:
 				case IDDIRECTION::Left:
 					if(0<v2dVelocity.i16iX()){
 						//	速度が逆方向なんでスリップ表示
-						FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+						FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition_upper,
 							ui8iPatternBase+16,
 							ui8iPalette,
 							TRUE
 						);
 					}else{
 						//	通常歩き表示
-						FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+						FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition_upper,
 							ui8iPatternBase+ui8iPattern+0,
 							ui8iPalette,
 							FALSE
@@ -1268,14 +1268,14 @@ public:
 				}
 				return 1;
 			case IDSTATE::OnLadder:
-				FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+				FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition_upper,
 					ui8iPatternBase+20,
 					ui8iPalette,
 					OFWBOOL((ui8iPattern&8)!=0)
 				);
 				return 1;
 			case IDSTATE::Jumping:
-				FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+				FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition_upper,
 					ui8iPatternBase+12,
 					ui8iPalette,
 					OFWBOOL(idDirection==IDDIRECTION::Right)
@@ -1302,23 +1302,23 @@ public:
 			//		ジャンプ(コントローラA)ボタン押下状態です。
 			//		「押下の瞬間」だけ「TRUE」になります。
 			CAUTO					controller_cejump=OFWBOOL((pgameOwner->CONTROLLER_ui8cSingle&CONTROLLER_stcui8cJump)!=0);
-			CAUTO					ci16ixcr=i16iGetPositionXCR_Upper();
-			CAUTO					ci16ixcl=i16iGetPositionXCL_Upper();
-			CAUTO					ci16iyd8=i16iGetPositionYD8_Upper();
-			CAUTO					ci16iym=i16iGetPositionYU0_Upper();
-			CAUTO					ci16iyu=i16iGetPositionYU8_Upper();
-			CAUTO					cv2icrd8=VECTOR2(ci16ixcr,ci16iyd8);
-			CAUTO					cv2icld8=VECTOR2(ci16ixcl,ci16iyd8);
-			CAUTO					cv2icrm=VECTOR2(ci16ixcr,ci16iym);
-			CAUTO					cv2iclm=VECTOR2(ci16ixcl,ci16iym);
-			CAUTO					cv2icru=VECTOR2(ci16ixcr,ci16iyu);
-			CAUTO					cv2iclu=VECTOR2(ci16ixcl,ci16iyu);
-			CAUTO					map_cui8ccrd8=MAP_stui8cReadPattern(cv2icrd8);
-			CAUTO					map_cui8ccld8=MAP_stui8cReadPattern(cv2icld8);
-			CAUTO					map_cui8ccrm=MAP_stui8cReadPattern(cv2icrm);
-			CAUTO					map_cui8cclm=MAP_stui8cReadPattern(cv2iclm);
-			CAUTO					map_cui8ccru=MAP_stui8cReadPattern(cv2icru);
-			CAUTO					map_cui8cclu=MAP_stui8cReadPattern(cv2iclu);
+			CAUTO					ci16ixcr_upper=i16iGetPositionXCR_Upper();
+			CAUTO					ci16ixcl_upper=i16iGetPositionXCL_Upper();
+			CAUTO					ci16iyd8_upper=i16iGetPositionYD8_Upper();
+			CAUTO					ci16iym_upper=i16iGetPositionYU0_Upper();
+			CAUTO					ci16iyu_upper=i16iGetPositionYU8_Upper();
+			CAUTO					cv2icrd8_upper=VECTOR2(ci16ixcr_upper,ci16iyd8_upper);
+			CAUTO					cv2icld8_upper=VECTOR2(ci16ixcl_upper,ci16iyd8_upper);
+			CAUTO					cv2icrm_upper=VECTOR2(ci16ixcr_upper,ci16iym_upper);
+			CAUTO					cv2iclm_upper=VECTOR2(ci16ixcl_upper,ci16iym_upper);
+			CAUTO					cv2icru_upper=VECTOR2(ci16ixcr_upper,ci16iyu_upper);
+			CAUTO					cv2iclu_upper=VECTOR2(ci16ixcl_upper,ci16iyu_upper);
+			CAUTO					map_cui8ccrd8=MAP_stui8cReadPattern(cv2icrd8_upper);
+			CAUTO					map_cui8ccld8=MAP_stui8cReadPattern(cv2icld8_upper);
+			CAUTO					map_cui8ccrm=MAP_stui8cReadPattern(cv2icrm_upper);
+			CAUTO					map_cui8cclm=MAP_stui8cReadPattern(cv2iclm_upper);
+			CAUTO					map_cui8ccru=MAP_stui8cReadPattern(cv2icru_upper);
+			CAUTO					map_cui8cclu=MAP_stui8cReadPattern(cv2iclu_upper);
 			//	OFWBOOL					cescaffold
 			//		「足元」に「足場」があるかどうかを保持します。
 			//		「ダッシュ最高速だと1キャラ分の穴に絶対に落ちない」という補正がかかると同時に、
@@ -1344,7 +1344,7 @@ public:
 						//		前方1キャラクタ先、「自機」範囲に「含まれない」足元直下の「マップパーツ」を保持します。
 						CAUTO					map_cui8cforwardd8=MAP_stui8cReadPattern({
 							(0<v2dVelocity.i16iX())?i16iGetPositionXR_Upper(stci16nNeighbor_Upper):i16iGetPositionXL_Upper(stci16nNeighbor_Upper),
-							ci16iyd8
+							ci16iyd8_upper
 						});
 						eAir?
 							(!MAP_steIsMovable(map_cui8cforwardd8)):
@@ -1360,8 +1360,8 @@ public:
 						//	さらに前方に「足場」があるので、補正が入る可能性あり。
 						if(
 							CAUTO
-								map_cui8crd8=MAP_stui8cReadPattern({i16iGetPositionXR_Upper(ci16ncollisionwidth_upper),ci16iyd8}),
-								map_cui8cld8=MAP_stui8cReadPattern({i16iGetPositionXL_Upper(ci16ncollisionwidth_upper),ci16iyd8});
+								map_cui8crd8=MAP_stui8cReadPattern({i16iGetPositionXR_Upper(ci16ncollisionwidth_upper),ci16iyd8_upper}),
+								map_cui8cld8=MAP_stui8cReadPattern({i16iGetPositionXL_Upper(ci16ncollisionwidth_upper),ci16iyd8_upper});
 							eAir?
 								(!MAP_steIsMovable(map_cui8crd8))||(!MAP_steIsMovable(map_cui8cld8)):
 								(!MAP_steIsSpace(map_cui8crd8))||(!MAP_steIsSpace(map_cui8cld8))
@@ -1384,8 +1384,8 @@ public:
 					}
 				}
 				{
-					CAUTO					map_cui8crd8=MAP_stui8cReadPattern({i16iGetPositionXR_Upper(stci16nCollisionWidthHalf_Upper),ci16iyd8});
-					CAUTO					map_cui8cld8=MAP_stui8cReadPattern({i16iGetPositionXL_Upper(stci16nCollisionWidthHalf_Upper),ci16iyd8});
+					CAUTO					map_cui8crd8=MAP_stui8cReadPattern({i16iGetPositionXR_Upper(stci16nCollisionWidthHalf_Upper),ci16iyd8_upper});
+					CAUTO					map_cui8cld8=MAP_stui8cReadPattern({i16iGetPositionXL_Upper(stci16nCollisionWidthHalf_Upper),ci16iyd8_upper});
 
 					//	足元位置補正あるにせよ無いにせよ、マップパーツに応じた「足場」有無を返す
 					return eAir?
@@ -1401,22 +1401,22 @@ public:
 				OFWBOOL					eplayse=FALSE;
 
 				if(MAP_steIsScoring(map_cui8ccrm)){
-					MAP_stWritePattern(cv2icrm,MAP_stcui8cNone);
+					MAP_stWritePattern(cv2icrm_upper,MAP_stcui8cNone);
 					pgameOwner->AddScore(1);
 					eplayse=TRUE;
 				}
 				if(MAP_steIsScoring(map_cui8cclm)){
-					MAP_stWritePattern(cv2iclm,MAP_stcui8cNone);
+					MAP_stWritePattern(cv2iclm_upper,MAP_stcui8cNone);
 					pgameOwner->AddScore(1);
 					eplayse=TRUE;
 				}
 				if(MAP_steIsScoring(map_cui8ccru)){
-					MAP_stWritePattern(cv2icru,MAP_stcui8cNone);
+					MAP_stWritePattern(cv2icru_upper,MAP_stcui8cNone);
 					pgameOwner->AddScore(1);
 					eplayse=TRUE;
 				}
 				if(MAP_steIsScoring(map_cui8cclu)){
-					MAP_stWritePattern(cv2iclu,MAP_stcui8cNone);
+					MAP_stWritePattern(cv2iclu_upper,MAP_stcui8cNone);
 					pgameOwner->AddScore(1);
 					eplayse=TRUE;
 				}
@@ -1499,8 +1499,8 @@ public:
 						switch(idDirection){
 						case IDDIRECTION::Right:
 							{
-								CAUTO					ci16ixr1=i16iGetPositionXNeighborR_Upper();
-								CAUTO					map_cui8cr1d8=MAP_stui8cReadPattern({ci16ixr1,ci16iyd8});
+								CAUTO					ci16ixr1_upper=i16iGetNeighborPositionXR_Upper();
+								CAUTO					map_cui8cr1d8=MAP_stui8cReadPattern({ci16ixr1_upper,ci16iyd8_upper});
 
 								if(MAP_steIsLadder(map_cui8ccrd8)||MAP_steIsLadder(map_cui8cr1d8)){
 									//	少し右方向に行けばハシゴを降りれそうなので右方向移動動作に解釈変更。
@@ -1512,8 +1512,8 @@ public:
 							break;
 						case IDDIRECTION::Left:
 							{
-								CAUTO					ci16ixl1=i16iGetPositionXNeighborL_Upper();
-								CAUTO					map_cui8cl1d8=MAP_stui8cReadPattern({ci16ixl1,ci16iyd8});
+								CAUTO					ci16ixl1_upper=i16iGetNeighborPositionXL_Upper();
+								CAUTO					map_cui8cl1d8=MAP_stui8cReadPattern({ci16ixl1_upper,ci16iyd8_upper});
 
 								if(MAP_steIsLadder(map_cui8ccld8)||MAP_steIsLadder(map_cui8cl1d8)){
 									//	少し左方向に行けばハシゴを降りれそうなので左方向移動動作に解釈変更。
@@ -1525,16 +1525,16 @@ public:
 							break;
 						}
 					}else if(controller_cui8cdu==CONTROLLER_stcui8cUp){
-						CAUTO					ci16iyd7=i16iGetPositionYD7_Upper();
+						CAUTO					ci16iyd7_upper=i16iGetPositionYD7_Upper();
 
 						//	上方向の入力がある(「何か」を昇ろうとしている)。
 						switch(idDirection){
 						case IDDIRECTION::Right:
 							{
-								CAUTO					ci16ixr1=i16iGetPositionXNeighborR_Upper();
-								CAUTO					cv2icrd7=VECTOR2(ci16ixcr,ci16iyd7);
-								CAUTO					map_cui8ccrd7=MAP_stui8cReadPattern(cv2icrd7);
-								CAUTO					map_cui8cr1d7=MAP_stui8cReadPattern({ci16ixr1,ci16iyd7});
+								CAUTO					ci16ixr1_upper=i16iGetNeighborPositionXR_Upper();
+								CAUTO					cv2icrd7_upper=VECTOR2(ci16ixcr_upper,ci16iyd7_upper);
+								CAUTO					map_cui8ccrd7=MAP_stui8cReadPattern(cv2icrd7_upper);
+								CAUTO					map_cui8cr1d7=MAP_stui8cReadPattern({ci16ixr1_upper,ci16iyd7_upper});
 
 								if(MAP_steIsLadder(map_cui8ccrd7)||MAP_steIsLadder(map_cui8cr1d7)){
 									//	少し右方向に行けばハシゴを昇れそうなので右方向移動動作に解釈変更。
@@ -1546,10 +1546,10 @@ public:
 							break;
 						case IDDIRECTION::Left:
 							{
-								CAUTO					ci16ixl1=i16iGetPositionXNeighborL_Upper();
-								CAUTO					cv2icld7=VECTOR2(ci16ixcl,ci16iyd7);
-								CAUTO					map_cui8ccld7=MAP_stui8cReadPattern(cv2icld7);
-								CAUTO					map_cui8cl1d7=MAP_stui8cReadPattern({ci16ixl1,ci16iyd7});
+								CAUTO					ci16ixl1_upper=i16iGetNeighborPositionXL_Upper();
+								CAUTO					cv2icld7_upper=VECTOR2(ci16ixcl_upper,ci16iyd7_upper);
+								CAUTO					map_cui8ccld7=MAP_stui8cReadPattern(cv2icld7_upper);
+								CAUTO					map_cui8cl1d7=MAP_stui8cReadPattern({ci16ixl1_upper,ci16iyd7_upper});
 
 								if(MAP_steIsLadder(map_cui8ccld7)||MAP_steIsLadder(map_cui8cl1d7)){
 									//	少し左方向に行けばハシゴを昇れそうなので左方向移動動作に解釈変更。
@@ -1698,7 +1698,7 @@ public:
 		_INLINE_  VOID			SetVelocityY_Jump(VOID)noexcept{
 			//	INT16					ci16nminimum
 			//		ジャンプ初速度最小値です。
-			constexpr INT16			ci16nminimum=3<<(stcui8nDiscardBit-1);
+			constexpr INT16			ci16nminimum=3<<(FIXEDL_stcui8nBit-1);
 
 			v2dVelocity.i16iY()=-ci16nminimum;
 			if(v2iPosition_Upper.i16iX()!=v2iPositionPrevious_Upper.i16iX()){
@@ -1713,7 +1713,7 @@ public:
 		_INLINE_ VOID			SetVelocityY_Trumple(VOID)noexcept{
 			//	INT16					ci16nminimum
 			//		踏みつけ跳ね返り初速度最小値です。
-			constexpr INT16			ci16nminimum=4<<(stcui8nDiscardBit-1);
+			constexpr INT16			ci16nminimum=4<<(FIXEDL_stcui8nBit-1);
 
 			v2dVelocity.i16iY()=-ci16nminimum;
 			SetState(IDSTATE::Normal);
@@ -1752,9 +1752,9 @@ public:
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
 		//		足元が「ハシゴ」であるならめり込みを許容します。
 		_INLINE_ OFWBOOL		eIsCollidingD_Ladder(VOID)noexcept{
-			CAUTO					ci16iy=i16iGetPredictedPositionYD7_Upper();
-			CAUTO					map_cui8ccrd=MAP_stui8cReadPattern({i16iGetPositionXCR_Upper(),ci16iy});
-			CAUTO					map_cui8ccld=MAP_stui8cReadPattern({i16iGetPositionXCL_Upper(),ci16iy});
+			CAUTO					ci16iy_upper=i16iGetPredictedPositionYD7_Upper();
+			CAUTO					map_cui8ccrd=MAP_stui8cReadPattern({i16iGetPositionXCR_Upper(),ci16iy_upper});
+			CAUTO					map_cui8ccld=MAP_stui8cReadPattern({i16iGetPositionXCL_Upper(),ci16iy_upper});
 
 			//	足元「ほぼ」点で判定するが、左右対称化のため2ドット判定する。
 			if(MAP_steIsLadder(map_cui8ccrd)||MAP_steIsLadder(map_cui8ccld)){
@@ -1765,7 +1765,7 @@ public:
 				//	1ドット右に移動させる必要がある。
 				//	一方左半身だけが「ハシゴ」なら、
 				//	整数切り捨てによって勝手に左方向に寄るため、移動補正は不要。
-				if(!MAP_steIsMovable(map_cui8ccld))v2iPosition.i16iX()+=1<<stcui8nDiscardBit;
+				if(!MAP_steIsMovable(map_cui8ccld))v2iPosition.i16iX()+=1<<FIXEDL_stcui8nBit;
 				//	めり込み許容するので返り値は「FALSE」だが「空中状態」ではない。
 			}else if((!MAP_steIsSpace(map_cui8ccrd))||(!MAP_steIsSpace(map_cui8ccld))){
 				//	足元は「足場」であった。
@@ -1794,9 +1794,9 @@ public:
 		//		上移動で壁に衝突するかどうかを「仮更新位置」で「ハシゴ昇降向け」判定します。
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
 		_INLINE_ OFWBOOL		eIsCollidingU_Ladder(VOID)noexcept{
-			CAUTO					ci16iy=i16iGetPredictedPositionYU8_Upper();
-			CAUTO					map_cui8ccru=MAP_stui8cReadPattern({i16iGetPositionXCR_Upper(),ci16iy});
-			CAUTO					map_cui8cclu=MAP_stui8cReadPattern({i16iGetPositionXCL_Upper(),ci16iy});
+			CAUTO					ci16iy_upper=i16iGetPredictedPositionYU8_Upper();
+			CAUTO					map_cui8ccru=MAP_stui8cReadPattern({i16iGetPositionXCR_Upper(),ci16iy_upper});
+			CAUTO					map_cui8cclu=MAP_stui8cReadPattern({i16iGetPositionXCL_Upper(),ci16iy_upper});
 
 			//	頭上「ほぼ」点で判定するが、左右対称化のため2ドット判定する。
 			if(MAP_steIsLadder(map_cui8ccru)||MAP_steIsLadder(map_cui8cclu)){
@@ -1807,7 +1807,7 @@ public:
 				//	1ドット右に移動させる必要がある。
 				//	一方左半身だけが「ハシゴ」なら、
 				//	整数切り捨てによって勝手に左方向に寄るため、移動補正は不要。
-				if(!MAP_steIsMovable(map_cui8cclu))v2iPosition.i16iX()+=1<<stcui8nDiscardBit;
+				if(!MAP_steIsMovable(map_cui8cclu))v2iPosition.i16iX()+=1<<FIXEDL_stcui8nBit;
 			}else if((!MAP_steIsSpace(map_cui8ccru))||(!MAP_steIsSpace(map_cui8cclu))){
 				//	頭上は「足場」であった。
 				v2iPosition.i16iY()=sti16iGetPositionN(
@@ -1830,7 +1830,7 @@ public:
 					SetState(IDSTATE::Normal);
 					SetVelocityX_StopP();
 					SetVelocityY_Zero();
-					PredictPosition_Upper();
+					PredictPosition();
 					eIsCollidingR();
 					if(ui8iWalkingSound!=2){
 						ui8iWalkingSound=2;
@@ -1850,7 +1850,7 @@ public:
 					SetState(IDSTATE::Normal);
 					SetVelocityX_StopN();
 					SetVelocityY_Zero();
-					PredictPosition_Upper();
+					PredictPosition();
 					eIsCollidingL();
 					if(ui8iWalkingSound!=2){
 						ui8iWalkingSound=2;
@@ -1892,7 +1892,7 @@ public:
 					SetVelocityX_AccelP();
 					SetVelocityY_Zero();
 					if(!controller_cedash)SetVelocityX_DecelP();
-					PredictPosition_Upper();
+					PredictPosition();
 					if(eIsCollidingX()){
 					}else{
 						ui8iPattern+=controller_cedash?2:1;
@@ -1915,7 +1915,7 @@ public:
 					SetVelocityX_AccelN();
 					SetVelocityY_Zero();
 					if(!controller_cedash)SetVelocityX_DecelN();
-					PredictPosition_Upper();
+					PredictPosition();
 					if(eIsCollidingX()){
 					}else{
 						ui8iPattern+=controller_cedash?2:1;
@@ -1969,9 +1969,9 @@ public:
 			switch(ciddirection){
 			case IDDIRECTION::Right:
 				{
-					CAUTO					ci16ix=i16iGetPositionXNeighborR_Upper();
-					CAUTO					map_cui8crm=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYU0_Upper()});
-					CAUTO					map_cui8cru=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYU8_Upper()});
+					CAUTO					ci16ix_upper=i16iGetNeighborPositionXR_Upper();
+					CAUTO					map_cui8crm=MAP_stui8cReadPattern({ci16ix_upper,i16iGetPositionYU0_Upper()});
+					CAUTO					map_cui8cru=MAP_stui8cReadPattern({ci16ix_upper,i16iGetPositionYU8_Upper()});
 					CAUTO					cemovablem=MAP_steIsMovable(map_cui8crm);
 					CAUTO					cemovableu=MAP_steIsMovable(map_cui8cru);
 
@@ -1995,7 +1995,7 @@ public:
 							Move_Walking(TRUE,IDDIRECTION::Right);
 						}
 					}else{
-						CAUTO					map_cui8crd=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYD8_Upper()});
+						CAUTO					map_cui8crd=MAP_stui8cReadPattern({ci16ix_upper,i16iGetPositionYD8_Upper()});
 						CAUTO					cemovabled=MAP_steIsMovable(map_cui8crd);
 
 						//	縦座標は普通に端数あり。
@@ -2022,9 +2022,9 @@ public:
 				break;
 			case IDDIRECTION::Left:
 				{
-					CAUTO					ci16ix=i16iGetPositionXNeighborL_Upper();
-					CAUTO					map_cui8clm=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYU0_Upper()});
-					CAUTO					map_cui8clu=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYU8_Upper()});
+					CAUTO					ci16ix_upper=i16iGetNeighborPositionXL_Upper();
+					CAUTO					map_cui8clm=MAP_stui8cReadPattern({ci16ix_upper,i16iGetPositionYU0_Upper()});
+					CAUTO					map_cui8clu=MAP_stui8cReadPattern({ci16ix_upper,i16iGetPositionYU8_Upper()});
 					CAUTO					cemovablem=MAP_steIsMovable(map_cui8clm);
 					CAUTO					cemovableu=MAP_steIsMovable(map_cui8clu);
 
@@ -2048,7 +2048,7 @@ public:
 							Move_Walking(TRUE,IDDIRECTION::Left);
 						}
 					}else{
-						CAUTO					map_cui8cld=MAP_stui8cReadPattern({ci16ix,i16iGetPositionYD8_Upper()});
+						CAUTO					map_cui8cld=MAP_stui8cReadPattern({ci16ix_upper,i16iGetPositionYD8_Upper()});
 						CAUTO					cemovabled=MAP_steIsMovable(map_cui8cld);
 
 						//	縦座標は普通に端数あり。
@@ -2082,14 +2082,14 @@ public:
 		//		わざわざ区別するのは「昇降出来ていなかったなら左右移動を試みたいから」です。
 		OFWBOOL					Move_eLadderY(COFWBOOL ceup)noexcept{
 			if(ceup){
-				CAUTO					ci16iy=i16iGetPositionYD7_Upper();
-				CAUTO					map_cui8ccrd=MAP_stui8cReadPattern({i16iGetPositionXCR_Upper(),ci16iy});
-				CAUTO					map_cui8ccld=MAP_stui8cReadPattern({i16iGetPositionXCL_Upper(),ci16iy});
+				CAUTO					ci16iy_upper=i16iGetPositionYD7_Upper();
+				CAUTO					map_cui8ccrd=MAP_stui8cReadPattern({i16iGetPositionXCR_Upper(),ci16iy_upper});
+				CAUTO					map_cui8ccld=MAP_stui8cReadPattern({i16iGetPositionXCL_Upper(),ci16iy_upper});
 
 				if(MAP_steIsLadder(map_cui8ccrd)||MAP_steIsLadder(map_cui8ccld)){
 					//	昇る場合は足元最低1ドットの重なりを求める。
 					SetVelocityY_OneU();
-					PredictPosition_Upper();
+					PredictPosition();
 					if(!eIsCollidingU_Ladder()){
 						Move_LadderY_Commit();
 						return TRUE;
@@ -2097,7 +2097,7 @@ public:
 				}
 			}else{
 				SetVelocityY_OneD();
-				PredictPosition_Upper();
+				PredictPosition();
 				if(!eIsCollidingD_Ladder()){
 					Move_LadderY_Commit();
 					return TRUE;
@@ -2114,11 +2114,11 @@ public:
 			switch(idDirection){
 			case IDDIRECTION::Right:
 				if(
-					CAUTO					cui8doffset=UINT8((v2iPosition_Upper.i16iX()-1)&7);
-					cui8doffset<3
+					CAUTO					cui8doffset_upper=UINT8((v2iPosition_Upper.i16iX()-1)&7);
+					cui8doffset_upper<3
 				){
 					SetVelocityX_OneR();
-				}else if(3<cui8doffset){
+				}else if(3<cui8doffset_upper){
 					SetVelocityX_OneL();
 				}else{
 					SetVelocityX_Zero();
@@ -2126,11 +2126,11 @@ public:
 				break;
 			case IDDIRECTION::Left:
 				if(
-					CAUTO					cui8doffset=UINT8((v2iPosition_Upper.i16iX()+0)&7);
-					cui8doffset<4
+					CAUTO					cui8doffset_upper=UINT8((v2iPosition_Upper.i16iX()+0)&7);
+					cui8doffset_upper<4
 				){
 					SetVelocityX_OneR();
-				}else if(4<cui8doffset){
+				}else if(4<cui8doffset_upper){
 					SetVelocityX_OneL();
 				}else{
 					SetVelocityX_Zero();
@@ -2200,52 +2200,52 @@ public:
 			//		下移動時に「TRUE」になります。
 			CAUTO					ced=OFWBOOL(0<=v2dVelocity.i16iY());
 
-			PredictPosition_Upper();
+			PredictPosition();
 			//	[滑り込み条件1]ヨコ方向の速度があるか。
 			if(v2dVelocity.i16iX()!=0)if(
-				//	INT16					ci16iy0
+				//	INT16					ci16iy0_upper
 				//		「現状位置」Y座標ベースの「基準点0」です。
 				//		下移動かどうかで「足元」か「中央」かが分かれます。
 				//		「仮更新位置」ベースにしないのは、Y座標8ドットまたぎ前の位置で「空き」判定したいためです。
-				CAUTO					ci16iy0=ced?i16iGetPositionYD7_Upper():i16iGetPositionYU0_Upper();
+				CAUTO					ci16iy0_upper=ced?i16iGetPositionYD7_Upper():i16iGetPositionYU0_Upper();
 				//	[滑り込み条件2]Y座標8ドットをまたいだかどうか。
-				INT16(ci16iy0&~7)!=INT16((ced?i16iGetPredictedPositionYD7_Upper():i16iGetPredictedPositionYU0_Upper())&~7)
+				INT16(ci16iy0_upper&~7)!=INT16((ced?i16iGetPredictedPositionYD7_Upper():i16iGetPredictedPositionYU0_Upper())&~7)
 			){
 				//	OFWBOOL					cer
 				//		右移動時に「TRUE」になります。
 				CAUTO					cer=OFWBOOL(0<v2dVelocity.i16iX());
 
 				if(
-					//	INT16					ci16ix
+					//	INT16					ci16ix_upper
 					//		「現状位置」X座標ベースの「端」です。
 					//		右移動かどうかで「右端」か「左端」かが分かれます。
 					//		「仮更新位置」ベースにしないのは、めり込んでいない位置基準で「空き」判定したいためです。
-					CAUTO					ci16ix=cer?i16iGetPositionXR_Upper(stci16nCollisionWidthHalf_Upper+1):i16iGetPositionXL_Upper(stci16nCollisionWidthHalf_Upper+1);
+					CAUTO					ci16ix_upper=cer?i16iGetPositionXR_Upper(stci16nCollisionWidthHalf_Upper+1):i16iGetPositionXL_Upper(stci16nCollisionWidthHalf_Upper+1);
 					//	[滑り込み条件3]X座標が壁接触状態かどうか。
-					UINT8(ci16ix&7)==UINT8(cer?0:7)
+					UINT8(ci16ix_upper&7)==UINT8(cer?0:7)
 				)if(
-					//	INT16					ci16iy1
+					//	INT16					ci16iy1_upper
 					//		「現状位置」Y座標ベースの「基準点1」です。
 					//		下移動かどうかで「中央」か「頭上」かが分かれます。
 					//		「仮更新位置」ベースにしないのは、Y座標8ドットまたぎ前の位置で「空き」判定したいためです。
-					CAUTO					ci16iy1=ced?i16iGetPositionYU1_Upper():i16iGetPositionYU8_Upper();
+					CAUTO					ci16iy1_upper=ced?i16iGetPositionYU1_Upper():i16iGetPositionYU8_Upper();
 					//	[滑り込み条件4]Y座標8ドットまたぎ前の位置ベースで「端」が空いているかどうか。
-					MAP_steIsMovable(MAP_stui8cReadPattern({ci16ix,ci16iy0}))&&
-					MAP_steIsMovable(MAP_stui8cReadPattern({ci16ix,ci16iy1}))
+					MAP_steIsMovable(MAP_stui8cReadPattern({ci16ix_upper,ci16iy0_upper}))&&
+					MAP_steIsMovable(MAP_stui8cReadPattern({ci16ix_upper,ci16iy1_upper}))
 				)if(
-					//	INT16					ci16iy2
+					//	INT16					ci16iy2_upper
 					//		「現状位置」Y座標ベースの「基準点2」です。
 					//		下移動かどうかで、キャラクタ範囲に「含まれない」、「頭上」か「足元」かが分かれます。
 					//		「仮更新位置」ベースにしないのは、Y座標8ドットまたぎ前の位置で「空き」判定したいためです。
-					CAUTO					ci16iy2=ced?i16iGetPositionYU9_Upper():i16iGetPositionYD8_Upper();
+					CAUTO					ci16iy2_upper=ced?i16iGetPositionYU9_Upper():i16iGetPositionYD8_Upper();
 					//	[滑り込み条件5]Y座標8ドットまたぎ前の位置ベースで、
 					//	キャラクタ範囲に「含まれない」部分が「壁」であるか、
 					//	つまり補正無しだと滑り込みにくい状態であるかどうか。
-					!MAP_steIsMovable(MAP_stui8cReadPattern({ci16ix,ci16iy2}))
+					!MAP_steIsMovable(MAP_stui8cReadPattern({ci16ix_upper,ci16iy2_upper}))
 				){
 					v2iPosition_Upper.i16iX()+=cer?INT16(+1):INT16(-1);
 					v2iPosition.i16iX()=sti16iGetPositionP(v2iPosition_Upper.i16iX());
-					PredictPosition_Upper();
+					PredictPosition();
 					return Move_eAirCollide_DU(ced);
 				}
 			}
@@ -2497,11 +2497,11 @@ public:
 			return 0;
 		}
 		VOID					Move_Self(VOID)noexcept{
-			CAUTO					ci16ixr0=INT16(v2iPosition_Upper.i16iX()+sti16dGetOffset_UpperR(stci16nCollisionWidthHalf_Upper));
-			CAUTO					ci16ixl0=INT16(v2iPosition_Upper.i16iX()+sti16dGetOffset_UpperL(stci16nCollisionWidthHalf_Upper));
-			CAUTO					ci16iyd8=i16iGetPositionYD8_Upper();
-			CAUTO					map_cui8cr0d8=MAP_stui8cReadPattern({ci16ixr0,ci16iyd8});
-			CAUTO					map_cui8cl0d8=MAP_stui8cReadPattern({ci16ixl0,ci16iyd8});
+			CAUTO					ci16ixr0_upper=INT16(v2iPosition_Upper.i16iX()+sti16dGetOffsetR_Upper(stci16nCollisionWidthHalf_Upper));
+			CAUTO					ci16ixl0_upper=INT16(v2iPosition_Upper.i16iX()+sti16dGetOffsetL_Upper(stci16nCollisionWidthHalf_Upper));
+			CAUTO					ci16iyd8_upper=i16iGetPositionYD8_Upper();
+			CAUTO					map_cui8cr0d8=MAP_stui8cReadPattern({ci16ixr0_upper,ci16iyd8_upper});
+			CAUTO					map_cui8cl0d8=MAP_stui8cReadPattern({ci16ixl0_upper,ci16iyd8_upper});
 			//	OFWBOOL					cescaffold
 			//		足元に「足場」があるかどうかを保持します。
 			CAUTO					cescaffold=(!MAP_steIsMovable(map_cui8cr0d8))||(!MAP_steIsMovable(map_cui8cl0d8));
@@ -2518,12 +2518,12 @@ public:
 			if(cescaffold){
 				//	「足場」あり
 				SetVelocityY_Zero();
-				PredictPosition_Upper();
+				PredictPosition();
 				++ui8iPattern;
 			}else{
 				//	「足場」無し
 				SetVelocityY_Gravity();
-				PredictPosition_Upper();
+				PredictPosition();
 				eIsCollidingD(stci16nCollisionWidthHalf_Upper);
 			}
 			switch(idDirection){
@@ -2549,10 +2549,10 @@ public:
 		VOID					SetDirection_Self(const IDDIRECTION ciddirection)noexcept{
 			switch(ciddirection){
 			case IDDIRECTION::Right:
-				v2dVelocity=VECTOR2(+1,0)<<(stcui8nDiscardBit-1);
+				v2dVelocity=VECTOR2(+1,0)<<(FIXEDL_stcui8nBit-1);
 				break;
 			case IDDIRECTION::Left:
-				v2dVelocity=VECTOR2(-1,0)<<(stcui8nDiscardBit-1);
+				v2dVelocity=VECTOR2(-1,0)<<(FIXEDL_stcui8nBit-1);
 				break;
 			}
 			return;
@@ -2637,11 +2637,11 @@ public:
 		idMode=IDMODE::Normal;
 		ui16nScore=0;
 		//	「自機」初期化
-		PLAYER_plyrThis.Start(PLAYER::IDTYPE::Mario,VECTOR2((24<<3)+4,(87<<3))<<stcui8nDiscardBit);
-		SHELLCREEPER::stStart(&ENEMY_aenmyThis[0],VECTOR2((26<<3),(89<<3))<<stcui8nDiscardBit,CHARACTER_::IDDIRECTION::Right);
-		SHELLCREEPER::stStart(&ENEMY_aenmyThis[1],VECTOR2((28<<3),(89<<3))<<stcui8nDiscardBit,CHARACTER_::IDDIRECTION::Right);
-		SHELLCREEPER::stStart(&ENEMY_aenmyThis[2],VECTOR2((30<<3),(89<<3))<<stcui8nDiscardBit,CHARACTER_::IDDIRECTION::Right);
-		SHELLCREEPER::stStart(&ENEMY_aenmyThis[3],VECTOR2((32<<3),(89<<3))<<stcui8nDiscardBit,CHARACTER_::IDDIRECTION::Right);
+		PLAYER_plyrThis.Start(PLAYER::IDTYPE::Mario,VECTOR2((24<<3)+4,(87<<3))<<FIXEDL_stcui8nBit);
+		SHELLCREEPER::stStart(&ENEMY_aenmyThis[0],VECTOR2((26<<3),(89<<3))<<FIXEDL_stcui8nBit,CHARACTER_::IDDIRECTION::Right);
+		SHELLCREEPER::stStart(&ENEMY_aenmyThis[1],VECTOR2((28<<3),(89<<3))<<FIXEDL_stcui8nBit,CHARACTER_::IDDIRECTION::Right);
+		SHELLCREEPER::stStart(&ENEMY_aenmyThis[2],VECTOR2((30<<3),(89<<3))<<FIXEDL_stcui8nBit,CHARACTER_::IDDIRECTION::Right);
+		SHELLCREEPER::stStart(&ENEMY_aenmyThis[3],VECTOR2((32<<3),(89<<3))<<FIXEDL_stcui8nBit,CHARACTER_::IDDIRECTION::Right);
 		//	「背景」初期化
 		SCROLL_SetPosition();
 		FAMILYBASIC::BG1_stCopyAttribute({0,0},MAP_stcv2nSize,MAP_stacui16cAttribute);
@@ -2829,7 +2829,7 @@ private:
 		return;
 	}
 	VOID					SCROLL_SetPosition(VOID)noexcept{
-		CAUTO					cv2iposition_upper=PLAYER_plyrThis.cv2iGetPosition()>>stcui8nDiscardBit;
+		CAUTO					cv2iposition_upper=PLAYER_plyrThis.cv2iGetPosition()>>FIXEDL_stcui8nBit;
 
 		SCROLL_v2iPosition_Upper={
 			STD::stxFit(

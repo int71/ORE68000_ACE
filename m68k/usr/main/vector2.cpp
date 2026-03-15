@@ -24,19 +24,19 @@ using namespace m68k::i71::main;
 
 //	public
 
-UINT8					VECTOR2::ui8Atan(VOID)const noexcept{
+UINT8					VECTOR2::TRIG_ui8iGetAngle(VOID)const noexcept{
 	if(0<=i16iX()){
-		if(0<=i16iY())return ui8Atan_Positive();
-		else return UINT8(TRIG_stcui16nAngle-VECTOR2(i16iX(),-i16iY()).ui8Atan_Positive());
+		if(0<=i16iY())return TRIG_ui8iGetAngle_Positive();
+		else return UINT8(TRIG_stcui16nAngle-VECTOR2(i16iX(),-i16iY()).TRIG_ui8iGetAngle_Positive());
 	}else{
-		if(0<=i16iY())return UINT8((TRIG_stcui16nAngle>>1)-VECTOR2(-i16iX(),i16iY()).ui8Atan_Positive());
-		else return UINT8((TRIG_stcui16nAngle>>1)+VECTOR2(-i16iX(),-i16iY()).ui8Atan_Positive());
+		if(0<=i16iY())return UINT8((TRIG_stcui16nAngle>>1)-VECTOR2(-i16iX(),i16iY()).TRIG_ui8iGetAngle_Positive());
+		else return UINT8((TRIG_stcui16nAngle>>1)+VECTOR2(-i16iX(),-i16iY()).TRIG_ui8iGetAngle_Positive());
 	}
 }
 
 //	private
 
-_INLINE_ UINT8			VECTOR2::ui8Atan_Positive(VOID)const noexcept{
+_INLINE_ UINT8			VECTOR2::TRIG_ui8iGetAngle_Positive(VOID)const noexcept{
 	AUTO					i16ix=i16iX();
 	AUTO					i16iy=i16iY();
 

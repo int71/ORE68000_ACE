@@ -42,9 +42,9 @@ public:
 		Normal,
 		GameOver
 	};
-	//	UINT8					stcui8nDiscardBit
+	//	UINT8					FIXEDL_stcui8nBit
 	//		16bit中、6bitを「小数点値」扱いにします。
-	static constexpr UINT8	stcui8nDiscardBit=		6;
+	static constexpr UINT8	FIXEDL_stcui8nBit=		6;
 	//	VECTOR2					stcv2nMapBit
 	//		マップデータのサイズ(キャラクタ単位)ビット幅です。
 	static constexpr VECTOR2	stcv2nMapBit={7,7};
@@ -368,37 +368,37 @@ public:
 		static constexpr AUTO	stcv2inHitHalf_Upper=VECTOR2(4,6);
 		//	INT16					stci16nAccel
 		//		地上での歩き加速度です。
-		static constexpr INT16	stci16nAccel=1<<(stcui8nDiscardBit-3);
+		static constexpr INT16	stci16nAccel=1<<(FIXEDL_stcui8nBit-3);
 		//	INT16					stci16nXSpeedMaximum
 		//		横方向の最大速度です。
-		static constexpr INT16	stci16nXSpeedMaximum=1<<stcui8nDiscardBit;
+		static constexpr INT16	stci16nXSpeedMaximum=1<<FIXEDL_stcui8nBit;
 		//	INT16					stci16nXDashSpeedMaximum
 		//		横方向の最大ダッシュ速度です。
-		static constexpr INT16	stci16nXDashSpeedMaximum=4<<(stcui8nDiscardBit-1);
+		static constexpr INT16	stci16nXDashSpeedMaximum=4<<(FIXEDL_stcui8nBit-1);
 		//	INT16					stci16nAccelAir
 		//		空中での(謎)加速度です。
-		static constexpr INT16	stci16nAccelAir=1<<(stcui8nDiscardBit-4);
+		static constexpr INT16	stci16nAccelAir=1<<(FIXEDL_stcui8nBit-4);
 		//	INT16					stci16nStop
 		//		地上での自然停止減速度です。
-		static constexpr INT16	stci16nStop=1<<(stcui8nDiscardBit-4);
+		static constexpr INT16	stci16nStop=1<<(FIXEDL_stcui8nBit-4);
 		//	INT16					stci16nStopAir
 		//		空中での(謎)自然停止減速度です。
-		static constexpr INT16	stci16nStopAir=1<<(stcui8nDiscardBit-5);
+		static constexpr INT16	stci16nStopAir=1<<(FIXEDL_stcui8nBit-5);
 		//	INT16					stci16nJumpInitialSpeed
 		//		ジャンプ初速度最小値です。
-		static constexpr INT16	stci16nJumpInitialSpeed=3<<(stcui8nDiscardBit-1);
+		static constexpr INT16	stci16nJumpInitialSpeed=3<<(FIXEDL_stcui8nBit-1);
 		//	UINT8					stcui8nJumpKeeping
 		//		ジャンプボタン押しっぱなしでジャンプ初速度を維持できるフレーム数です。
 		static constexpr UINT8	stcui8nJumpKeeping=12;
 		//	INT16					stci16nGravity
 		//		重力加速度です。
-		static constexpr INT16	stci16nGravity=1<<(stcui8nDiscardBit-3);
+		static constexpr INT16	stci16nGravity=1<<(FIXEDL_stcui8nBit-3);
 		//	INT16					stci16nYSpeedMaximum
 		//		縦方向の最大速度です。
-		static constexpr INT16	stci16nYSpeedMaximum=4<<stcui8nDiscardBit;
-		//	INT16					stci16nDUCollisionWidth_UpperHalf
+		static constexpr INT16	stci16nYSpeedMaximum=4<<FIXEDL_stcui8nBit;
+		//	INT16					stci16nDUCollisionWidthHalf_Upper
 		//		足元、頭上の「空き」判定幅ドット数(の半分)です。
-		static constexpr INT16	stci16nDUCollisionWidth_UpperHalf=2;
+		static constexpr INT16	stci16nDUCollisionWidthHalf_Upper=2;
 
 		//
 		//		body:PLAYER
@@ -419,11 +419,11 @@ public:
 		//		整数状態での「位置」です。
 		//		当たり判定は整数状態で取るので、キャッシュ的に保持しておきます。
 		VECTOR2					v2iPosition_Upper;
-		//	VECTOR2					v2iPosition_PredictedUpper
+		//	VECTOR2					v2iPredictedPosition_Upper
 		//		整数状態での「仮更新位置」です。
 		//		「壁にめり込む」等の状況を避けるため「位置」、「速度」を調整しますが、
 		//		その際にこの「仮更新位置」が使われます。
-		VECTOR2					v2iPosition_PredictedUpper;
+		VECTOR2					v2iPredictedPosition_Upper;
 		//	VECTOR2					v2dVelocity
 		//		「速度」です。
 		//		この値は6bit小数点値の「固定小数点値」です。
@@ -503,16 +503,16 @@ public:
 		//		「移動処理」と分けているのは、「表示を垂直帰線期間中に確実に完了させる」ためです。
 		//		返り値はスプライト枚数の使用実績です。
 		UINT8					ui8nShow(CUINT8 cui8isprite)const noexcept{
-			CAUTO					cv2iposition=v2iPosition_Upper-VECTOR2(8,8);
+			CAUTO					cv2iposition_upper=v2iPosition_Upper-VECTOR2(8,8);
 
 			switch(idMode){
 			case IDMODE::Normal:
-				if(v2dVelocity.i16iX()!=0)FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+				if(v2dVelocity.i16iX()!=0)FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition_upper,
 					ui8iPatternBase+16,
 					ui8iPalette,
 					OFWBOOL(idDirection==IDDIRECTION::Right)
 				);
-				else FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+				else FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition_upper,
 					ui8iPatternBase+4,
 					ui8iPalette,
 					OFWBOOL(idDirection==IDDIRECTION::Right)
@@ -521,24 +521,24 @@ public:
 			case IDMODE::Walking:
 				switch(idDirection){
 				case IDDIRECTION::Right:
-					if(v2dVelocity.i16iX()<0)FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+					if(v2dVelocity.i16iX()<0)FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition_upper,
 						ui8iPatternBase+16,
 						ui8iPalette,
 						FALSE
 					);
-					else FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+					else FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition_upper,
 						ui8iPatternBase+ui8iPattern+0,
 						ui8iPalette,
 						TRUE
 					);
 					break;
 				case IDDIRECTION::Left:
-					if(0<v2dVelocity.i16iX())FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+					if(0<v2dVelocity.i16iX())FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition_upper,
 						ui8iPatternBase+16,
 						ui8iPalette,
 						TRUE
 					);
-					else FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+					else FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition_upper,
 						ui8iPatternBase+ui8iPattern+0,
 						ui8iPalette,
 						FALSE
@@ -547,14 +547,14 @@ public:
 				}
 				return 1;
 			case IDMODE::OnLadder:
-				FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+				FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition_upper,
 					ui8iPatternBase+20,
 					ui8iPalette,
 					OFWBOOL((ui8iPattern&8)!=0)
 				);
 				return 1;
 			case IDMODE::Jumping:
-				FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition,
+				FAMILYBASIC::SPRITE_stWrite16(cui8isprite,cv2iposition_upper,
 					ui8iPatternBase+12,
 					ui8iPalette,
 					OFWBOOL(idDirection==IDDIRECTION::Right)
@@ -757,13 +757,13 @@ public:
 		//		セットで整数状態での「位置」を設定します。
 		constexpr VOID			UpdatePosition(VOID)noexcept{
 			v2iPosition+=v2dVelocity;
-			v2iPosition_Upper=v2iPosition>>stcui8nDiscardBit;
+			v2iPosition_Upper=v2iPosition>>FIXEDL_stcui8nBit;
 			return;
 		}
-		//	VOID					PredictPosition_Upper(VOID)
+		//	VOID					PredictPosition(VOID)
 		//		現状の「位置」と「速度」から整数状態での「仮更新位置」を設定します。
-		constexpr VOID			PredictPosition_Upper(VOID)noexcept{
-			v2iPosition_PredictedUpper=(v2iPosition+v2dVelocity)>>stcui8nDiscardBit;
+		constexpr VOID			PredictPosition(VOID)noexcept{
+			v2iPredictedPosition_Upper=(v2iPosition+v2dVelocity)>>FIXEDL_stcui8nBit;
 			return;
 		}
 		//	VOID					Move_Normal(const PGAME cpgameowner)
@@ -774,13 +774,13 @@ public:
 			if(0<v2dVelocity.i16iX()){
 				if(Move_eIsFalling(cpgameowner)){
 					v2dVelocity.i16iX()=STD::stxGetMaximum(v2dVelocity.i16iX()-stci16nStopAir,0);
-					PredictPosition_Upper();
+					PredictPosition();
 					Move_eIsCollidingR(cpgameowner);
 					Move_eIsCollidingD(cpgameowner);
 				}else{
 					SetMode(IDMODE::Normal);
 					v2dVelocity.i16iX()=STD::stxGetMaximum(v2dVelocity.i16iX()-stci16nStop,0);
-					PredictPosition_Upper();
+					PredictPosition();
 					Move_eIsCollidingR(cpgameowner);
 					if(ui8iWalkingSound!=2){
 						ui8iWalkingSound=2;
@@ -790,13 +790,13 @@ public:
 			}else if(v2dVelocity.i16iX()<0){
 				if(Move_eIsFalling(cpgameowner)){
 					v2dVelocity.i16iX()=STD::stxGetMinimum(v2dVelocity.i16iX()+stci16nStopAir,0);
-					PredictPosition_Upper();
+					PredictPosition();
 					Move_eIsCollidingL(cpgameowner);
 					Move_eIsCollidingD(cpgameowner);
 				}else{
 					SetMode(IDMODE::Normal);
 					v2dVelocity.i16iX()=STD::stxGetMinimum(v2dVelocity.i16iX()+stci16nStop,0);
-					PredictPosition_Upper();
+					PredictPosition();
 					Move_eIsCollidingL(cpgameowner);
 					if(ui8iWalkingSound!=2){
 						ui8iWalkingSound=2;
@@ -806,7 +806,7 @@ public:
 			}else{
 				//	真下への落下
 				if(Move_eIsFalling(cpgameowner)){
-					PredictPosition_Upper();
+					PredictPosition();
 					Move_eIsCollidingD(cpgameowner);
 				}else{
 					SetMode(IDMODE::Normal);
@@ -825,7 +825,7 @@ public:
 				if(Move_eIsFalling(cpgameowner)){
 					v2dVelocity.i16iX()=STD::stxGetMinimum(v2dVelocity.i16iX()+stci16nAccelAir,+stci16nXDashSpeedMaximum);
 					if(!controller_cedash)if(+stci16nXSpeedMaximum<v2dVelocity.i16iX())v2dVelocity.i16iX()=STD::stxGetMaximum(v2dVelocity.i16iX()-(stci16nAccelAir<<1),+stci16nXSpeedMaximum);
-					PredictPosition_Upper();
+					PredictPosition();
 					Move_eIsCollidingX(cpgameowner);
 					Move_eIsCollidingD(cpgameowner);
 				}else{
@@ -833,7 +833,7 @@ public:
 					idDirection=IDDIRECTION::Right;
 					v2dVelocity.i16iX()=STD::stxGetMinimum(v2dVelocity.i16iX()+stci16nAccel,+stci16nXDashSpeedMaximum);
 					if(!controller_cedash)if(+stci16nXSpeedMaximum<v2dVelocity.i16iX())v2dVelocity.i16iX()=STD::stxGetMaximum(v2dVelocity.i16iX()-(stci16nAccel<<1),+stci16nXSpeedMaximum);
-					PredictPosition_Upper();
+					PredictPosition();
 					if(Move_eIsCollidingX(cpgameowner)){
 					}else{
 						ui8iPattern+=controller_cedash?2:1;
@@ -845,7 +845,7 @@ public:
 				if(Move_eIsFalling(cpgameowner)){
 					v2dVelocity.i16iX()=STD::stxGetMaximum(v2dVelocity.i16iX()-stci16nAccelAir,-stci16nXDashSpeedMaximum);
 					if(!controller_cedash)if(v2dVelocity.i16iX()<-stci16nXSpeedMaximum)v2dVelocity.i16iX()=STD::stxGetMinimum(v2dVelocity.i16iX()+(stci16nAccelAir<<1),-stci16nXSpeedMaximum);
-					PredictPosition_Upper();
+					PredictPosition();
 					Move_eIsCollidingX(cpgameowner);
 					Move_eIsCollidingD(cpgameowner);
 				}else{
@@ -853,7 +853,7 @@ public:
 					idDirection=IDDIRECTION::Left;
 					v2dVelocity.i16iX()=STD::stxGetMaximum(v2dVelocity.i16iX()-stci16nAccel,-stci16nXDashSpeedMaximum);
 					if(!controller_cedash)if(v2dVelocity.i16iX()<-stci16nXSpeedMaximum)v2dVelocity.i16iX()=STD::stxGetMinimum(v2dVelocity.i16iX()+(stci16nAccel<<1),-stci16nXSpeedMaximum);
-					PredictPosition_Upper();
+					PredictPosition();
 					if(Move_eIsCollidingX(cpgameowner)){
 					}else{
 						ui8iPattern+=controller_cedash?2:1;
@@ -1016,16 +1016,16 @@ public:
 					MAP_steIsLadder(map_cui8ccd)||MAP_steIsLadder(map_cui8ccm)
 				){
 					//	昇る場合は足元最低1ドットの重なりを求める
-					v2dVelocity.i16iY()=INT16(-1)<<stcui8nDiscardBit;
-					PredictPosition_Upper();
+					v2dVelocity.i16iY()=INT16(-1)<<FIXEDL_stcui8nBit;
+					PredictPosition();
 					if(!Move_eIsCollidingU(cpgameowner,TRUE)){
 						Move_LadderY_Commit(cpgameowner);
 						return TRUE;
 					}
 				}
 			}else{
-				v2dVelocity.i16iY()=INT16(+1)<<stcui8nDiscardBit;
-				PredictPosition_Upper();
+				v2dVelocity.i16iY()=INT16(+1)<<FIXEDL_stcui8nBit;
+				PredictPosition();
 				if(!Move_eIsCollidingD(cpgameowner,TRUE)){
 					Move_LadderY_Commit(cpgameowner);
 					return TRUE;
@@ -1040,12 +1040,12 @@ public:
 			SetMode(IDMODE::OnLadder);
 			//	ハシゴ上下動時、ハシゴキャラクタに横位置合わせしていく
 			if(
-				CAUTO					ci16doffset=v2iPosition_Upper.i16iX()&7;
-				ci16doffset<4
+				CAUTO					ci16doffset_upper=v2iPosition_Upper.i16iX()&7;
+				ci16doffset_upper<4
 			){
-				v2dVelocity.i16iX()=INT16(+1)<<stcui8nDiscardBit;
-			}else if(4<ci16doffset){
-				v2dVelocity.i16iX()=INT16(-1)<<stcui8nDiscardBit;
+				v2dVelocity.i16iX()=INT16(+1)<<FIXEDL_stcui8nBit;
+			}else if(4<ci16doffset_upper){
+				v2dVelocity.i16iX()=INT16(-1)<<FIXEDL_stcui8nBit;
 			}else{
 				v2dVelocity.i16iX()=0;
 			}
@@ -1099,14 +1099,14 @@ public:
 				ui8nJumpKeeping=0;
 				v2dVelocity.i16iY()=STD::stxGetMinimum(v2dVelocity.i16iY()+stci16nGravity,stci16nYSpeedMaximum);
 			}
-			PredictPosition_Upper();
+			PredictPosition();
 			if(v2dVelocity.i16iY()<0){
 				Move_eIsCollidingU(cpgameowner);
 			}else{
 				if(Move_eIsCollidingD(cpgameowner))SetMode(IDMODE::Walking);
 			}
 			//	天井衝突時、横速度を殺したくないので、横方向の壁衝突判定は別途実施
-			PredictPosition_Upper();
+			PredictPosition();
 			Move_eIsCollidingX(cpgameowner);
 			return;
 		}
@@ -1117,8 +1117,8 @@ public:
 		OFWBOOL					Move_eIsFalling(const PGAME cpgameowner)noexcept{
 			if(
 				CAUTO
-					map_cui8crd=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(+stci16nDUCollisionWidth_UpperHalf,8)),
-					map_cui8cld=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(-stci16nDUCollisionWidth_UpperHalf,8));
+					map_cui8crd=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(+stci16nDUCollisionWidthHalf_Upper,8)),
+					map_cui8cld=cpgameowner->MAP_ui8cRead(v2iPosition_Upper+VECTOR2(-stci16nDUCollisionWidthHalf_Upper,8));
 				MAP_steIsSpace(map_cui8crd)&&
 				MAP_steIsSpace(map_cui8cld)
 			){
@@ -1143,13 +1143,13 @@ public:
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
 		OFWBOOL					Move_eIsCollidingR(const PGAME cpgameowner)noexcept{
 			if(
-				CAUTO					map_cui8crd=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(+4,7)),map_cui8crm=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(+4,-1)),map_cui8cru=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(+4,-8));
+				CAUTO					map_cui8crd=cpgameowner->MAP_ui8cRead(v2iPredictedPosition_Upper+VECTOR2(+4,7)),map_cui8crm=cpgameowner->MAP_ui8cRead(v2iPredictedPosition_Upper+VECTOR2(+4,-1)),map_cui8cru=cpgameowner->MAP_ui8cRead(v2iPredictedPosition_Upper+VECTOR2(+4,-8));
 				(!MAP_steIsMovable(map_cui8crd))||
 				(!MAP_steIsMovable(map_cui8crm))||
 				(!MAP_steIsMovable(map_cui8cru))
 			){
 				//	今のままだと壁にめり込むので補正をかける
-				v2iPosition.i16iX()=((v2iPosition_PredictedUpper.i16iX()&INT16(~7))+4)<<stcui8nDiscardBit;
+				v2iPosition.i16iX()=((v2iPredictedPosition_Upper.i16iX()&INT16(~7))+4)<<FIXEDL_stcui8nBit;
 				v2dVelocity.i16iX()=0;
 				return TRUE;
 			}
@@ -1160,13 +1160,13 @@ public:
 		//		めり込みが発生していたなら補正を実施し、「TRUE」を返します。
 		OFWBOOL					Move_eIsCollidingL(const PGAME cpgameowner)noexcept{
 			if(
-				CAUTO					map_cui8cld=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(-5,7)),map_cui8clm=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(-5,-1)),map_cui8clu=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(-5,-8));
+				CAUTO					map_cui8cld=cpgameowner->MAP_ui8cRead(v2iPredictedPosition_Upper+VECTOR2(-5,7)),map_cui8clm=cpgameowner->MAP_ui8cRead(v2iPredictedPosition_Upper+VECTOR2(-5,-1)),map_cui8clu=cpgameowner->MAP_ui8cRead(v2iPredictedPosition_Upper+VECTOR2(-5,-8));
 				(!MAP_steIsMovable(map_cui8cld))||
 				(!MAP_steIsMovable(map_cui8clm))||
 				(!MAP_steIsMovable(map_cui8clu))
 			){
 				//	今のままだと壁にめり込むので補正をかける
-				v2iPosition.i16iX()=((v2iPosition_PredictedUpper.i16iX()&INT16(~7))+5)<<stcui8nDiscardBit;
+				v2iPosition.i16iX()=((v2iPredictedPosition_Upper.i16iX()&INT16(~7))+5)<<FIXEDL_stcui8nBit;
 				v2dVelocity.i16iX()=0;
 				return TRUE;
 			}
@@ -1181,27 +1181,27 @@ public:
 		OFWBOOL					Move_eIsCollidingD(const PGAME cpgameowner,COFWBOOL celadder=FALSE)noexcept{
 			if(celadder){
 				if(
-					CAUTO					map_cui8ccd=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(0,8));
+					CAUTO					map_cui8ccd=cpgameowner->MAP_ui8cRead(v2iPredictedPosition_Upper+VECTOR2(0,8));
 					MAP_steIsLadder(map_cui8ccd)
 				){
 					if(v2dVelocity.i16iY()){
-						v2iPosition.i16iY()=v2iPosition_PredictedUpper.i16iY()<<stcui8nDiscardBit;
+						v2iPosition.i16iY()=v2iPredictedPosition_Upper.i16iY()<<FIXEDL_stcui8nBit;
 						v2dVelocity.i16iY()=0;
 					}
 				}else if(!MAP_steIsSpace(map_cui8ccd)){
-					v2iPosition.i16iY()=(v2iPosition_PredictedUpper.i16iY()&INT16(~7))<<stcui8nDiscardBit;
+					v2iPosition.i16iY()=(v2iPredictedPosition_Upper.i16iY()&INT16(~7))<<FIXEDL_stcui8nBit;
 					v2dVelocity.i16iY()=0;
 					return TRUE;
 				}
 			}else{
 				if(
 					CAUTO
-						map_cui8crd=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(+stci16nDUCollisionWidth_UpperHalf,8)),
-						map_cui8cld=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(-stci16nDUCollisionWidth_UpperHalf,8));
+						map_cui8crd=cpgameowner->MAP_ui8cRead(v2iPredictedPosition_Upper+VECTOR2(+stci16nDUCollisionWidthHalf_Upper,8)),
+						map_cui8cld=cpgameowner->MAP_ui8cRead(v2iPredictedPosition_Upper+VECTOR2(-stci16nDUCollisionWidthHalf_Upper,8));
 					(!MAP_steIsMovable(map_cui8crd))||
 					(!MAP_steIsMovable(map_cui8cld))
 				){
-					v2iPosition.i16iY()=(v2iPosition_PredictedUpper.i16iY()&INT16(~7))<<stcui8nDiscardBit;
+					v2iPosition.i16iY()=(v2iPredictedPosition_Upper.i16iY()&INT16(~7))<<FIXEDL_stcui8nBit;
 					v2dVelocity.i16iY()=0;
 					return TRUE;
 				}
@@ -1216,27 +1216,27 @@ public:
 		OFWBOOL					Move_eIsCollidingU(const PGAME cpgameowner,COFWBOOL celadder=FALSE)noexcept{
 			if(celadder){
 				if(
-					CAUTO					map_cui8ccu=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(0,-8));
+					CAUTO					map_cui8ccu=cpgameowner->MAP_ui8cRead(v2iPredictedPosition_Upper+VECTOR2(0,-8));
 					MAP_steIsLadder(map_cui8ccu)
 				){
 					if(v2dVelocity.i16iY()){
-						v2iPosition.i16iY()=v2iPosition_PredictedUpper.i16iY()<<stcui8nDiscardBit;
+						v2iPosition.i16iY()=v2iPredictedPosition_Upper.i16iY()<<FIXEDL_stcui8nBit;
 						v2dVelocity.i16iY()=0;
 					}
 				}else if(!MAP_steIsSpace(map_cui8ccu)){
-					v2iPosition.i16iY()=((v2iPosition_PredictedUpper.i16iY()&INT16(~7))+8)<<stcui8nDiscardBit;
+					v2iPosition.i16iY()=((v2iPredictedPosition_Upper.i16iY()&INT16(~7))+8)<<FIXEDL_stcui8nBit;
 					v2dVelocity.i16iY()=0;
 					return TRUE;
 				}
 			}else{
 				if(
 					CAUTO
-						map_cui8cru=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(+stci16nDUCollisionWidth_UpperHalf,-8)),
-						map_cui8clu=cpgameowner->MAP_ui8cRead(v2iPosition_PredictedUpper+VECTOR2(-stci16nDUCollisionWidth_UpperHalf,-8));
+						map_cui8cru=cpgameowner->MAP_ui8cRead(v2iPredictedPosition_Upper+VECTOR2(+stci16nDUCollisionWidthHalf_Upper,-8)),
+						map_cui8clu=cpgameowner->MAP_ui8cRead(v2iPredictedPosition_Upper+VECTOR2(-stci16nDUCollisionWidthHalf_Upper,-8));
 					(!MAP_steIsMovable(map_cui8cru))||
 					(!MAP_steIsMovable(map_cui8clu))
 				){
-					v2iPosition.i16iY()=((v2iPosition_PredictedUpper.i16iY()&INT16(~7))+8)<<stcui8nDiscardBit;
+					v2iPosition.i16iY()=((v2iPredictedPosition_Upper.i16iY()&INT16(~7))+8)<<FIXEDL_stcui8nBit;
 					v2dVelocity.i16iY()=0;
 					return TRUE;
 				}
@@ -1271,7 +1271,7 @@ private:
 	PLAYER					PLAYER_plyrThis;
 	//	VECTOR2					SCROLL_v2iPosition
 	//		スクロール位置です。
-	VECTOR2					SCROLL_v2iPosition_Upper;
+	VECTOR2					SCROLL_v2iPosition;
 public:
 	/*VOID*/				GAME(VOID)noexcept{}
 	/*VOID*/				~GAME(VOID)noexcept{
@@ -1316,11 +1316,11 @@ public:
 		idMode=IDMODE::Normal;
 		ui16nScore=0;
 		//	「自機」初期化
-		PLAYER_plyrThis.Start(this,PLAYER::IDTYPE::Mario,VECTOR2(4,1024-16)<<stcui8nDiscardBit);
+		PLAYER_plyrThis.Start(this,PLAYER::IDTYPE::Mario,VECTOR2(4,1024-16)<<FIXEDL_stcui8nBit);
 		//	「背景」初期化
 		FAMILYBASIC::SPRITE_stSetSize(FAMILYBASIC::IDSIZE::n1024);
 		FAMILYBASIC::BG1_stSetSize(FAMILYBASIC::IDSIZE::n1024);
-		SCROLL_v2iPosition_Upper=VECTOR2(0,1024-212)<<stcui8nDiscardBit;
+		SCROLL_v2iPosition=VECTOR2(0,1024-212)<<FIXEDL_stcui8nBit;
 		FAMILYBASIC::BG1_stCopyAttribute({0,0},stcv2nMap,stacui16cMap);
 		//	点数系初期化
 		FAMILYBASIC::BG0_stPrint({11,12},"          ",0);
@@ -1343,7 +1343,7 @@ public:
 			CAUTO					cui16nscore=ui16nScore;
 
 			PLAYER_plyrThis.Move(this);
-			SCROLL_v2iPosition_Upper=PLAYER_plyrThis.cv2iGetPosition()-(VECTOR2(128,112)<<stcui8nDiscardBit);
+			SCROLL_v2iPosition=PLAYER_plyrThis.cv2iGetPosition()-(VECTOR2(128,112)<<FIXEDL_stcui8nBit);
 			//	点数に変動があった場合だけ表示
 			if(cui16nscore!=ui16nScore)ShowScore();
 		}
@@ -1375,8 +1375,8 @@ private:
 		UINT8					ui8isprite=0;
 
 		//	背景
-		FAMILYBASIC::SPRITE_stSetOffset(SCROLL_v2iPosition_Upper>>stcui8nDiscardBit);
-		FAMILYBASIC::BG1_stSetOffset(SCROLL_v2iPosition_Upper>>stcui8nDiscardBit);
+		FAMILYBASIC::SPRITE_stSetOffset(SCROLL_v2iPosition>>FIXEDL_stcui8nBit);
+		FAMILYBASIC::BG1_stSetOffset(SCROLL_v2iPosition>>FIXEDL_stcui8nBit);
 		//	自機
 		PLAYER_plyrThis.ui8nShow(ui8isprite);
 		//	残りは消去

@@ -124,9 +124,9 @@ namespace m68k::i71::sub{
 			return;
 		}
 		static _INLINE_ UINT32	HPC_stui32Read(VOID)noexcept{
-			CAUTO					cui16iupper=DEVICE_HPC_stui16Delegate();
+			CAUTO					cui16h=DEVICE_HPC_stui16Delegate();
 
-			return (UINT32(cui16iupper)<<16)|UINT32(DEVICE_HPC_stui16Delegate());
+			return (UINT32(cui16h)<<16)|UINT32(DEVICE_HPC_stui16Delegate());
 		}
 		static _INLINE_ VOID	LFSR_stSetSeed(CUINT32 cui32cseed)noexcept{
 			DEVICE_LFSR_stui16Delegate()=0x0000|((cui32cseed>>24)&0xff);

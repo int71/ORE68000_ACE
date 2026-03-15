@@ -46,8 +46,8 @@ namespace m68k::i71::common{
 				0
 			};
 		}
-		static constexpr UINT16	stui16cGetDiscardMask(CUINT8 cui8ndiscardbit)noexcept{
-			return UINT16(UINT32(1<<(16-cui8ndiscardbit))-1);
+		static constexpr UINT16	FIXEDU_stui16cGetMask(CUINT8 fixedl_cui8nbit)noexcept{
+			return UINT16(UINT32(1<<(16-fixedl_cui8nbit))-1);
 		}
 		constexpr /*VOID*/		VECTOR2_(VOID)noexcept{}
 		constexpr /*VOID*/		VECTOR2_(CVECTOR2_& cv2source)noexcept{
@@ -112,7 +112,7 @@ namespace m68k::i71::common{
 				STD::stxGetAbs(i16Value1_Body)
 			};
 		}
-		//	OFWBOOL					eIsHit<CUINT8 cui8nDiscardBit>(CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)
+		//	OFWBOOL					FIXED_eIsHit<CUINT8 FIXEDL_cui8nBit>(CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)
 		//		「cv2iposition」と衝突しているかを判定します。
 		//		衝突していれば「TRUE」を返します。
 		//		「cv2nsizehalf」は自身と判定対象の「1/2サイズ」の合計値です。
@@ -120,54 +120,54 @@ namespace m68k::i71::common{
 		//		座標の差が「4*1/2+6*1/2=5」以下で衝突となります。
 		//		「cv2nsizehalf」で指定するのはこの「5」相当の値です。
 		//		なお、衝突の条件が「未満」でなく「以下」なのは、判定アルゴリズムの都合です。
-		template<CUINT8 cui8nDiscardBit>
-		constexpr OFWBOOL		eIsHit(CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)const noexcept{
-			constexpr AUTO			cui16cdiscardmask=stui16cGetDiscardMask(cui8nDiscardBit);
+		template<CUINT8 FIXEDL_cui8nBit>
+		constexpr OFWBOOL		FIXED_eIsHit(CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)const noexcept{
+			constexpr AUTO			cui16cmask=FIXEDU_stui16cGetMask(FIXEDL_cui8nBit);
 			CAUTO					ci16nsizehalf_width=cv2nsizehalf.i16nWidth();
 
-			if(UINT16((i16iX()-cv2iposition.i16iX()+ci16nsizehalf_width)&cui16cdiscardmask)<=UINT16(ci16nsizehalf_width<<1)){
+			if(UINT16((i16iX()-cv2iposition.i16iX()+ci16nsizehalf_width)&cui16cmask)<=UINT16(ci16nsizehalf_width<<1)){
 				CAUTO					ci16nsizehalf_height=cv2nsizehalf.i16nHeight();
 
-				return (UINT16((i16iY()-cv2iposition.i16iY()+ci16nsizehalf_height)&cui16cdiscardmask)<=UINT16(ci16nsizehalf_height<<1));
+				return (UINT16((i16iY()-cv2iposition.i16iY()+ci16nsizehalf_height)&cui16cmask)<=UINT16(ci16nsizehalf_height<<1));
 			}
 			return FALSE;
 		}
-		constexpr OFWBOOL		eIsHit256(CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)const noexcept{
-			return eIsHit<8>(cv2iposition,cv2nsizehalf);
+		constexpr OFWBOOL		FIXED256_eIsHit(CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)const noexcept{
+			return FIXED_eIsHit<8>(cv2iposition,cv2nsizehalf);
 		}
-		constexpr OFWBOOL		eIsHit512(CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)const noexcept{
-			return eIsHit<7>(cv2iposition,cv2nsizehalf);
+		constexpr OFWBOOL		FIXED512_eIsHit(CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)const noexcept{
+			return FIXED_eIsHit<7>(cv2iposition,cv2nsizehalf);
 		}
-		constexpr OFWBOOL		eIsHit1024(CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)const noexcept{
-			return eIsHit<6>(cv2iposition,cv2nsizehalf);
+		constexpr OFWBOOL		FIXED1024_eIsHit(CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)const noexcept{
+			return FIXED_eIsHit<6>(cv2iposition,cv2nsizehalf);
 		}
-		//	OFWBOOL					eIsHit<CUINT8 cui8nDiscardBit>(CVECTOR2_& cv2nthissizehalf,CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)
+		//	OFWBOOL					FIXED_eIsHit<CUINT8 FIXEDL_cui8nBit>(CVECTOR2_& cv2nthissizehalf,CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)
 		//		「cv2iposition」と衝突しているかを判定します。
 		//		衝突していれば「TRUE」を返します。
 		//		「cv2nthissizehalf」は自身の「1/2サイズ」、「cv2nsizehalf」は判定対象の「1/2サイズ」です。
 		//		自身のサイズが「4」、判定対象のサイズが「6」だとすると、
 		//		座標の差が「4*1/2+6*1/2=5」以下で衝突となります。
 		//		なお、衝突の条件が「未満」でなく「以下」なのは、判定アルゴリズムの都合です。
-		template<CUINT8 cui8nDiscardBit>
-		constexpr OFWBOOL		eIsHit(CVECTOR2_& cv2nthissizehalf,CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)const noexcept{
-			constexpr AUTO			cui16cdiscardmask=stui16cGetDiscardMask(cui8nDiscardBit);
+		template<CUINT8 FIXEDL_cui8nBit>
+		constexpr OFWBOOL		FIXED_eIsHit(CVECTOR2_& cv2nthissizehalf,CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)const noexcept{
+			constexpr AUTO			cui16cmask=FIXEDU_stui16cGetMask(FIXEDL_cui8nBit);
 			CAUTO					ci16nsizehalf_width=INT16(cv2nthissizehalf.i16nWidth()+cv2nsizehalf.i16nWidth());
 
-			if(UINT16((i16iX()-cv2iposition.i16iX()+ci16nsizehalf_width)&cui16cdiscardmask)<=UINT16(ci16nsizehalf_width<<1)){
+			if(UINT16((i16iX()-cv2iposition.i16iX()+ci16nsizehalf_width)&cui16cmask)<=UINT16(ci16nsizehalf_width<<1)){
 				CAUTO					ci16nsizehalf_height=INT16(cv2nthissizehalf.i16nHeight()+cv2nsizehalf.i16nHeight());
 
-				return (UINT16((i16iY()-cv2iposition.i16iY()+ci16nsizehalf_height)&cui16cdiscardmask)<=UINT16(ci16nsizehalf_height<<1));
+				return (UINT16((i16iY()-cv2iposition.i16iY()+ci16nsizehalf_height)&cui16cmask)<=UINT16(ci16nsizehalf_height<<1));
 			}
 			return FALSE;
 		}
-		constexpr OFWBOOL		eIsHit256(CVECTOR2_& cv2nthissizehalf,CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)const noexcept{
-			return eIsHit<8>(cv2nthissizehalf,cv2iposition,cv2nsizehalf);
+		constexpr OFWBOOL		FIXED256_eIsHit(CVECTOR2_& cv2nthissizehalf,CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)const noexcept{
+			return FIXED_eIsHit<8>(cv2nthissizehalf,cv2iposition,cv2nsizehalf);
 		}
-		constexpr OFWBOOL		eIsHit512(CVECTOR2_& cv2nthissizehalf,CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)const noexcept{
-			return eIsHit<7>(cv2nthissizehalf,cv2iposition,cv2nsizehalf);
+		constexpr OFWBOOL		FIXED512_eIsHit(CVECTOR2_& cv2nthissizehalf,CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)const noexcept{
+			return FIXED_eIsHit<7>(cv2nthissizehalf,cv2iposition,cv2nsizehalf);
 		}
-		constexpr OFWBOOL		eIsHit1024(CVECTOR2_& cv2nthissizehalf,CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)const noexcept{
-			return eIsHit<6>(cv2nthissizehalf,cv2iposition,cv2nsizehalf);
+		constexpr OFWBOOL		FIXED1024_eIsHit(CVECTOR2_& cv2nthissizehalf,CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)const noexcept{
+			return FIXED_eIsHit<6>(cv2nthissizehalf,cv2iposition,cv2nsizehalf);
 		}
 		constexpr OFWBOOL		operator ==(CVECTOR2_& cv2source)const noexcept{
 			return (

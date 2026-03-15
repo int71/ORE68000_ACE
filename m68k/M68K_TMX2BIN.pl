@@ -10,7 +10,7 @@ use strict;
 use integer;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'base.pl';
-my($sVersion,$sDate)=('1.42','2026/02/13');
+my($sVersion,$sDate)=('1.44','2026/03/14');
 my($CLASS_sStage)='STAGE';
 my($CLASS_STAGE_sArea)='AREA';
 my($CLASS_STAGE_sBGM)='BGM_PLAY';
@@ -149,6 +149,10 @@ $BASE::Self (入力).tmx [-v] [-h] [-o (出力).bin] [-c (Cソース).cpp] [-j (
 ・タイルサイズ
   自動判別しますが、マップを構成するタイルは「正方形である」事を前提とします。
   もし正方形でなければ、「左端2タイル分はパレット定義領域である」と解釈します。
+
+・イベント属性
+  「イベント」扱いさせるためには、属性値「名前」と「Class」の設定が必須です。
+  これら属性値には「//」でコメントを付ける事が出来るため、文字列が「//」で始まっていると、「イベント」扱いされません。
 
 <「(Cソース).cpp」について>
 ・メタ文字
@@ -879,14 +883,14 @@ END
 						if($iarea==0){
 							if(defined $ihscroll_next){
 								$img_destination_c->AddTEXT(<<END
-	if(SCROLL_i32iHPosition<($ihscroll_next<<stcui8nLowerBit)){
-		SCROLL_i32iHPosition=$ihscroll<<stcui8nLowerBit;
+	if(SCROLL_i32iHPosition<($ihscroll_next<<FIXEDL_stcui8nBit)){
+		SCROLL_i32iHPosition=$ihscroll<<FIXEDL_stcui8nBit;
 		pcui8start=PCUINT8(acui8event$sarea);
 END
 								);
 							}else{
 								$img_destination_c->AddTEXT(<<END
-	SCROLL_i32iHPosition=$ihscroll<<stcui8nLowerBit;
+	SCROLL_i32iHPosition=$ihscroll<<FIXEDL_stcui8nBit;
 	pcui8start=PCUINT8(acui8event$sarea);
 END
 								);
@@ -894,15 +898,15 @@ END
 						}else{
 							if(defined $ihscroll_next){
 								$img_destination_c->AddTEXT(<<END
-	}else if(SCROLL_i32iHPosition<($ihscroll_next<<stcui8nLowerBit)){
-		SCROLL_i32iHPosition=$ihscroll<<stcui8nLowerBit;
+	}else if(SCROLL_i32iHPosition<($ihscroll_next<<FIXEDL_stcui8nBit)){
+		SCROLL_i32iHPosition=$ihscroll<<FIXEDL_stcui8nBit;
 		pcui8start=PCUINT8(acui8event$sarea);
 END
 								);
 							}else{
 								$img_destination_c->AddTEXT(<<END
 	}else{
-		SCROLL_i32iHPosition=$ihscroll<<stcui8nLowerBit;
+		SCROLL_i32iHPosition=$ihscroll<<FIXEDL_stcui8nBit;
 		pcui8start=PCUINT8(acui8event$sarea);
 	}
 END

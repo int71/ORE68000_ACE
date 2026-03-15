@@ -53,7 +53,7 @@ namespace m68k::i71::main{
 		//
 
 	public:
-		//	VECTOR2					stv2Trigonometric(CUINT8 cui8iangle)
+		//	VECTOR2					TRIG_stv2dImmediate(CUINT8 cui8iangle)
 		//		角度「cui8iangle」に応じたCOS/SINを固定小数点値で返します。
 		//		「1<<TRIG_stcui8nWidthBit」が「1.0」に対応します。
 		//		スクリーン座標は右下がプラス方向となるので、角度は下記に対応します。
@@ -62,18 +62,18 @@ namespace m68k::i71::main{
 		//		128--+--  0
 		//		     |
 		//		     64
-		static _INLINE_ VECTOR2	stv2Trigonometric(CUINT8 cui8iangle)noexcept{
+		static _INLINE_ VECTOR2	TRIG_stv2dImmediate(CUINT8 cui8iangle)noexcept{
 			return {
 				MEMORY::ROM_COS_stci16GetThis(cui8iangle),
 				MEMORY::ROM_SIN_stci16GetThis(cui8iangle)
 			};
 		}
-		static _INLINE_ VECTOR2	stv2dGetDirection(CUINT8 cui8iangle,CINT16 ci16nspeed)noexcept{
-			CAUTO					cv2idunit=stv2Trigonometric(cui8iangle);
+		static _INLINE_ VECTOR2	TRIG_stv2dImmediate(CUINT8 cui8iangle,CINT16 ci16nsize)noexcept{
+			CAUTO					cv2idunit=TRIG_stv2dImmediate(cui8iangle);
 
 			return {
-				INT16(STD::sti32Multiply(cv2idunit.i16iX(),ci16nspeed)>>TRIG_stcui8nWidthBit),
-				INT16(STD::sti32Multiply(cv2idunit.i16iY(),ci16nspeed)>>TRIG_stcui8nWidthBit)
+				INT16(STD::sti32Multiply(cv2idunit.i16iX(),ci16nsize)>>TRIG_stcui8nWidthBit),
+				INT16(STD::sti32Multiply(cv2idunit.i16iY(),ci16nsize)>>TRIG_stcui8nWidthBit)
 			};
 		}
 		constexpr /*VOID*/		VECTOR2(VOID)noexcept{}
@@ -91,9 +91,9 @@ namespace m68k::i71::main{
 			i16Value1_Body=ci16value1;
 			return *this;
 		}
-		UINT8					ui8Atan(VOID)const noexcept;
+		UINT8					TRIG_ui8iGetAngle(VOID)const noexcept;
 	private:
-		_INLINE_ UINT8			ui8Atan_Positive(VOID)const noexcept;
+		_INLINE_ UINT8			TRIG_ui8iGetAngle_Positive(VOID)const noexcept;
 	};
 }
 

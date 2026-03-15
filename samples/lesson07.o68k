@@ -53,30 +53,30 @@ public:
 		UpDual,
 		UpLeftRight
 	};
-	//	UINT8					stcui8nDiscardBit
+	//	UINT8					FIXEDL_stcui8nBit
 	//		16bit中、6bitを「小数点値」扱いにします。
-	static constexpr UINT8	stcui8nDiscardBit=		6;
+	static constexpr UINT8	FIXEDL_stcui8nBit=		6;
 	//	VECTOR2					stcv2iiMinimum8
 	//		8ドット四方のオブジェクトが存在できる座標の最小値です。
-	static constexpr AUTO	stcv2iiMinimum8=		VECTOR2(  0-4,  0-4)<<stcui8nDiscardBit;
+	static constexpr AUTO	stcv2iiMinimum8=		VECTOR2(  0-4,  0-4)<<FIXEDL_stcui8nBit;
 	//	VECTOR2					stcv2iiMaximum8
 	//		8ドット四方のオブジェクトが存在できる座標の最大値です。
-	static constexpr AUTO	stcv2iiMaximum8=		VECTOR2(256+4,212+4)<<stcui8nDiscardBit;
+	static constexpr AUTO	stcv2iiMaximum8=		VECTOR2(256+4,212+4)<<FIXEDL_stcui8nBit;
 	//	VECTOR2					stcv2iiMinimum16
 	//		16ドット四方のオブジェクトが存在できる座標の最小値です。
-	static constexpr AUTO	stcv2iiMinimum16=		VECTOR2(  0-8,  0-8)<<stcui8nDiscardBit;
+	static constexpr AUTO	stcv2iiMinimum16=		VECTOR2(  0-8,  0-8)<<FIXEDL_stcui8nBit;
 	//	VECTOR2					stcv2iiMaximum16
 	//		16ドット四方のオブジェクトが存在できる座標の最大値です。
-	static constexpr AUTO	stcv2iiMaximum16=		VECTOR2(256+8,212+8)<<stcui8nDiscardBit;
+	static constexpr AUTO	stcv2iiMaximum16=		VECTOR2(256+8,212+8)<<FIXEDL_stcui8nBit;
 	//	UINT8					CONTROLLER_stcui8nRapid
 	//		「コントローラ」ソフトウェア連射の間隔(フレーム数)です。
 	static constexpr UINT8	CONTROLLER_stcui8nRapid=	2;
 	//	VECTOR2					PLAYER_stcv2iiMinimum
 	//		「自機」が移動できる座標の最小値です。
-	static constexpr AUTO	PLAYER_stcv2iiMinimum=	VECTOR2(  0+8, 32+8)<<stcui8nDiscardBit;
+	static constexpr AUTO	PLAYER_stcv2iiMinimum=	VECTOR2(  0+8, 32+8)<<FIXEDL_stcui8nBit;
 	//	VECTOR2					PLAYER_stcv2iiMaximum
 	//		「自機」が移動できる座標の最大値です。
-	static constexpr AUTO	PLAYER_stcv2iiMaximum=	VECTOR2(256-8,212-8)<<stcui8nDiscardBit;
+	static constexpr AUTO	PLAYER_stcv2iiMaximum=	VECTOR2(256-8,212-8)<<FIXEDL_stcui8nBit;
 	//	VECTOR2					PLAYER_stcv2inHitHalf_Upper
 	//		「自機」当たり判定の大きさの半分です。
 	//		当たり判定は整数で行うため、この値は「固定小数点値」ではありません。
@@ -205,22 +205,22 @@ public:
 			case IDTYPE::Up:
 				v2iPosition=cv2iposition;
 				v2dVelocity={
-					INT16( 0)<<stcui8nDiscardBit,
-					INT16(-8)<<stcui8nDiscardBit
+					INT16( 0)<<FIXEDL_stcui8nBit,
+					INT16(-8)<<FIXEDL_stcui8nBit
 				};
 				break;
 			case IDTYPE::Left:
 				v2iPosition=cv2iposition;
 				v2dVelocity={
-					INT16(-4)<<stcui8nDiscardBit,
-					INT16(-7)<<stcui8nDiscardBit
+					INT16(-4)<<FIXEDL_stcui8nBit,
+					INT16(-7)<<FIXEDL_stcui8nBit
 				};
 				break;
 			case IDTYPE::Right:
 				v2iPosition=cv2iposition;
 				v2dVelocity={
-					INT16(+4)<<stcui8nDiscardBit,
-					INT16(-7)<<stcui8nDiscardBit
+					INT16(+4)<<FIXEDL_stcui8nBit,
+					INT16(-7)<<FIXEDL_stcui8nBit
 				};
 				break;
 			default:
@@ -240,7 +240,7 @@ public:
 			case IDTYPE::Left:
 				FALLTHROUGH;
 			case IDTYPE::Right:
-				FAMILYBASIC::SPRITE_stWrite8(cui8isprite,(v2iPosition>>stcui8nDiscardBit)-VECTOR2(4,4),221,3);
+				FAMILYBASIC::SPRITE_stWrite8(cui8isprite,(v2iPosition>>FIXEDL_stcui8nBit)-VECTOR2(4,4),221,3);
 				return 1;
 			default:
 				break;
@@ -261,7 +261,7 @@ public:
 			case IDTYPE::Right:
 				v2iPosition+=v2dVelocity;
 				if(!steIsInScreen8(v2iPosition))idType=IDTYPE::None;
-				else v2iPosition_Upper=v2iPosition>>stcui8nDiscardBit;
+				else v2iPosition_Upper=v2iPosition>>FIXEDL_stcui8nBit;
 				break;
 			default:
 				break;
@@ -279,7 +279,7 @@ public:
 			case IDTYPE::Right:
 				FALLTHROUGH;
 			case IDTYPE::Up:
-				if(v2iPosition_Upper.eIsHit512(VECTOR2(2,4),cv2iposition_upper,cv2nhithalf_upper)){
+				if(v2iPosition_Upper.FIXED512_eIsHit(VECTOR2(2,4),cv2iposition_upper,cv2nhithalf_upper)){
 					idType=IDTYPE::None;
 					return TRUE;
 				}
@@ -301,7 +301,7 @@ public:
 			case IDTYPE::Right:
 				FALLTHROUGH;
 			case IDTYPE::Up:
-				if(v2iPosition_Upper.eIsHit512(VECTOR2(2,4),cv2iposition_upper,cv2nhithalf_upper)){
+				if(v2iPosition_Upper.FIXED512_eIsHit(VECTOR2(2,4),cv2iposition_upper,cv2nhithalf_upper)){
 					idType=IDTYPE::None;
 					--ui8ndurability;
 					if(ui8ndurability==0)return TRUE;
@@ -410,9 +410,9 @@ public:
 				FAMILYBASIC::SE1_stPlay(SE1_stacui8cCrush);
 				break;
 			case IDTYPE::NormalWavy:
-				SetPosition(VECTOR2(128,0-8)<<stcui8nDiscardBit);
+				SetPosition(VECTOR2(128,0-8)<<FIXEDL_stcui8nBit);
 				v2dVelocity={
-					INT16(-3)<<stcui8nDiscardBit,
+					INT16(-3)<<FIXEDL_stcui8nBit,
 					INT16(cpgameowner->ENEMY_ui16nSpeed>>1)
 				};
 				ui16iPattern=0;
@@ -420,7 +420,7 @@ public:
 				AIM_Start(cpgameowner);
 				break;
 			case IDTYPE::NormalStraight:
-				SetPosition(VECTOR2(FAMILYBASIC::stui16GetRandom()&0xff,0-8)<<stcui8nDiscardBit);
+				SetPosition(VECTOR2(FAMILYBASIC::stui16GetRandom()&0xff,0-8)<<FIXEDL_stcui8nBit);
 				v2dVelocity={
 					INT16(0),
 					INT16(cpgameowner->ENEMY_ui16nSpeed)
@@ -429,7 +429,7 @@ public:
 				AIM_Start(cpgameowner);
 				break;
 			case IDTYPE::NormalStraightSide:
-				SetPosition(VECTOR2(FAMILYBASIC::stui16GetRandom()&0xff,0-8)<<stcui8nDiscardBit);
+				SetPosition(VECTOR2(FAMILYBASIC::stui16GetRandom()&0xff,0-8)<<FIXEDL_stcui8nBit);
 				v2dVelocity={
 					INT16(0),
 					INT16(cpgameowner->ENEMY_ui16nSpeed)
@@ -440,7 +440,7 @@ public:
 				AIM_Start(cpgameowner);
 				break;
 			case IDTYPE::NormalBackAttacker:
-				SetPosition(VECTOR2(FAMILYBASIC::stui16GetRandom()&0xff,212+8)<<stcui8nDiscardBit);
+				SetPosition(VECTOR2(FAMILYBASIC::stui16GetRandom()&0xff,212+8)<<FIXEDL_stcui8nBit);
 				//	基本は「追いかけ」なんですが、まずは上方向に移動させます。
 				v2dVelocity={
 					INT16(0),
@@ -451,14 +451,14 @@ public:
 				AIM_Start(cpgameowner);
 				break;
 			case IDTYPE::NormalHighSpeed:
-				SetPosition(VECTOR2(FAMILYBASIC::stui16GetRandom()&0xff,0-4)<<stcui8nDiscardBit);
+				SetPosition(VECTOR2(FAMILYBASIC::stui16GetRandom()&0xff,0-4)<<FIXEDL_stcui8nBit);
 				//	移動方向を「自機」に向けます。
-				v2dVelocity=VECTOR2::stv2dGetDirection(cpgameowner->ENEMY_ui8iAim(v2iPosition_Upper),cpgameowner->ENEMY_ui16nSpeed<<1);
+				v2dVelocity=VECTOR2::TRIG_stv2dImmediate(cpgameowner->ENEMY_ui8iGetAngle(v2iPosition_Upper),cpgameowner->ENEMY_ui16nSpeed<<1);
 				ui16iPattern=0;
 				break;
 			case IDTYPE::NormalFollower:
 				ui8nDurability=6;
-				SetPosition(VECTOR2(FAMILYBASIC::stui16GetRandom()&0xff,0-8)<<stcui8nDiscardBit);
+				SetPosition(VECTOR2(FAMILYBASIC::stui16GetRandom()&0xff,0-8)<<FIXEDL_stcui8nBit);
 				//	基本は「追いかけ」なんですが、まずは下方向に移動させます。
 				v2dVelocity={
 					INT16(0),
@@ -471,7 +471,7 @@ public:
 			case IDTYPE::Bullet:
 				SetPosition(cv2iposition);
 				//	移動方向を「自機」に向けます。
-				v2dVelocity=VECTOR2::stv2dGetDirection(cpgameowner->ENEMY_ui8iAim(v2iPosition_Upper),cpgameowner->ENEMY_ui16nSpeed>>1);
+				v2dVelocity=VECTOR2::TRIG_stv2dImmediate(cpgameowner->ENEMY_ui8iGetAngle(v2iPosition_Upper),cpgameowner->ENEMY_ui16nSpeed>>1);
 				ui16iPattern=0;
 				break;
 			default:
@@ -582,7 +582,7 @@ public:
 					}else{
 						//	撃ち落とされてないので移動を実施
 						++ui16iPattern;
-						v2dVelocity.i16iX()+=((INT16(128)<<stcui8nDiscardBit)-v2iPosition.i16iX())>>9;
+						v2dVelocity.i16iX()+=((INT16(128)<<FIXEDL_stcui8nBit)-v2iPosition.i16iX())>>9;
 					}
 				}else idType=IDTYPE::None;
 				break;
@@ -646,7 +646,7 @@ public:
 							//	256フレーム経過していなければ「追いかけ」る
 							if((ui16iPattern&0x001f)==0){
 								//	32フレーム毎に「自機」に向かい直す
-								v2dVelocity=VECTOR2::stv2dGetDirection(cpgameowner->ENEMY_ui8iAim(v2iPosition_Upper),cpgameowner->ENEMY_ui16nSpeed>>1);
+								v2dVelocity=VECTOR2::TRIG_stv2dImmediate(cpgameowner->ENEMY_ui8iGetAngle(v2iPosition_Upper),cpgameowner->ENEMY_ui16nSpeed>>1);
 							}
 						}else{
 							//	256フレーム経過したなら画面外に移動
@@ -695,7 +695,7 @@ public:
 								cui16cmasked==0x0000
 							){
 								//	16フレーム交互に「自機」に向かい直す
-								v2dVelocity=VECTOR2::stv2dGetDirection(cpgameowner->ENEMY_ui8iAim(v2iPosition_Upper),cpgameowner->ENEMY_ui16nSpeed>>1);
+								v2dVelocity=VECTOR2::TRIG_stv2dImmediate(cpgameowner->ENEMY_ui8iGetAngle(v2iPosition_Upper),cpgameowner->ENEMY_ui16nSpeed>>1);
 							}else if(cui16cmasked==0x0010){
 								//	16フレーム交互に停止する
 								v2dVelocity=VECTOR2::stv2ImmediateZero();
@@ -733,7 +733,7 @@ public:
 		//		セット更新が必要となる「v2iPosition_Upper」があるので明示的に手続き化しています。
 		constexpr VOID			SetPosition(CVECTOR2& cv2iposition)noexcept{
 			v2iPosition=cv2iposition;
-			v2iPosition_Upper=v2iPosition>>stcui8nDiscardBit;
+			v2iPosition_Upper=v2iPosition>>FIXEDL_stcui8nBit;
 			return;
 		}
 		//	VOID					AIM_Start(const PGAME cpgameowner)
@@ -928,12 +928,12 @@ public:
 		ui16nScore=0;
 		ui16nShotDown=0;
 		//	「自機」初期化
-		PLAYER_v2iPosition={INT16(128)<<stcui8nDiscardBit,INT16(200)<<stcui8nDiscardBit};
-		PLAYER_v2iPosition_Upper=PLAYER_v2iPosition>>stcui8nDiscardBit;
+		PLAYER_v2iPosition={INT16(128)<<FIXEDL_stcui8nBit,INT16(200)<<FIXEDL_stcui8nBit};
+		PLAYER_v2iPosition_Upper=PLAYER_v2iPosition>>FIXEDL_stcui8nBit;
 		//	「自機」移動速度初期化です。
 		//	将来的「動的変更」に備え変数になっていますが、現状固定値です。
 		{
-			INT16					i16nspeed=INT16(2)<<stcui8nDiscardBit;
+			INT16					i16nspeed=INT16(2)<<FIXEDL_stcui8nBit;
 
 			PLAYER_av2nSpeed[0]={0,					0					};
 			PLAYER_av2nSpeed[1]={0,					INT16(-i16nspeed)	};
@@ -969,7 +969,7 @@ public:
 		//	表示(垂直帰線期間中に完了できるよう冒頭に持ってくる)
 		Show();
 		//	「背景」移動
-		SCROLL_ui16iPosition-=INT16(1)<<stcui8nDiscardBit;
+		SCROLL_ui16iPosition-=INT16(1)<<FIXEDL_stcui8nBit;
 		//	「自機」移動
 		if(PLAYER_ui16iPattern==0){
 			//	UINT8					stacui8idirection
@@ -1004,7 +1004,7 @@ public:
 			PLAYER_v2iPosition+=PLAYER_av2nSpeed[stacui8idirection[CONTROLLER_ui8cCurrent&0xf]];
 			PLAYER_v2iPosition=PLAYER_v2iPosition.v2GetMaximum(PLAYER_stcv2iiMinimum);
 			PLAYER_v2iPosition=PLAYER_v2iPosition.v2GetMinimum(PLAYER_stcv2iiMaximum);
-			PLAYER_v2iPosition_Upper=PLAYER_v2iPosition>>stcui8nDiscardBit;
+			PLAYER_v2iPosition_Upper=PLAYER_v2iPosition>>FIXEDL_stcui8nBit;
 			//	「ショット」発射操作はソフトウェア連射で
 			if(CONTROLLER_ui8cGetRapid()&FAMILYBASIC::stcui8cMaskButtonB)switch(PLAYER_idShot){
 			case IDSHOT::UpSingle:
@@ -1016,7 +1016,7 @@ public:
 				break;
 			case IDSHOT::UpDual:
 				{
-					constexpr AUTO			cv2idoffset=VECTOR2(6,0)<<stcui8nDiscardBit;
+					constexpr AUTO			cv2idoffset=VECTOR2(6,0)<<FIXEDL_stcui8nBit;
 					CAUTO					ceshot0=SHOT_steStart(SHOT_ashotThis0,SHOT::IDTYPE::Up,PLAYER_v2iPosition-cv2idoffset);
 					CAUTO					ceshot1=SHOT_steStart(SHOT_ashotThis1,SHOT::IDTYPE::Up,PLAYER_v2iPosition+cv2idoffset);
 
@@ -1025,7 +1025,7 @@ public:
 				break;
 			case IDSHOT::UpLeftRight:
 				{
-					constexpr AUTO			cv2idoffset=VECTOR2(6,0)<<stcui8nDiscardBit;
+					constexpr AUTO			cv2idoffset=VECTOR2(6,0)<<FIXEDL_stcui8nBit;
 					CAUTO					ceshot0=SHOT_steStart(SHOT_ashotThis0,SHOT::IDTYPE::Up,PLAYER_v2iPosition);
 					CAUTO					ceshot1=SHOT_steStart(SHOT_ashotThis1,SHOT::IDTYPE::Left,PLAYER_v2iPosition-cv2idoffset);
 					CAUTO					ceshot2=SHOT_steStart(SHOT_ashotThis2,SHOT::IDTYPE::Right,PLAYER_v2iPosition+cv2idoffset);
@@ -1119,9 +1119,9 @@ private:
 		UINT8					ui8isprite=0;
 
 		//	星
-		VIDEO_DRIVER::stWrite(IDREGISTERW::BG1OffsetY,((SCROLL_ui16iPosition>>stcui8nDiscardBit)&0x0ff)|0x2000);
-		VIDEO_DRIVER::stWrite(IDREGISTERW::BG2OffsetY,((SCROLL_ui16iPosition>>(stcui8nDiscardBit+1))&0x0ff)|0x2000);
-		VIDEO_DRIVER::stWrite(IDREGISTERW::BG3OffsetY,((SCROLL_ui16iPosition>>(stcui8nDiscardBit+2))&0x0ff)|0x2000);
+		VIDEO_DRIVER::stWrite(IDREGISTERW::BG1OffsetY,((SCROLL_ui16iPosition>>FIXEDL_stcui8nBit)&0x0ff)|0x2000);
+		VIDEO_DRIVER::stWrite(IDREGISTERW::BG2OffsetY,((SCROLL_ui16iPosition>>(FIXEDL_stcui8nBit+1))&0x0ff)|0x2000);
+		VIDEO_DRIVER::stWrite(IDREGISTERW::BG3OffsetY,((SCROLL_ui16iPosition>>(FIXEDL_stcui8nBit+2))&0x0ff)|0x2000);
 		//	自機
 		if(PLAYER_ui16iPattern==0){
 			FAMILYBASIC::SPRITE_stWrite16(ui8isprite,PLAYER_v2iPosition_Upper-VECTOR2(8,8),172,0);
@@ -1248,7 +1248,7 @@ private:
 	//		「ショットによる破壊」的意味で当たっていれば「TRUE」を返しますが、
 	//		現状バリア的フィーチャーが無いので、「FALSE」しか返りません。
 	OFWBOOL					PLAYER_eIsHitL(CVECTOR2& cv2iposition_upper,CVECTOR2& cv2nhithalf_upper)noexcept{
-		if(PLAYER_ui16iPattern==0)if(PLAYER_v2iPosition_Upper.eIsHit512(PLAYER_stcv2inHitHalf_Upper,cv2iposition_upper,cv2nhithalf_upper)){
+		if(PLAYER_ui16iPattern==0)if(PLAYER_v2iPosition_Upper.FIXED512_eIsHit(PLAYER_stcv2inHitHalf_Upper,cv2iposition_upper,cv2nhithalf_upper)){
 			PLAYER_ui16iPattern=1;
 			SOUND_DRIVER::DEVICE_FM_stWrite(SOUND_DRIVER::FM_IDREGISTERW::NoiseDivRatio5,0x80+31);
 			FAMILYBASIC::SE1_stPlay(SE1_stacui8cCrush);
@@ -1262,7 +1262,7 @@ private:
 	//		さらに「0」に至っていれば「TRUE」を返しますが、
 	//		現状バリア的フィーチャーが無いので、「FALSE」しか返りません。
 	OFWBOOL					PLAYER_eIsHitH(CVECTOR2& cv2iposition_upper,CVECTOR2& cv2nhithalf_upper,UINT8& ui8ndurability)noexcept{
-		if(PLAYER_ui16iPattern==0)if(PLAYER_v2iPosition_Upper.eIsHit512(PLAYER_stcv2inHitHalf_Upper,cv2iposition_upper,cv2nhithalf_upper)){
+		if(PLAYER_ui16iPattern==0)if(PLAYER_v2iPosition_Upper.FIXED512_eIsHit(PLAYER_stcv2inHitHalf_Upper,cv2iposition_upper,cv2nhithalf_upper)){
 			PLAYER_ui16iPattern=1;
 			SOUND_DRIVER::DEVICE_FM_stWrite(SOUND_DRIVER::FM_IDREGISTERW::NoiseDivRatio5,0x80+31);
 			FAMILYBASIC::SE1_stPlay(SE1_stacui8cCrush);
@@ -1330,25 +1330,25 @@ private:
 		}
 		return;
 	}
-	//	UINT8					ENEMY_ui8iAim(CVECTOR2& cv2iposition_upper)
+	//	UINT8					ENEMY_ui8iGetAngle(CVECTOR2& cv2iposition_upper)
 	//		整数値たる位置「cv2iposition_upper」から見た自機の「方角」を返します。
-	//		この「方角」は「VECTOR2::stv2Trigonometric」に渡す事ができます。
-	UINT8					ENEMY_ui8iAim(CVECTOR2& cv2iposition_upper)const noexcept{
-		return VECTOR2(PLAYER_v2iPosition_Upper-cv2iposition_upper).ui8Atan();
+	//		この「方角」は「VECTOR2::TRIG_stv2dImmediate」に渡す事ができます。
+	UINT8					ENEMY_ui8iGetAngle(CVECTOR2& cv2iposition_upper)const noexcept{
+		return VECTOR2(PLAYER_v2iPosition_Upper-cv2iposition_upper).TRIG_ui8iGetAngle();
 	}
 	//	VOID					ENEMY_RankUp(VOID)
 	//		敵ランク(難易度)アップします。
 	VOID					ENEMY_RankUp(VOID)noexcept{
 		if(ENEMY_ui16iRank==0){
 			ENEMY_ui16nCounter=16;
-			ENEMY_ui16nSpeed=1<<stcui8nDiscardBit;
+			ENEMY_ui16nSpeed=1<<FIXEDL_stcui8nBit;
 			ENEMY_ui16nAim=256;
 			ENEMYGROUP_ui16nCounter=128;
 			ENEMYGROUP_ui16nCounterRest=128;
 			ENEMYGROUP_ui16nEntityRest=0;
 		}else{
 			if((ENEMY_ui16iRank&0x0007)==0)ENEMY_ui16nCounter=STD::stxGetMaximum(ENEMY_ui16nCounter-1,8);
-			if((ENEMY_ui16iRank&0x000f)==0)ENEMY_ui16nSpeed=STD::stxGetMinimum(ENEMY_ui16nSpeed+(1<<(stcui8nDiscardBit-1)),2<<stcui8nDiscardBit);
+			if((ENEMY_ui16iRank&0x000f)==0)ENEMY_ui16nSpeed=STD::stxGetMinimum(ENEMY_ui16nSpeed+(1<<(FIXEDL_stcui8nBit-1)),2<<FIXEDL_stcui8nBit);
 			ENEMY_ui16nAim=STD::stxGetMaximum(ENEMY_ui16nAim-2,64);
 			ENEMYGROUP_ui16nCounter=STD::stxGetMaximum(ENEMYGROUP_ui16nCounter-2,8);
 		}

@@ -44,30 +44,30 @@ public:
 		Normal,
 		GameOver
 	};
-	//	static constexpr UINT8	stcui8nDiscardBit
+	//	static constexpr UINT8	FIXEDL_stcui8nBit
 	//		16bit中、6bitを「小数点値」扱いにします。
-	static constexpr UINT8	stcui8nDiscardBit=6;
+	static constexpr UINT8	FIXEDL_stcui8nBit=6;
 	//	static constexpr INT16	stci16iXMinimum
 	//		画面左端を示す「X軸最小値」です。
 	//		スプライトは座標値から左上に8ドットずらした位置に表示する、
 	//		つまり座標値をスプライトの「中心」にしているので、
 	//		左端の座標が「8」になるのです。
 	//		この値は6bit小数点値の「固定小数点値」です。
-	static constexpr INT16	stci16iXMinimum=INT16(8)<<stcui8nDiscardBit;
+	static constexpr INT16	stci16iXMinimum=INT16(8)<<FIXEDL_stcui8nBit;
 	//	static constexpr INT16	stci16iXMaximum
 	//		画面右端を示す「X軸最大値」です。
 	//		スプライトは座標値から左上に8ドットずらした位置に表示する、
 	//		つまり座標値をスプライトの「中心」にしているので、
 	//		右端の座標が「256-8=248」になるのです。
 	//		この値は6bit小数点値の「固定小数点値」です。
-	static constexpr INT16	stci16iXMaximum=INT16(248)<<stcui8nDiscardBit;
+	static constexpr INT16	stci16iXMaximum=INT16(248)<<FIXEDL_stcui8nBit;
 	//	static constexpr INT16	stci16iYMaximum
 	//		画面下端(地面直上)を示す「Y軸最大値」です。
 	//		スプライトは座標値から左上に8ドットずらした位置に表示する、
 	//		つまり座標値をスプライトの「中心」にしているので、
 	//		下端の座標が「192-8(地面分)-8(中心補正分)」になるのです。
 	//		この値は6bit小数点値の「固定小数点値」です。
-	static constexpr INT16	stci16iYMaximum=INT16(192-16)<<stcui8nDiscardBit;
+	static constexpr INT16	stci16iYMaximum=INT16(192-16)<<FIXEDL_stcui8nBit;
 	//	static constexpr VECTOR2	stv2nHitHalf_Upper
 	//		「ニタニタ当たり判定(12ドット)+ハエ当たり判定(12ドット)」の半分です。
 	//		当たり判定は整数で行うため、この値は「固定小数点値」ではありません。
@@ -76,7 +76,7 @@ public:
 	//	static constexpr INT16	PLAYER_stci16nXSpeed
 	//		「ニタニタ横移動速度」です。
 	//		この値は6bit小数点値の「固定小数点値」です。
-	static constexpr INT16	PLAYER_stci16nXSpeed=INT16(2)<<stcui8nDiscardBit;
+	static constexpr INT16	PLAYER_stci16nXSpeed=INT16(2)<<FIXEDL_stcui8nBit;
 	//	static constexpr UINT8	ENEMY_stcui8nInstanceMaximum
 	//		「ハエ出現最大数」です。
 	static constexpr UINT8	ENEMY_stcui8nInstanceMaximum=16;
@@ -341,7 +341,7 @@ public:
 
 			v2iPosition={
 				INT16(cui16random&0xffc0),
-				INT16(-8)<<stcui8nDiscardBit
+				INT16(-8)<<FIXEDL_stcui8nBit
 			};
 			v2dVelocity={
 				INT16((INT16((cui16random&0x07)<<1)-7)<<1),
@@ -357,9 +357,9 @@ public:
 		VOID					Show(VOID)const noexcept{
 			if(eActive){
 				if(ui8iVanish==0){
-					FAMILYBASIC::SPRITE_stWrite16(ui8iInstance+1,(v2iPosition>>stcui8nDiscardBit)-VECTOR2(8,8),(ui16iPattern&4)+56,1);
+					FAMILYBASIC::SPRITE_stWrite16(ui8iInstance+1,(v2iPosition>>FIXEDL_stcui8nBit)-VECTOR2(8,8),(ui16iPattern&4)+56,1);
 				}else{
-					if(ui8iVanish&2)FAMILYBASIC::SPRITE_stWrite16(ui8iInstance+1,(v2iPosition>>stcui8nDiscardBit)-VECTOR2(8,8),(ui16iPattern&4)+56,1);
+					if(ui8iVanish&2)FAMILYBASIC::SPRITE_stWrite16(ui8iInstance+1,(v2iPosition>>FIXEDL_stcui8nBit)-VECTOR2(8,8),(ui16iPattern&4)+56,1);
 					else FAMILYBASIC::SPRITE_stErase(ui8iInstance+1);
 				}
 			}
@@ -392,7 +392,7 @@ public:
 		//		整数値「cv2iposition_upper」と比較して、当たっていれば「TRUE」を返します。
 		OFWBOOL					eIsHit(CVECTOR2& cv2iposition_upper)noexcept{
 			if(eActive&&(ui8iVanish==0)){
-				if((v2iPosition>>stcui8nDiscardBit).eIsHit256(cv2iposition_upper,stv2nHitHalf_Upper)){
+				if((v2iPosition>>FIXEDL_stcui8nBit).FIXED256_eIsHit(cv2iposition_upper,stv2nHitHalf_Upper)){
 					ui8iVanish=1;
 					return TRUE;
 				}
@@ -489,7 +489,7 @@ public:
 	VOID					Start(VOID)noexcept{
 		idMode=IDMODE::Normal;
 		ui16nScore=0;
-		PLAYER_v2iPosition={INT16(128)<<stcui8nDiscardBit,stci16iYMaximum};
+		PLAYER_v2iPosition={INT16(128)<<FIXEDL_stcui8nBit,stci16iYMaximum};
 		PLAYER_v2dVelocity={PLAYER_stci16nXSpeed,0};
 		PLAYER_i16dAccelY=0;
 		PLAYER_ui16iPattern=0;
@@ -511,7 +511,7 @@ public:
 
 		CONTROLLER_Update();
 		//	表示(垂直帰線期間中に完了できるよう冒頭に持ってくる)
-		FAMILYBASIC::SPRITE_stWrite16(0,(PLAYER_v2iPosition>>stcui8nDiscardBit)-VECTOR2(8,8),((PLAYER_ui16iPattern>>2)&4)+88,2);
+		FAMILYBASIC::SPRITE_stWrite16(0,(PLAYER_v2iPosition>>FIXEDL_stcui8nBit)-VECTOR2(8,8),((PLAYER_ui16iPattern>>2)&4)+88,2);
 		for(CAUTO& cenmycurrent:ENEMY_aenmyThis)cenmycurrent.Show();
 		//	ニタニタ移動
 		{
@@ -519,7 +519,7 @@ public:
 			if(CONTROLLER_ui8cCurrent&(1<<FAMILYBASIC::IDBUTTON::Right))PLAYER_v2dVelocity.i16iX()=PLAYER_stci16nXSpeed;
 			else if(CONTROLLER_ui8cCurrent&(1<<FAMILYBASIC::IDBUTTON::Left))PLAYER_v2dVelocity.i16iX()=-PLAYER_stci16nXSpeed;
 			if((CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::IDBUTTON::A))&&(PLAYER_i16dAccelY==0)){
-				PLAYER_v2dVelocity.i16iY()=INT16(-12)<<stcui8nDiscardBit;
+				PLAYER_v2dVelocity.i16iY()=INT16(-12)<<FIXEDL_stcui8nBit;
 				PLAYER_i16dAccelY=28;
 				//	ジャンプ音
 				FAMILYBASIC::SE0_stPlay(stacui8cSE_Jump);
@@ -549,7 +549,7 @@ public:
 			//		「ニタニタの位置」です。
 			//		当たり判定は整数で行うため、この値は「固定小数点値」ではありません。
 			//		その気持ちを「_upper」に込めています。
-			CAUTO					cv2iposition_upper=PLAYER_v2iPosition>>stcui8nDiscardBit;
+			CAUTO					cv2iposition_upper=PLAYER_v2iPosition>>FIXEDL_stcui8nBit;
 
 			for(AUTO& enmycurrent:ENEMY_aenmyThis){
 				//	「eMove」は、ハエが地面に到達すると「TRUE」を返すので、
@@ -590,7 +590,7 @@ public:
 	VOID					GameOver(VOID)noexcept{
 		CONTROLLER_Update();
 		//	表示(垂直帰線期間中に完了できるよう冒頭に持ってくる)
-		FAMILYBASIC::SPRITE_stWrite16(0,(PLAYER_v2iPosition>>stcui8nDiscardBit)-VECTOR2(8,8),((PLAYER_ui16iPattern>>2)&4)+88,2);
+		FAMILYBASIC::SPRITE_stWrite16(0,(PLAYER_v2iPosition>>FIXEDL_stcui8nBit)-VECTOR2(8,8),((PLAYER_ui16iPattern>>2)&4)+88,2);
 		for(CAUTO& cenmycurrent:ENEMY_aenmyThis)cenmycurrent.Show();
 		//	リスタート判定
 		if(CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::IDBUTTON::A))idMode=IDMODE::Start;
