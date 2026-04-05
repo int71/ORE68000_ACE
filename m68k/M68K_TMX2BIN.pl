@@ -10,7 +10,7 @@ use strict;
 use integer;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'base.pl';
-my($sVersion,$sDate)=('1.44','2026/03/14');
+my($sVersion,$sDate)=('1.45','2026/04/03');
 my($CLASS_sStage)='STAGE';
 my($CLASS_STAGE_sArea)='AREA';
 my($CLASS_STAGE_sBGM)='BGM_PLAY';
@@ -607,7 +607,7 @@ END
 **																			**
 END
 				);
-				$img_destination_c->AddLINE("**\t".&USR_sTabLeft("'$$ref_switch{'NameCPP'}.cpp'",12)."2025 written by int71\t**");
+				$img_destination_c->AddLINE("**\t".&USR_sTabLeft("'$$ref_switch{'NameCPP'}.cpp'",12)."2026 written by int71\t**");
 				$img_destination_c->AddTEXT(<<END
  ****************************************************************************/
 
@@ -632,6 +632,7 @@ using namespace m68k::oredius68k::main::stage;
 //	private
 
 VOID					${sclass}::Attach_Self(VOID)noexcept{
+	OREDIUS68K_CHECKINHERITANCE;
 	STAGE_::Attach_Self();
 	idClass=IDCLASS::$sidclass;
 	return;
