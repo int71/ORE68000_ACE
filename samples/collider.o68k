@@ -1,0 +1,208 @@
+/****************************************************************************
+**																			**
+**																			**
+**									m68k									**
+**																			**
+**	'collider.o68k'									2026 written by int71	**
+ ****************************************************************************/
+
+//
+//		include
+//
+
+#include				<sub/familybasic.hpp>
+
+//
+//		using
+//
+
+using namespace m68k::i71::sub;
+
+//
+//		user
+//
+
+//	UINT8					FIXEDL_cui8nBit
+//		固定小数6bitとします。
+constexpr UINT8			FIXEDL_cui8nBit=6;
+//	VECTOR2					cv2cMask
+//		固定小数6bit「255」で循環させるAND用マスクです。
+constexpr AUTO			cv2cMask=VECTOR2(255,255)<<FIXEDL_cui8nBit;
+//	UINT8					cui8nPlayerCollision
+//		自機当たり判定数で、「COLLIDER」的には「TargetA」数です。
+constexpr UINT8			cui8nPlayerCollision=4;
+//	UINT8					cui8nEnemySet
+//		出現敵セット数で、「COLLIDER」的には「TargetB」セット数です。
+//		1セット当たり16ヶです。
+constexpr UINT8			cui8nEnemySet=8;
+//	UINT8					cui8nEnemy
+//		出現する敵の数です。
+constexpr UINT8			cui8nEnemy=cui8nEnemySet<<4;
+constexpr AUTO			cv2nSizeHalf_Upper=VECTOR2(8,8);
+//	VECTOR2					cv2nSizeHalf
+//		当たり判定の大きさの半分です。
+//		とりあえず自機、敵共に共通。
+constexpr AUTO			cv2nSizeHalf=cv2nSizeHalf_Upper<<FIXEDL_cui8nBit;
+//	OFWBOOL					ceUseCollider
+//		「COLLIDER」を使うかどうかのスイッチです。
+constexpr OFWBOOL		ceUseCollider=TRUE;
+//	VOID					ShowNumber(CUINT16 cui16source)
+//		テスト用に16bit値を10進表示します。
+VOID					ShowNumber(CUINT16 cui16source)noexcept;
+
+VOID					USER_New(VOID)noexcept{
+	//	COLLIDER&				cldrthis
+	//		当たり判定処理用の座標、サイズ情報置き場です。
+	//		このメモリ領域は「COLLIDER」に関連付けされています。
+	AUTO&					cldrthis=OS::COLLIDERRAM_stcldrDelegate();
+
+	FAMILYBASIC::stNew();
+	FAMILYBASIC::PALETTE_stWriteSet(1,1);
+	FAMILYBASIC::BG0_stPrint({0,0},"COLLIDER",0);
+	//	自機の初期位置とサイズ設定
+	cldrthis.asqrTargetA[0].v2iPosition=VECTOR2(120,98)<<FIXEDL_cui8nBit;
+	for(UINT8 ui8icollision=0;ui8icollision<cui8nPlayerCollision;++ui8icollision)cldrthis.asqrTargetA[ui8icollision].v2nSizeHalf=cv2nSizeHalf;
+	//	敵の初期位置とサイズ設定
+	for(UINT8 ui8ienemy=0;ui8ienemy<cui8nEnemy;++ui8ienemy){
+		AUTO&					sqrcurrent=cldrthis.asqrTargetB[ui8ienemy];
+		CAUTO					cui16random=FAMILYBASIC::stui16GetRandom();
+
+		//	位置はランダム
+		sqrcurrent.v2iPosition=VECTOR2(INT16(cui16random&255),INT16(cui16random>>8))<<FIXEDL_cui8nBit;
+		sqrcurrent.v2nSizeHalf=cv2nSizeHalf;
+	}
+	//	X、Y軸共に、固定小数6bit「255」で循環させる
+	OS::COLLIDER_stWrite(COLLIDER::IDREGISTERW::MaskX,cv2cMask.i16iX());
+	OS::COLLIDER_stWrite(COLLIDER::IDREGISTERW::MaskY,cv2cMask.i16iY());
+	//	「TargetA」が自機
+	OS::COLLIDER_stSetTargetA(0,cui8nPlayerCollision);
+	//	「TargetB」が敵
+	OS::COLLIDER_stSetTargetB(0,cui8nEnemy);
+	return;
+}
+
+VOID					USER_Delete(VOID)noexcept{
+	FAMILYBASIC::stDelete();
+	return;
+}
+
+VOID					USER_Main(VOID)noexcept{
+	using					IDBUTTON=FAMILYBASIC::IDBUTTON;
+	AUTO&					cldrthis=OS::COLLIDERRAM_stcldrDelegate();
+	USTR					aaustrbit[cui8nEnemySet][17];
+
+	//	自機移動
+	{
+		AUTO&					v2iplayer=cldrthis.asqrTargetA[0].v2iPosition;
+		CAUTO					cui8cjoystick=FAMILYBASIC::CONTROLLER_stui8cRead(0);
+
+		if(cui8cjoystick&(1<<IDBUTTON::Right))v2iplayer.i16iX()+=2<<6;
+		if(cui8cjoystick&(1<<IDBUTTON::Left))v2iplayer.i16iX()-=2<<6;
+		if(cui8cjoystick&(1<<IDBUTTON::Down))v2iplayer.i16iY()+=2<<6;
+		if(cui8cjoystick&(1<<IDBUTTON::Up))v2iplayer.i16iY()-=2<<6;
+		FAMILYBASIC::SPRITE_stWrite16(0,(v2iplayer>>6)-VECTOR2(8,8),172,0);
+		for(UINT8 ui8icollision=1;ui8icollision<cui8nPlayerCollision;++ui8icollision)cldrthis.asqrTargetA[ui8icollision].v2iPosition=v2iplayer;
+	}
+	//	敵移動
+	for(UINT8 ui8ienemy=0;ui8ienemy<cui8nEnemy;++ui8ienemy){
+		AUTO&					v2ienemy=cldrthis.asqrTargetB[ui8ienemy].v2iPosition;
+
+		v2ienemy.i16iY()+=1<<4;
+		FAMILYBASIC::SPRITE_stWrite16(1+ui8ienemy,(v2ienemy>>6)-VECTOR2(8,8),160,1);
+	}
+	for(UINT8 ui8ienemyset=0;ui8ienemyset<cui8nEnemySet;++ui8ienemyset){
+		AUTO&					austrbit=aaustrbit[ui8ienemyset];
+
+		for(UINT8 ui8ibit=0;ui8ibit<16;++ui8ibit)austrbit[ui8ibit]='0';
+		austrbit[16]=0;
+	}
+	//	サイクル測定開始
+	OS::HPC_stReset();
+	if constexpr(ceUseCollider){
+		//	「COLLIDER」炸裂
+		OS::COLLIDER_stDetectCollision();
+		for(UINT8 ui8ienemyset=0;ui8ienemyset<cui8nEnemySet;++ui8ienemyset){
+			if(
+				CAUTO					cui16collided=OS::COLLIDER_stui16ReadCollidedB(ui8ienemyset);
+				cui16collided
+			){
+				AUTO&					austrbit=aaustrbit[ui8ienemyset];
+
+				//	16ヶのうち少なくとも1つは衝突している
+				for(UINT8 ui8ibit=0;ui8ibit<16;++ui8ibit)if(cui16collided&(1<<ui8ibit))austrbit[15-ui8ibit]='1';
+			}
+		}
+	}else{
+		VECTOR2					av2iplayer_upper[cui8nPlayerCollision];
+
+		for(UINT8 ui8icollision=0;ui8icollision<cui8nPlayerCollision;++ui8icollision)av2iplayer_upper[ui8icollision]=cldrthis.asqrTargetA[ui8icollision].v2iPosition>>FIXEDL_cui8nBit;
+		//	これまで通りの手作りの味
+		for(UINT8 ui8ienemyset=0;ui8ienemyset<cui8nEnemySet;++ui8ienemyset){
+			AUTO&					austrbit=aaustrbit[ui8ienemyset];
+
+			for(UINT8 ui8ibit=0;ui8ibit<16;++ui8ibit){
+				CAUTO					cv2ienemy_upper=cldrthis.asqrTargetB[(ui8ienemyset<<4)+ui8ibit].v2iPosition>>FIXEDL_cui8nBit;
+
+				for(UINT8 ui8icollision=0;ui8icollision<cui8nPlayerCollision;++ui8icollision)if(
+					av2iplayer_upper[ui8icollision].FIXED256_eIsHit(cv2nSizeHalf_Upper,cv2ienemy_upper,cv2nSizeHalf_Upper)
+				){
+					austrbit[15-ui8ibit]='1';
+					break;
+				}
+			}
+		}
+	}
+	//	サイクル測定終了
+	ShowNumber(UINT16(OS::HPC_stui32Read()));
+	//	衝突判定結果発表
+	for(UINT8 ui8itargetb=0;ui8itargetb<cui8nEnemySet;++ui8itargetb){
+		AUTO&					austrbit=aaustrbit[ui8itargetb];
+
+		FAMILYBASIC::BG0_stPrint({0,INT16(ui8itargetb+1)},austrbit,0);
+	}
+	return;
+}
+
+VOID					ShowNumber(CUINT16 cui16source)noexcept{
+	USTR					austrnumber[]="00000";
+	AUTO					ui16source=cui16source;
+	USTR					ustrzero=' ';
+	USTR					ustrdigit;
+
+	//	「万」の位
+	for(ustrdigit='0';10000<=ui16source;++ustrdigit,ui16source-=10000);
+	if(ustrdigit=='0'){
+		austrnumber[0]=ustrzero;
+	}else{
+		ustrzero='0';
+		austrnumber[0]=ustrdigit;
+	}
+	//	「千」の位
+	for(ustrdigit='0';1000<=ui16source;++ustrdigit,ui16source-=1000);
+	if(ustrdigit=='0'){
+		austrnumber[1]=ustrzero;
+	}else{
+		ustrzero='0';
+		austrnumber[1]=ustrdigit;
+	}
+	//	「百」の位
+	for(ustrdigit='0';100<=ui16source;++ustrdigit,ui16source-=100);
+	if(ustrdigit=='0'){
+		austrnumber[2]=ustrzero;
+	}else{
+		ustrzero='0';
+		austrnumber[2]=ustrdigit;
+	}
+	//	「十」の位
+	for(ustrdigit='0';10<=ui16source;++ustrdigit,ui16source-=10);
+	if(ustrdigit=='0'){
+		austrnumber[3]=ustrzero;
+	}else{
+		ustrzero='0';
+		austrnumber[3]=ustrdigit;
+	}
+	//	「一」の位は空白表示の場合が無いので単純変換
+	austrnumber[4]='0'+ui16source;
+	FAMILYBASIC::BG0_stPrint({16,0},austrnumber,0);
+	return;
+}

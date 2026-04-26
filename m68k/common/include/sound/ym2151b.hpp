@@ -3,7 +3,7 @@
 **																			**
 **									m68k									**
 **																			**
-**	'm68k/sound/ym2151b.hpp'						2025 written by int71	**
+**	'm68k/sound/ym2151b.hpp'						2026 written by int71	**
  ****************************************************************************/
 #ifndef M68K_SOUND_YM2151B
 #define M68K_SOUND_YM2151B

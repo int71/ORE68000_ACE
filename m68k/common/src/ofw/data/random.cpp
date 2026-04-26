@@ -3,7 +3,7 @@
 **																			**
 **									m68k									**
 **																			**
-**	'm68k/ofw/data/random.cpp'						2024 written by int71	**
+**	'm68k/ofw/data/random.cpp'						2026 written by int71	**
  ****************************************************************************/
 
 //

@@ -3,7 +3,7 @@
 **																			**
 **								ORE68000ACE									**
 **																			**
-**	'm68k/ore68000ace/driver/sound.hpp'				2025 written by int71	**
+**	'm68k/ore68000ace/driver/sound.hpp'				2026 written by int71	**
  ****************************************************************************/
 #ifndef M68K_ORE68000ACE_DRIVER_SOUND
 #define M68K_ORE68000ACE_DRIVER_SOUND
@@ -820,13 +820,6 @@ namespace m68k::ore68000ace::driver{
 			DEVICE_stui8Delegate(DEVICE_SOUND_stcui16dDataOffset)=cui8value;
 			return;
 		}
-		static _INLINE_ VOID	DEVICE_stSelectRead(const IDREGISTERR cidregister)noexcept{
-			DEVICE_stui8Delegate(DEVICE_SOUND_stcui16dSelectROffset)=UINT8(cidregister);
-			return;
-		}
-		static _INLINE_ UINT8	DEVICE_stui8Read(VOID)noexcept{
-			return DEVICE_stcui8GetThis(DEVICE_stcui16dDataOffset);
-		}
 		VOID					New(CUINT16 cui16cchannelmask)noexcept;
 		VOID					Delete(VOID)noexcept;
 		VOID					Play(_UNDISCARDABLE_ CUINT8* const cpcui8source)noexcept;
@@ -838,6 +831,13 @@ namespace m68k::ore68000ace::driver{
 		VOID					PlayVoice(_UNDISCARDABLE_ CUINT8* const cpcui8source,CUINT16 cui16nsourceblock,CUINT8 cui8ibufferblockaddress=0xfe)noexcept;
 		VOID					Progress(VOID)noexcept;
 	private:
+		static _INLINE_ VOID	DEVICE_stSelectRead(const IDREGISTERR cidregister)noexcept{
+			DEVICE_stui8Delegate(DEVICE_SOUND_stcui16dSelectROffset)=UINT8(cidregister);
+			return;
+		}
+		static _INLINE_ UINT8	DEVICE_stui8Read(VOID)noexcept{
+			return DEVICE_stcui8GetThis(DEVICE_stcui16dDataOffset);
+		}
 		static _INLINE_ _UNDISCARDABLE_ UINT8&	DEVICE_stui8Delegate(CUINT16 cui16iaddress)noexcept{
 			return MEMORYS::DEVICE_stui8DelegateThis(DEVICE_SOUND_stcui16dOffsetS+cui16iaddress);
 		}

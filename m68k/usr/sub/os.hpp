@@ -13,6 +13,7 @@
 //
 
 #include				"base.hpp"
+#include				"collider.hpp"
 
 //
 //		namespace:m68k::i71::sub
@@ -137,6 +138,53 @@ namespace m68k::i71::sub{
 		}
 		static _INLINE_ UINT16	LFSR_stui16Read(VOID)noexcept{
 			return DEVICE_LFSR_stui16Delegate();
+		}
+		static _INLINE_ COLLIDER&	COLLIDERRAM_stcldrDelegate(VOID)noexcept{
+			return COLLIDER::COLLIDERRAM_stcldrDelegate();
+		}
+		static _INLINE_ VOID	COLLIDER_stWrite(const COLLIDER::IDREGISTERW cidregisterw,CUINT16 cui16value)noexcept{
+			COLLIDER::stWrite(cidregisterw,cui16value);
+			return;
+		}
+		static _INLINE_ VOID	COLLIDER_stWrite_Select(const COLLIDER::IDREGISTERW cidregisterw)noexcept{
+			COLLIDER::stWrite_Select(cidregisterw);
+			return;
+		}
+		static _INLINE_ VOID	COLLIDER_stWrite_Write(CUINT16 cui16value)noexcept{
+			COLLIDER::stWrite_Write(cui16value);
+			return;
+		}
+		static _INLINE_ _UNDISCARDABLE_ CUINT16&	COLLIDER_stui16Read(const COLLIDER::IDREGISTERR cidregisterr)noexcept{
+			return COLLIDER::stui16Read(cidregisterr);
+		}
+		static _INLINE_ VOID	COLLIDER_stRead_Select(const COLLIDER::IDREGISTERR cidregisterr)noexcept{
+			COLLIDER::stRead_Select(cidregisterr);
+			return;
+		}
+		static _INLINE_ _UNDISCARDABLE_ CUINT16&	COLLIDER_stui16Read_Read(VOID)noexcept{
+			return COLLIDER::stui16Read_Read();
+		}
+		static _INLINE_ VOID	COLLIDER_stSetTargetA(CUINT8 cui8istart,CUINT8 cui8iend)noexcept{
+			COLLIDER::stSetTargetA(cui8istart,cui8iend);
+			return;
+		}
+		static _INLINE_ VOID	COLLIDER_stSetTargetB(CUINT8 cui8istart,CUINT8 cui8iend)noexcept{
+			COLLIDER::stSetTargetB(cui8istart,cui8iend);
+			return;
+		}
+		static _INLINE_ VOID	COLLIDER_stDetectCollision(VOID)noexcept{
+			COLLIDER::stDetectCollision();
+			return;
+		}
+		static _INLINE_ _UNDISCARDABLE_ CUINT16&	COLLIDER_stui16ReadCollidedB(CUINT8 cui8iset)noexcept{
+			return COLLIDER::stui16ReadCollidedB(cui8iset);
+		}
+		static _INLINE_ VOID	COLLIDER_stReadCollidedB_WaitforDone(CUINT8 cui8iset)noexcept{
+			COLLIDER::stReadCollidedB_WaitforDone(cui8iset);
+			return;
+		}
+		static _INLINE_ _UNDISCARDABLE_ CUINT16&	COLLIDER_stui16ReadCollidedB_Read(CUINT8 cui8iset)noexcept{
+			return COLLIDER::stui16ReadCollidedB_Read(cui8iset);
 		}
 		static _INLINE_ UINT16	DEVICE_KEYBOARD_stui16Read(CUINT8 cui8ibank)noexcept{
 			DEVICE_KEYBOARD_stui16Delegate(MAP::DEVICE::KEYBOARD_stcui16dSelectOffset)=UINT16(cui8ibank);

@@ -1179,6 +1179,7 @@ private:
 		//	「一」の位は空白表示の場合が無いので単純変換
 		austrscore[3]='0'+ui16nscore;
 		FAMILYBASIC::BG0_stPrint({6,1},austrscore,0);
+		return;
 	}
 	//	VOID					AddScore(CUINT16 cui16nscore)
 	//		スコアを加算します。

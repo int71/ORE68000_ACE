@@ -3,7 +3,7 @@
 **																			**
 **								ORE68000ACE									**
 **																			**
-**	'm68k/ore68000ace/driver/video.cpp'				2025 written by int71	**
+**	'm68k/ore68000ace/driver/video.cpp'				2026 written by int71	**
  ****************************************************************************/
 
 //

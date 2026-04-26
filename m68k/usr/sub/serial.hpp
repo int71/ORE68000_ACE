@@ -3,7 +3,7 @@
 **																			**
 **									I71										**
 **																			**
-**	'sub/serial.hpp'								2025 written by int71	**
+**	'sub/serial.hpp'								2026 written by int71	**
  ****************************************************************************/
 #ifndef I71_SUB_SERIAL
 #define I71_SUB_SERIAL
@@ -25,17 +25,13 @@ namespace m68k::i71::sub{
 	//
 
 	//	SERIAL
-	class SERIAL;
-	using					CSERIAL=const SERIAL;
-
-	//
-	//		class:SERIAL
-	//
-
-	class SERIAL:public common::SERIAL_<
-		common::MAP::DEVICE::SERIAL_stcui16dOffsetS+common::MAP::DEVICE::SERIAL_stcui16dDataOffset
-	>{
-	};
+	using					SERIAL=common::SERIAL_<common::MAP::DEVICE::SERIAL_stcui16dOffsetS>;
 }
+
+//
+//		class:SERIAL
+//
+
+extern template class m68k::i71::common::SERIAL_<m68k::i71::common::MAP::DEVICE::SERIAL_stcui16dOffsetS>;
 
 #endif

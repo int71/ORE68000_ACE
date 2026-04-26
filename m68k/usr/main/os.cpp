@@ -108,12 +108,14 @@ VOID					OS::stNew(VOID)noexcept{
 	BASE::stNew();
 	DEBUG::stNew();
 	INTERRUPTER::stNew();
+	COLLIDER::stNew();
 	LFSR_stSetSeed(0);
 	return;
 }
 
 VOID					OS::stDelete(VOID)noexcept{
 	st.Delete();
+	COLLIDER::stDelete();
 	INTERRUPTER::stDelete();
 	DEBUG::stDelete();
 	BASE::stDelete();

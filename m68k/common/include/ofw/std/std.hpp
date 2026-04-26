@@ -3,7 +3,7 @@
 **																			**
 **									m68k									**
 **																			**
-**	'm68k/ofw/std/std.hpp'							2025 written by int71	**
+**	'm68k/ofw/std/std.hpp'							2026 written by int71	**
  ****************************************************************************/
 #ifndef M68K_OFW_STD_STD
 #define M68K_OFW_STD_STD
@@ -353,7 +353,7 @@ namespace m68k::ofw{
 			else return cdwsource;
 		}
 		//	CLASS					stxSwitchEndian(const CLASS& cxsource)
-		//		「cdwsource」のバイトオーダ反転値を返します。
+		//		「cxsource」のバイトオーダ反転値を返します。
 		template<class CLASS>
 		static constexpr CLASS	stxSwitchEndian(const CLASS& cxsource)noexcept{
 			if constexpr(SIZEOF(CLASS)==2){
@@ -388,6 +388,89 @@ namespace m68k::ofw{
 				return CLASS(stdwSwitchEndianB(DWORD(cxsource)));
 			}else{
 				return cxsource;
+			}
+		}
+		//	BYTE					stbReverseBit(CBYTE cbsource)
+		//		「cbsource」のビット並び順を反転します。
+		static constexpr BYTE	stbReverseBit(CBYTE cbsource)noexcept{
+			return
+				((cbsource&0x01)<<7)|
+				((cbsource&0x02)<<5)|
+				((cbsource&0x04)<<3)|
+				((cbsource&0x08)<<1)|
+				((cbsource&0x10)>>1)|
+				((cbsource&0x20)>>3)|
+				((cbsource&0x40)>>5)|
+				((cbsource&0x80)>>7);
+		}
+		//	WORD					stwReverseBit(CWORD cwsource)
+		//		「cwsource」のビット並び順を反転します。
+		static constexpr WORD	stwReverseBit(CWORD cwsource)noexcept{
+			return
+				((cwsource&0x0001)<<15)|
+				((cwsource&0x0002)<<13)|
+				((cwsource&0x0004)<<11)|
+				((cwsource&0x0008)<< 9)|
+				((cwsource&0x0010)<< 7)|
+				((cwsource&0x0020)<< 5)|
+				((cwsource&0x0040)<< 3)|
+				((cwsource&0x0080)<< 1)|
+				((cwsource&0x0100)>> 1)|
+				((cwsource&0x0200)>> 3)|
+				((cwsource&0x0400)>> 5)|
+				((cwsource&0x0800)>> 7)|
+				((cwsource&0x1000)>> 9)|
+				((cwsource&0x2000)>>11)|
+				((cwsource&0x4000)>>13)|
+				((cwsource&0x8000)>>15);
+		}
+		//	DWORD					stdwReverseBit(CDWORD cdwsource)
+		//		「cdwsource」のビット並び順を反転します。
+		static constexpr DWORD	stdwReverseBit(CDWORD cdwsource)noexcept{
+			return
+				((cdwsource&0x00000001)<<31)|
+				((cdwsource&0x00000002)<<29)|
+				((cdwsource&0x00000004)<<27)|
+				((cdwsource&0x00000008)<<25)|
+				((cdwsource&0x00000010)<<23)|
+				((cdwsource&0x00000020)<<21)|
+				((cdwsource&0x00000040)<<19)|
+				((cdwsource&0x00000080)<<17)|
+				((cdwsource&0x00000100)<<15)|
+				((cdwsource&0x00000200)<<13)|
+				((cdwsource&0x00000400)<<11)|
+				((cdwsource&0x00000800)<< 9)|
+				((cdwsource&0x00001000)<< 7)|
+				((cdwsource&0x00002000)<< 5)|
+				((cdwsource&0x00004000)<< 3)|
+				((cdwsource&0x00008000)<< 1)|
+				((cdwsource&0x00010000)>> 1)|
+				((cdwsource&0x00020000)>> 3)|
+				((cdwsource&0x00040000)>> 5)|
+				((cdwsource&0x00080000)>> 7)|
+				((cdwsource&0x00100000)>> 9)|
+				((cdwsource&0x00200000)>>11)|
+				((cdwsource&0x00400000)>>13)|
+				((cdwsource&0x00800000)>>15)|
+				((cdwsource&0x01000000)>>17)|
+				((cdwsource&0x02000000)>>19)|
+				((cdwsource&0x04000000)>>21)|
+				((cdwsource&0x08000000)>>23)|
+				((cdwsource&0x10000000)>>25)|
+				((cdwsource&0x20000000)>>27)|
+				((cdwsource&0x40000000)>>29)|
+				((cdwsource&0x80000000)>>31);
+		}
+		//	CLASS					stxReverseBit(const CLASS& cxsource)
+		//		「cxsource」のビット並び順を反転します。
+		template<class CLASS>
+		static constexpr CLASS	stxReverseBit(const CLASS& cxsource)noexcept{
+			if constexpr(SIZEOF(CLASS)==1){
+				return CLASS(stbReverseBit(BYTE(cxsource)));
+			}else if constexpr(SIZEOF(CLASS)==2){
+				return CLASS(stwReverseBit(WORD(cxsource)));
+			}else{
+				return CLASS(stdwReverseBit(DWORD(cxsource)));
 			}
 		}
 		//	CLASS					stxGetMinimum<CLASS>(VOID)

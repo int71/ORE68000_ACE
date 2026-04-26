@@ -3,14 +3,14 @@
 **																			**
 **									I71										**
 **																			**
-**	'main/serial.cpp'								2026 written by int71	**
+**	'sub/collider.cpp'								2026 written by int71	**
  ****************************************************************************/
 
 //
 //		include
 //
 
-#include				"serial.hpp"	// IWYU pragma: keep
+#include				"collider.hpp"	// IWYU pragma: keep
 
 //
 //		using
@@ -19,7 +19,7 @@
 using namespace m68k::i71;
 
 //
-//		class:SERIAL
+//		class:COLLIDER
 //
 
-template class common::SERIAL_<common::MAP::DEVICE::SERIAL_stcui16dOffsetM>;
+template class common::COLLIDER_<common::MAP::DEVICE::COLLIDER_stcui16dOffsetS,common::MAP::COLLIDERRAM::stcui32iAddressS>;

@@ -3,7 +3,7 @@
 **																			**
 **									m68k									**
 **																			**
-**	'm68k/ofw/ofw.hpp'								2025 written by int71	**
+**	'm68k/ofw/ofw.hpp'								2026 written by int71	**
  ****************************************************************************/
 #ifndef M68K_OFW_OFW
 #define M68K_OFW_OFW

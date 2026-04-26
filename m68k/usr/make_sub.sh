@@ -21,6 +21,8 @@ $ORE68000ACE_DRIVER_SOUND_CPP="$Source/ore68000ace/driver/sound.cpp";
 $ORE68000ACE_DRIVER_SOUND_OBJ="$Object/ore68000ace_driver_sound.o";
 $COMMON_BASE__CPP="common/base_.cpp";
 $COMMON_BASE__OBJ="$Object/common_base_.o";
+$COMMON_COLLIDER__CPP="common/collider_.cpp";
+$COMMON_COLLIDER__OBJ="$Object/common_collider_.o";
 $COMMON_MAP_CPP="common/map.cpp";
 $COMMON_MAP_OBJ="$Object/common_map.o";
 $COMMON_ROM_SOUND_CPP="common/rom_sound.cpp";
@@ -35,6 +37,8 @@ $BASE_CPP="$User/base.cpp";
 $BASE_OBJ="$Object/base.o";
 $BOOT_CPP="$User/boot.cpp";
 $BOOT_OBJ="$Object/boot.o";
+$COLLIDER_CPP="$User/collider.cpp";
+$COLLIDER_OBJ="$Object/collider.o";
 $FAMILYBASIC_CPP="$User/familybasic.cpp";
 $FAMILYBASIC_OBJ="$Object/familybasic.o";
 $INTERRUPTER_CPP="$User/interrupter.cpp";
@@ -60,6 +64,7 @@ $FONT='/c/Windows/Fonts//c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
 			$ORE68000ACE_DRIVER_VIDEO_OBJ,
 			$ORE68000ACE_DRIVER_SOUND_OBJ,
 			$COMMON_BASE__OBJ,
+			$COMMON_COLLIDER__OBJ,
 			$COMMON_MAP_OBJ,
 			$COMMON_ROM_SOUND_OBJ,
 			$COMMON_ROM_VIDEO_OBJ,
@@ -67,6 +72,7 @@ $FONT='/c/Windows/Fonts//c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
 			$COMMON_VECTOR2__OBJ,
 			$BASE_OBJ,
 			$BOOT_OBJ,
+			$COLLIDER_OBJ,
 			$FAMILYBASIC_OBJ,
 			$INTERRUPTER_OBJ,
 			$OS_OBJ,
@@ -121,6 +127,12 @@ $FONT='/c/Windows/Fonts//c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
 		],
 		exec=>["$C2OBJ \"$COMMON_BASE__CPP\" -o \"$COMMON_BASE__OBJ\""]
 	},
+	$COMMON_COLLIDER__OBJ=>{
+		depend_c=>[
+			$COMMON_COLLIDER__CPP
+		],
+		exec=>["$C2OBJ \"$COMMON_COLLIDER__CPP\" -o \"$COMMON_COLLIDER__OBJ\""]
+	},
 	$COMMON_MAP_OBJ=>{
 		depend_c=>[
 			$COMMON_MAP_CPP
@@ -162,6 +174,12 @@ $FONT='/c/Windows/Fonts//c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
 			$BOOT_CPP
 		],
 		exec=>["$C2OBJ \"$BOOT_CPP\" -o \"$BOOT_OBJ\""]
+	},
+	$COLLIDER_OBJ=>{
+		depend_c=>[
+			$COLLIDER_CPP
+		],
+		exec=>["$C2OBJ \"$COLLIDER_CPP\" -o \"$COLLIDER_OBJ\""]
 	},
 	$FAMILYBASIC_OBJ=>{
 		depend_c=>[

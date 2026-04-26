@@ -146,6 +146,7 @@ VOID					OS::stNew(VOID)noexcept{
 	st.VOICE_drvThis.SetMasterVolume(255);
 	DEBUG::stNew();
 	INTERRUPTER::stNew();
+	COLLIDER::stNew();
 	PATTERN::stNew();
 	LFSR_stSetSeed(0);
 	OFW::stEnableInterrupt();
@@ -156,6 +157,7 @@ VOID					OS::stDelete(VOID)noexcept{
 	OFW::stDisableInterrupt();
 	st.Delete();
 	PATTERN::stDelete();
+	COLLIDER::stDelete();
 	INTERRUPTER::stDelete();
 	DEBUG::stDelete();
 	SOUND_DRIVER::stDelete();

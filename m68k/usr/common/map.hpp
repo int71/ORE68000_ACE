@@ -3,7 +3,7 @@
 **																			**
 **									I71										**
 **																			**
-**	'common/map.hpp'								2025 written by int71	**
+**	'common/map.hpp'								2026 written by int71	**
  ****************************************************************************/
 #ifndef I71_COMMON_MAP
 #define I71_COMMON_MAP
@@ -14,6 +14,7 @@
 
 #include				<hid/keyboard.hpp>
 #include				<hid/joystick.hpp>
+#include				<misc/collider.hpp>
 #include				<ore68000ace/driver/video.hpp>
 #include				<ore68000ace/driver/sound.hpp>
 
@@ -47,6 +48,8 @@ namespace m68k::i71::common{
 		class VRAM;
 		//	PCMRAM
 		class PCMRAM;
+		//	COLLIDERRAM
+		class COLLIDERRAM;
 		//	DEVICE
 		class DEVICE;
 		//	VIDEO
@@ -121,6 +124,22 @@ namespace m68k::i71::common{
 		};
 
 		//
+		//		class:COLLIDERRAM
+		//
+
+		class COLLIDERRAM{
+		public:
+
+			//
+			//		const
+			//
+
+			static constexpr AUTO	stcui32iAddressM=								ore68000ace::COLLIDERRAM_stcui32iAddressM;
+			static constexpr AUTO	stcui32iAddressS=								ore68000ace::COLLIDERRAM_stcui32iAddressS;
+			static constexpr AUTO	stcui32nSize=									ore68000ace::COLLIDERRAM_stcui32nSize;
+		};
+
+		//
 		//		class:DEVICE
 		//
 
@@ -168,6 +187,12 @@ namespace m68k::i71::common{
 			static constexpr AUTO	LFSR_stcui16dOffsetS=							ore68000ace::DEVICE_LFSR_stcui16dOffsetS;
 			static constexpr AUTO	LFSR_stcui16nPort=								ore68000ace::DEVICE_LFSR_stcui16nPort;
 			static constexpr AUTO	LFSR_stcui16dDataOffset=						ore68000ace::DEVICE_LFSR_stcui16dDataOffset;
+			static constexpr AUTO	COLLIDER_stcui16dOffsetM=						ore68000ace::DEVICE_COLLIDER_stcui16dOffsetM;
+			static constexpr AUTO	COLLIDER_stcui16dOffsetS=						ore68000ace::DEVICE_COLLIDER_stcui16dOffsetS;
+			static constexpr AUTO	COLLIDER_stcui16nPort=							ore68000ace::DEVICE_COLLIDER_stcui16nPort;
+			static constexpr AUTO	COLLIDER_stcui16dSelectWOffset=					ore68000ace::DEVICE_COLLIDER_stcui16dSelectWOffset;
+			static constexpr AUTO	COLLIDER_stcui16dSelectROffset=					ore68000ace::DEVICE_COLLIDER_stcui16dSelectROffset;
+			static constexpr AUTO	COLLIDER_stcui16dDataOffset=					ore68000ace::DEVICE_COLLIDER_stcui16dDataOffset;
 			static constexpr AUTO	SERIAL_stcui16dOffsetM=							ore68000ace::DEVICE_SERIAL_stcui16dOffsetM;
 			static constexpr AUTO	SERIAL_stcui16dOffsetS=							ore68000ace::DEVICE_SERIAL_stcui16dOffsetS;
 			static constexpr AUTO	SERIAL_stcui16nPort=							ore68000ace::DEVICE_SERIAL_stcui16nPort;

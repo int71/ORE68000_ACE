@@ -3,7 +3,7 @@
 **																			**
 **								ORE68000ACE									**
 **																			**
-**	'm68k/ore68000ace/driver/video.hpp'				2025 written by int71	**
+**	'm68k/ore68000ace/driver/video.hpp'				2026 written by int71	**
  ****************************************************************************/
 #ifndef M68K_ORE68000ACE_DRIVER_VIDEO
 #define M68K_ORE68000ACE_DRIVER_VIDEO

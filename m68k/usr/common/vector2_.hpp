@@ -196,10 +196,46 @@ namespace m68k::i71::common{
 				INT16(i16Value1_Body-cv2source.i16Value1_Body)
 			};
 		}
+		constexpr VECTOR2_		operator &(CVECTOR2_& cv2source)const noexcept{
+			return {
+				INT16(i16Value0_Body&cv2source.i16Value0_Body),
+				INT16(i16Value1_Body&cv2source.i16Value1_Body)
+			};
+		}
+		constexpr VECTOR2_		operator |(CVECTOR2_& cv2source)const noexcept{
+			return {
+				INT16(i16Value0_Body|cv2source.i16Value0_Body),
+				INT16(i16Value1_Body|cv2source.i16Value1_Body)
+			};
+		}
+		constexpr VECTOR2_		operator ^(CVECTOR2_& cv2source)const noexcept{
+			return {
+				INT16(i16Value0_Body^cv2source.i16Value0_Body),
+				INT16(i16Value1_Body^cv2source.i16Value1_Body)
+			};
+		}
 		constexpr VECTOR2_		operator *(CINT16 ci16source)const noexcept{
 			return {
 				INT16(i16Value0_Body*ci16source),
 				INT16(i16Value1_Body*ci16source)
+			};
+		}
+		constexpr VECTOR2_		operator &(CINT16 ci16source)const noexcept{
+			return {
+				INT16(i16Value0_Body&ci16source),
+				INT16(i16Value1_Body&ci16source)
+			};
+		}
+		constexpr VECTOR2_		operator |(CINT16 ci16source)const noexcept{
+			return {
+				INT16(i16Value0_Body|ci16source),
+				INT16(i16Value1_Body|ci16source)
+			};
+		}
+		constexpr VECTOR2_		operator ^(CINT16 ci16source)const noexcept{
+			return {
+				INT16(i16Value0_Body^ci16source),
+				INT16(i16Value1_Body^ci16source)
 			};
 		}
 		constexpr VECTOR2_		operator >>(CUINT8 cui8nshift)const noexcept{
@@ -220,8 +256,26 @@ namespace m68k::i71::common{
 		constexpr VECTOR2_&		operator -=(CVECTOR2_& cv2source)noexcept{
 			return *this=*this-cv2source;
 		}
+		constexpr VECTOR2_&		operator &=(CVECTOR2_& cv2source)noexcept{
+			return *this=*this&cv2source;
+		}
+		constexpr VECTOR2_&		operator |=(CVECTOR2_& cv2source)noexcept{
+			return *this=*this|cv2source;
+		}
+		constexpr VECTOR2_&		operator ^=(CVECTOR2_& cv2source)noexcept{
+			return *this=*this^cv2source;
+		}
 		constexpr VECTOR2_		operator *=(CINT16 ci16source)noexcept{
 			return *this=*this*ci16source;
+		}
+		constexpr VECTOR2_		operator &=(CINT16 ci16source)noexcept{
+			return *this=*this&ci16source;
+		}
+		constexpr VECTOR2_		operator |=(CINT16 ci16source)noexcept{
+			return *this=*this|ci16source;
+		}
+		constexpr VECTOR2_		operator ^=(CINT16 ci16source)noexcept{
+			return *this=*this^ci16source;
 		}
 		constexpr VECTOR2_		operator >>=(CUINT8 cui8nshift)noexcept{
 			return *this=*this>>cui8nshift;

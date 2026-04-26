@@ -3,7 +3,7 @@
 **																			**
 **									m68k									**
 **																			**
-**	'm68k/video/vi71b.hpp'							2025 written by int71	**
+**	'm68k/video/vi71b.hpp'							2026 written by int71	**
  ****************************************************************************/
 #ifndef M68K_VIDEO_VI71B
 #define M68K_VIDEO_VI71B
@@ -419,6 +419,7 @@ namespace m68k::video{
 		static constexpr UINT8	stcui8nRegisterW=								0x30;
 		static constexpr UINT8	stcui8nRegisterR=								0x01;
 		static constexpr UINT32	VRAM_stcui32nSize=								0x100000;
+		static constexpr UINT16	PALETTE_stcui16nSize=							256;
 		static constexpr UINT16	SPRITE_stcui16nNumber=							256;
 		static constexpr UINT8	REGISTERW_Interrupt_stcui8iScanLineInterruptNumberBit=	0x0;
 		static constexpr UINT16	REGISTERW_Interrupt_stcui16cScanLineInterruptNumberMask=	0x3ff<<REGISTERW_Interrupt_stcui8iScanLineInterruptNumberBit;

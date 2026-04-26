@@ -3,7 +3,7 @@
 **																			**
 **								ORE68000ACE									**
 **																			**
-**	'm68k/ore68000ace/map.hpp'						2025 written by int71	**
+**	'm68k/ore68000ace/map.hpp'						2026 written by int71	**
  ****************************************************************************/
 #ifndef M68K_ORE68000ACE_MAP
 #define M68K_ORE68000ACE_MAP
@@ -14,6 +14,7 @@
 
 #include				"../video/vi71b.hpp"
 #include				"../sound/ym2151b.hpp"
+#include				"../misc/collider.hpp"
 
 //
 //		namespace:m68k::ore68000ace
@@ -26,24 +27,26 @@ namespace m68k::ore68000ace{
 	//
 
 	//	<MAIN>
-	//	ROM		000000-7f0000	CODE
-	//			7fe000-7ff000	ATAN
-	//			7ff000-7ff400	TRIG(三角関数)
-	//	RAM		800000-a00000
-	//	COM		fe0000-ff0000	M/Sコミュニケーション用非対称アクセスメモリ
-	//	I/O		ff8000-
+	//	ROM			000000-7f0000	CODE
+	//				7fe000-7ff000	ATAN
+	//				7ff000-7ff400	TRIG(三角関数)
+	//	RAM			800000-a00000
+	//	COLLIDER	fc0000-fc0200	コライダパラメータメモリ
+	//	COM			fe0000-ff0000	M/Sコミュニケーション用非対称アクセスメモリ
+	//	I/O			ff8000-
 	//	<SUB>
-	//	ROM		000000-400000	CODE
-	//			400000-700000	VIDEO(画像系)
-	//			700000-7c0000	SOUND(音系)
-	//			7c0000-7e0000	FONT
-	//			7fe000-7ff000	ATAN
-	//			7ff000-7ff400	TRIG(三角関数)
-	//	RAM		800000-a00000
-	//	PCMM	bf0000-c00000	波形メモリ
-	//	VRAM	c00000-d00000
-	//	COM		fe0000-ff0000	M/Sコミュニケーション用非対称アクセスメモリ
-	//	I/O		ff8000-
+	//	ROM			000000-400000	CODE
+	//				400000-700000	VIDEO(画像系)
+	//				700000-7c0000	SOUND(音系)
+	//				7c0000-7e0000	FONT
+	//				7fe000-7ff000	ATAN
+	//				7ff000-7ff400	TRIG(三角関数)
+	//	RAM			800000-a00000
+	//	PCMRAM		bf0000-c00000	YM2151B波形メモリ
+	//	VRAM		c00000-d00000
+	//	COLLIDER	fc0000-fc0200	コライダパラメータメモリ
+	//	COM			fe0000-ff0000	M/Sコミュニケーション用非対称アクセスメモリ
+	//	I/O			ff8000-
 	static constexpr UINT32	stcui32nCPUFrequencyHzM=						16'000'000;
 	static constexpr UINT32	stcui32nCPUFrequencyHzS=						16'000'000;
 	static constexpr UINT32	ROM_stcui32iAddressM=							0x000000;
@@ -111,6 +114,9 @@ namespace m68k::ore68000ace{
 	static constexpr UINT32	VRAM_ATTRIBUTE_BG1_stcui32dDefaultOffset=		0x0e8000;
 	static constexpr UINT32	VRAM_ATTRIBUTE_BG2_stcui32dDefaultOffset=		0x0f0000;
 	static constexpr UINT32	VRAM_ATTRIBUTE_BG3_stcui32dDefaultOffset=		0x0f8000;
+	static constexpr UINT32	COLLIDERRAM_stcui32iAddressM=					0xfc0000;
+	static constexpr UINT32	COLLIDERRAM_stcui32iAddressS=					0xfc0000;
+	static constexpr AUTO	COLLIDERRAM_stcui32nSize=						misc::COLLIDER::COLLIDERRAM_stcui32nSize;
 	static constexpr UINT32	COM_stcui32iAddressM=							0xfe0000;
 	static constexpr UINT32	COM_stcui32iAddressS=							0xfe0000;
 	static constexpr UINT32	COM_stcui32nSize=								0x010000;
@@ -160,6 +166,12 @@ namespace m68k::ore68000ace{
 	static constexpr UINT16	DEVICE_LFSR_stcui16dOffsetS=					0x0044;
 	static constexpr UINT16	DEVICE_LFSR_stcui16nPort=						0x0002;
 	static constexpr UINT16	DEVICE_LFSR_stcui16dDataOffset=					0x0000;
+	static constexpr UINT16	DEVICE_COLLIDER_stcui16dOffsetM=				0x0048;
+	static constexpr UINT16	DEVICE_COLLIDER_stcui16dOffsetS=				0x0048;
+	static constexpr UINT16	DEVICE_COLLIDER_stcui16nPort=					0x0008;
+	static constexpr UINT16	DEVICE_COLLIDER_stcui16dSelectWOffset=			0x0000;
+	static constexpr UINT16	DEVICE_COLLIDER_stcui16dSelectROffset=			0x0002;
+	static constexpr UINT16	DEVICE_COLLIDER_stcui16dDataOffset=				0x0006;
 	static constexpr UINT16	DEVICE_SERIAL_stcui16dOffsetM=					0x0100;
 	static constexpr UINT16	DEVICE_SERIAL_stcui16dOffsetS=					0x0100;
 	static constexpr UINT16	DEVICE_SERIAL_stcui16nPort=						0x0001;

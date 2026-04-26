@@ -40,7 +40,7 @@ namespace m68k::i71::common{
 		//		const
 		//
 
-		static constexpr AUTO	stcui32iDataAddress=							MAP::DEVICE::stcui32iAddress+UINT32(cui16dOffset);
+		static constexpr AUTO	stcui32iDataAddress=							MAP::DEVICE::stcui32iAddress+UINT32(cui16dOffset)+UINT32(MAP::DEVICE::SERIAL_stcui16dDataOffset);
 		static constexpr USTR	stacustrHex[]={
 			'0','1','2','3',
 			'4','5','6','7',

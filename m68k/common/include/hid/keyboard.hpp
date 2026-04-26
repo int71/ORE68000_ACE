@@ -3,7 +3,7 @@
 **																			**
 **									m68k									**
 **																			**
-**	'm68k/hid/keyboard.hpp'							2025 written by int71	**
+**	'm68k/hid/keyboard.hpp'							2026 written by int71	**
  ****************************************************************************/
 #ifndef M68K_HID_KEYBOARD
 #define M68K_HID_KEYBOARD

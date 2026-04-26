@@ -16,6 +16,8 @@ $ORE68000ACE_MEMORY_CPP="$Source/ore68000ace/memory.cpp";
 $ORE68000ACE_MEMORY_OBJ="$Object/ore68000ace_memory.o";
 $COMMON_BASE__CPP="common/base_.cpp";
 $COMMON_BASE__OBJ="$Object/common_base_.o";
+$COMMON_COLLIDER__CPP="common/collider_.cpp";
+$COMMON_COLLIDER__OBJ="$Object/common_collider_.o";
 $COMMON_MAP_CPP="common/map.cpp";
 $COMMON_MAP_OBJ="$Object/common_map.o";
 $COMMON_ROM_SOUND_CPP="common/rom_sound.cpp";
@@ -30,6 +32,8 @@ $BASE_CPP="$User/base.cpp";
 $BASE_OBJ="$Object/base.o";
 $BOOT_CPP="$User/boot.cpp";
 $BOOT_OBJ="$Object/boot.o";
+$COLLIDER_CPP="$User/collider.cpp";
+$COLLIDER_OBJ="$Object/collider.o";
 $INTERRUPTER_CPP="$User/interrupter.cpp";
 $INTERRUPTER_OBJ="$Object/interrupter.o";
 $OS_CPP="$User/os.cpp";
@@ -58,6 +62,7 @@ $VECTOR2_OBJ="$Object/vector2.o";
 			$OFW_STD_STD_OBJ,
 			$ORE68000ACE_MEMORY_OBJ,
 			$COMMON_BASE__OBJ,
+			$COMMON_COLLIDER__OBJ,
 			$COMMON_MAP_OBJ,
 			$COMMON_ROM_SOUND_OBJ,
 			$COMMON_ROM_VIDEO_OBJ,
@@ -65,12 +70,13 @@ $VECTOR2_OBJ="$Object/vector2.o";
 			$COMMON_VECTOR2__OBJ,
 			$BASE_OBJ,
 			$BOOT_OBJ,
+			$COLLIDER_OBJ,
 			$INTERRUPTER_OBJ,
 			$OS_OBJ,
 			$SERIAL_OBJ,
 			$VECTOR2_OBJ
 		],
-		exec=>["$OBJ2BIN \"$OFW_OFW_OBJ\" \"$OFW_STD_STD_OBJ\" \"$ORE68000ACE_MEMORY_OBJ\" \"$COMMON_BASE__OBJ\" \"$COMMON_MAP_OBJ\" \"$COMMON_ROM_SOUND_OBJ\" \"$COMMON_ROM_VIDEO_OBJ\" \"$COMMON_SERIAL__OBJ\" \"$COMMON_VECTOR2__OBJ\" \"$BASE_OBJ\" \"$BOOT_OBJ\" \"$INTERRUPTER_OBJ\" \"$OS_OBJ\" \"$SERIAL_OBJ\" \"$VECTOR2_OBJ\" -o \"$ROM_PROGRAM\" -ca 000400 -cs 7efc00 -da 800000 -ds 200000"]
+		exec=>["$OBJ2BIN \"$OFW_OFW_OBJ\" \"$OFW_STD_STD_OBJ\" \"$ORE68000ACE_MEMORY_OBJ\" \"$COMMON_BASE__OBJ\" \"$COMMON_COLLIDER__OBJ\" \"$COMMON_MAP_OBJ\" \"$COMMON_ROM_SOUND_OBJ\" \"$COMMON_ROM_VIDEO_OBJ\" \"$COMMON_SERIAL__OBJ\" \"$COMMON_VECTOR2__OBJ\" \"$BASE_OBJ\" \"$BOOT_OBJ\" \"$COLLIDER_OBJ\" \"$INTERRUPTER_OBJ\" \"$OS_OBJ\" \"$SERIAL_OBJ\" \"$VECTOR2_OBJ\" -o \"$ROM_PROGRAM\" -ca 000400 -cs 7efc00 -da 800000 -ds 200000"]
 	},
 	$OFW_OFW_OBJ=>{
 		depend_c=>[
@@ -95,6 +101,12 @@ $VECTOR2_OBJ="$Object/vector2.o";
 			$COMMON_BASE__CPP
 		],
 		exec=>["$C2OBJ \"$COMMON_BASE__CPP\" -o \"$COMMON_BASE__OBJ\""]
+	},
+	$COMMON_COLLIDER__OBJ=>{
+		depend_c=>[
+			$COMMON_COLLIDER__CPP
+		],
+		exec=>["$C2OBJ \"$COMMON_COLLIDER__CPP\" -o \"$COMMON_COLLIDER__OBJ\""]
 	},
 	$COMMON_MAP_OBJ=>{
 		depend_c=>[
@@ -137,6 +149,12 @@ $VECTOR2_OBJ="$Object/vector2.o";
 			$BOOT_CPP
 		],
 		exec=>["$C2OBJ \"$BOOT_CPP\" -o \"$BOOT_OBJ\""]
+	},
+	$COLLIDER_OBJ=>{
+		depend_c=>[
+			$COLLIDER_CPP
+		],
+		exec=>["$C2OBJ \"$COLLIDER_CPP\" -o \"$COLLIDER_OBJ\""]
 	},
 	$INTERRUPTER_OBJ=>{
 		depend_c=>[

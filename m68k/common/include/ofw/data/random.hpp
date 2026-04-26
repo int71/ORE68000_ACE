@@ -3,7 +3,7 @@
 **																			**
 **									m68k									**
 **																			**
-**	'm68k/ofw/data/random.hpp'						2025 written by int71	**
+**	'm68k/ofw/data/random.hpp'						2026 written by int71	**
  ****************************************************************************/
 #ifndef M68K_OFW_DATA_RANDOM
 #define M68K_OFW_DATA_RANDOM

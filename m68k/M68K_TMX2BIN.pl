@@ -10,7 +10,7 @@ use strict;
 use integer;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'base.pl';
-my($sVersion,$sDate)=('1.45','2026/04/03');
+my($sVersion,$sDate)=('1.46','2026/04/25');
 my($CLASS_sStage)='STAGE';
 my($CLASS_STAGE_sArea)='AREA';
 my($CLASS_STAGE_sBGM)='BGM_PLAY';
@@ -180,6 +180,9 @@ $BASE::Self (入力).tmx [-v] [-h] [-o (出力).bin] [-c (Cソース).cpp] [-j (
   ・イベント発生と無関係
     「(Cソース).cpp」内に記載されない「発生タイミング」無関係のオブジェクトで、座標補正は行われません。
     エリアイベント(Class:「STAGE」、名前:「AREA」)が該当します。
+
+・イベント発生タイミング
+  「イベント発生契機」の種類、イベント設置X座標のどちらも同一である場合、Y座標が若い(上にある)方が発生順として「先」になります。
 
 ・イベント発生先行
   イベント「スクロール位置」より先行して「画面外に配置」したい、例えばイベント「スクロール位置」をずらしつつ処理開始を同一タイミングに合わせたい等の場合があります。
