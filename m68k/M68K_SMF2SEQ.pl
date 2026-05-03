@@ -9,7 +9,7 @@
 use strict;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'smf.pl';
-my($sVersion,$sDate)=('2.33','2026/01/17');
+my($sVersion,$sDate)=('2.41','2026/05/02');
 my($COM_sDirectory)=('/d/Sync/Package/Cross/ORE68000_ACE/m68k');
 my($sChannelAdditionalVariableName)=('_INIT');
 new BASE::();
@@ -210,6 +210,8 @@ $BASE::Self (入力).mid [-v] [-h] [-o (演奏テキスト).sh] [-u (音符長�
 
 <「(入力).mid」について>
   「KeyOff」は音符に重なりが無い場合にのみ置かれ、重なりがある場合は「継続的(アタック無し)KeyOn」とされます。
+
+  「テンポ」は「3600/テンポ」で「4分音符当たりのフレーム数」に変換しますが、結果は「0.25」単位で量子化します。
 
   ピッチベンドが設定されていると下記手順でポルタメント指示に変換します。
 
@@ -451,7 +453,7 @@ sub USR_stSMF2SEQ{
 							}elsif($$ref_hash_event{'Type_Friendly'} eq 'End'){
 								$itime_end=$itime;
 							}elsif($$ref_hash_event{'Type_Friendly'} eq 'BPM'){
-								$nframeperunit=(60*60/$$ref_hash_event{'Value_Friendly'})*$nqnoteperunit;
+								$nframeperunit=&USR_SMF2SEQ_stnQuantizeFrameperUnit((60*60/$$ref_hash_event{'Value_Friendly'})*$nqnoteperunit);
 								$ntimeperframe=$ntimeperunit/$nframeperunit;
 							}elsif($$ref_hash_event{'Type_Friendly'} eq 'Beat'){
 								my($nnumerator,$ndenominator)=split(/\//,$$ref_hash_event{'Value_Friendly'});
@@ -1192,6 +1194,53 @@ sub USR_SMF2SEQ_stnDB2Value{
 	);
 }
 
+sub USR_SMF2SEQ_stnQuantizeFrameperUnit{
+	my($nframeperunit)=@_;
+
+	#	「0.25」単位で丸める
+	return BASE::Round($nframeperunit*4)/4;
+}
+
+sub USR_SMF2SEQ_stdQuantizeTimeOffset{
+	my($itimeoffset)=@_;
+
+	#	「'TimeOffset'」も最小単位5で丸める
+	return BASE::Round($itimeoffset/5)*5;
+}
+
+sub USR_SMF2SEQ_stQuantizePitchBend{
+	my($ref_array_ref_hash_pitchbend,$ipitchbend,$ref_npitchbend,$ref_ipitchbend)=@_;
+	my($ref_hash_pitchbend)=$$ref_array_ref_hash_pitchbend[$ipitchbend];
+
+	$$ref_hash_pitchbend{'Value'}=&USR_SMF2SEQ_stdQuantizePitchBendValue($$ref_hash_pitchbend{'Value'});
+	$$ref_hash_pitchbend{'TimeOffset'}=&USR_SMF2SEQ_stdQuantizeTimeOffset($$ref_hash_pitchbend{'TimeOffset'});
+	if($ipitchbend+1<scalar(@$ref_array_ref_hash_pitchbend)){
+		my($ref_hash_pitchbend_next)=$$ref_array_ref_hash_pitchbend[$ipitchbend+1];
+
+		if($$ref_hash_pitchbend_next{'TimeOffset'}==$$ref_hash_pitchbend{'TimeOffset'}){
+			splice(@$ref_array_ref_hash_pitchbend,$ipitchbend+1,1);
+			--$$ref_npitchbend;
+		}
+	}
+	if(0<$ipitchbend){
+		my($ref_hash_pitchbend_previous)=$$ref_array_ref_hash_pitchbend[$ipitchbend-1];
+
+		if($$ref_hash_pitchbend_previous{'TimeOffset'}==$$ref_hash_pitchbend{'TimeOffset'}){
+			splice(@$ref_array_ref_hash_pitchbend,$ipitchbend-1,1);
+			--$$ref_npitchbend;
+			--$$ref_ipitchbend;
+		}
+	}
+	return;
+}
+
+sub USR_SMF2SEQ_stdQuantizePitchBendValue{
+	my($dvalue)=@_;
+
+	#	乱暴であるが2段階以上の細かい指定は無かろうという想定
+	return BASE::Round($dvalue*2)/2;
+}
+
 sub USR_SMF2SEQ_stdPortamentoValueperTimefromPitchBend{
 	my($ref_hash_event,$smf,$itime,$pitchbend_ndepth)=@_;
 
@@ -1208,15 +1257,13 @@ sub USR_SMF2SEQ_stdPortamentoValueperTimefromPitchBend{
 				@$ref_array_ref_hash_pitchbend=(
 					{
 						'TimeOffset'=>0,
-						#	乱暴であるが2段階以上の細かい指定は無かろうという想定
-						'Value'=>BASE::Round($$ref_array_ref_hash_pitchbend[0]{'Value'}*2)/2
+						'Value'=>&USR_SMF2SEQ_stdQuantizePitchBendValue($$ref_array_ref_hash_pitchbend[0]{'Value'})
 					},@$ref_array_ref_hash_pitchbend
 				);
 				++$npitchbend;
 			}
 			{
-				#	乱暴であるが2段階以上の細かい指定は無かろうという想定
-				my($value_quantized)=BASE::Round($$ref_array_ref_hash_pitchbend[$npitchbend-1]{'Value'}*2)/2;
+				my($value_quantized)=&USR_SMF2SEQ_stdQuantizePitchBendValue($$ref_array_ref_hash_pitchbend[$npitchbend-1]{'Value'});
 				my($dvaluediff)=$value_quantized-$$ref_array_ref_hash_pitchbend[$npitchbend-1]{'Value'};
 
 				if($dvaluediff!=0){
@@ -1227,17 +1274,34 @@ sub USR_SMF2SEQ_stdPortamentoValueperTimefromPitchBend{
 						$$ref_array_ref_hash_pitchbend[$npitchbend-1]{'Value'}=$value_quantized;
 						$$ref_array_ref_hash_pitchbend[$npitchbend-2]{'Value'}=$value_quantized;
 					}else{
-						push(@$ref_array_ref_hash_pitchbend,{
-							#	「'TimeOffset'」も最小単位5で丸める
-							'TimeOffset'=>BASE::Round((
-								$$ref_array_ref_hash_pitchbend[$npitchbend-1]{'TimeOffset'}+$dvaluediff*(
-									($$ref_array_ref_hash_pitchbend[$npitchbend-1]{'TimeOffset'}-$$ref_array_ref_hash_pitchbend[$npitchbend-2]{'TimeOffset'})/
-									($$ref_array_ref_hash_pitchbend[$npitchbend-1]{'Value'}-$$ref_array_ref_hash_pitchbend[$npitchbend-2]{'Value'})
-								)
-							)/5)*5,
-							'Value'=>$value_quantized
-						});
+						#	$itimeoffset
+						#		ゼロ方向に向かう想定でのキリ良き「TimeOffset」。
+						my($itimeoffset)=&USR_SMF2SEQ_stdQuantizeTimeOffset(
+							$$ref_array_ref_hash_pitchbend[$npitchbend-1]{'TimeOffset'}+$dvaluediff*(
+								($$ref_array_ref_hash_pitchbend[$npitchbend-1]{'TimeOffset'}-$$ref_array_ref_hash_pitchbend[$npitchbend-2]{'TimeOffset'})/
+								($$ref_array_ref_hash_pitchbend[$npitchbend-1]{'Value'}-$$ref_array_ref_hash_pitchbend[$npitchbend-2]{'Value'})
+							)
+						);
+						#	$dtimeoffset_diff
+						#		マイナスならゼロでない方向への補間が必要
+						my($dtimeoffset_diff)=$itimeoffset-$$ref_array_ref_hash_pitchbend[$npitchbend-1]{'TimeOffset'};
+
 						++$npitchbend;
+						if(0<$dtimeoffset_diff){
+							#	想定通りゼロ方向に向かう補間
+							push(@$ref_array_ref_hash_pitchbend,{
+								'TimeOffset'=>$itimeoffset,
+								'Value'=>$value_quantized
+							});
+						}else{
+							#	ゼロでない方向への補間
+							push(@$ref_array_ref_hash_pitchbend,{
+								'TimeOffset'=>$itimeoffset-$dtimeoffset_diff*2,
+								'Value'=>$value_quantized-$dvaluediff*2
+							});
+							#	逆方向補間だと再度量子化が必要
+							&USR_SMF2SEQ_stQuantizePitchBend($ref_array_ref_hash_pitchbend,$npitchbend-1,\$npitchbend,\$ipitchbend);
+						}
 					}
 				}
 			}
@@ -1254,17 +1318,17 @@ sub USR_SMF2SEQ_stdPortamentoValueperTimefromPitchBend{
 			#	「$$ref_array_ref_hash_pitchbend[$ipitchbend+1]{'TimeOffset'}」以降変化が始まる
 			#	この時点では「$ipitchbend==$npitchbend-1」の可能性がある
 			{
-				my($ref_hash_pitchbend_start)=$$ref_array_ref_hash_pitchbend[$ipitchbend];
+				my($ref_hash_pitchbend_previous)=$$ref_array_ref_hash_pitchbend[$ipitchbend];
 				my($ichannel)=$$ref_hash_event{'Channel'};
 				my($inote)=$$ref_hash_event{'Note'};
 				my($nvelocity)=$$ref_hash_event{'Velocity'};
-				my($dtimeoffset)=$$ref_hash_pitchbend_start{'TimeOffset'};
+				my($dtimeoffset)=$$ref_hash_pitchbend_previous{'TimeOffset'};
 				my($dnoteoffset);
 
 				$dnoteoffset=0;
 				if($dtimeoffset==0){
 					#	変化開始が変化「0」ではなかったのでノート番号を更新
-					$dnoteoffset=BASE::Round($$ref_hash_pitchbend_start{'Value'}*$pitchbend_ndepth);
+					$dnoteoffset=BASE::Round($$ref_hash_pitchbend_previous{'Value'}*$pitchbend_ndepth);
 					$$ref_hash_event{'Note'}+=$dnoteoffset;
 					$$ref_hash_event{'Note_Friendly'}=&SMF::stsGetNote($$ref_hash_event{'Note'});
 					if($ipitchbend==$npitchbend-1){
@@ -1274,22 +1338,22 @@ sub USR_SMF2SEQ_stdPortamentoValueperTimefromPitchBend{
 				}else{
 					if($ipitchbend==$npitchbend-1){
 						#	継続的変化は無かったが「トランスポーズ指示」にオフセットがあったので「変化」と解釈
-						#	ただし「$$ref_hash_pitchbend_start{'Value'}」がゼロ(実際の変化がゼロ)の可能性はある
-						return $$ref_hash_pitchbend_start{'Value'}*$pitchbend_ndepth/$dtimeoffset;
+						#	ただし「$$ref_hash_pitchbend_previous{'Value'}」がゼロ(実際の変化がゼロ)の可能性はある
+						return $$ref_hash_pitchbend_previous{'Value'}*$pitchbend_ndepth/$dtimeoffset;
 					}
 				}
 				#	この時点で「$ipitchbend<$npitchbend-1」までは確定
 				++$ipitchbend;
 				{
 					my($ref_hash_pitchbend)=$$ref_array_ref_hash_pitchbend[$ipitchbend];
-					my($cvalueoffsetsign)=BASE::Sign($$ref_hash_pitchbend{'Value'}-$$ref_hash_pitchbend_start{'Value'});
+					my($cvalueoffsetsign)=BASE::Sign($$ref_hash_pitchbend{'Value'}-$$ref_hash_pitchbend_previous{'Value'});
 
 					#	分割が必要であるかの判定のため、傾き変化を見ていく
 					for(++$ipitchbend;$ipitchbend<$npitchbend;++$ipitchbend){
 						$ref_hash_pitchbend=$$ref_array_ref_hash_pitchbend[$ipitchbend];
 						if(
 							$cvalueoffsetsign!=
-							BASE::Sign($$ref_hash_pitchbend{'Value'}-$$ref_hash_pitchbend_start{'Value'})
+							BASE::Sign($$ref_hash_pitchbend{'Value'}-$$ref_hash_pitchbend_previous{'Value'})
 						){
 							my($ref_hash_event_add)=($$ref_hash_event{'Type'} eq 'KeyOff')?&SMF::stref_hash_eventNewKeyOff(
 								$ichannel,
@@ -1303,8 +1367,36 @@ sub USR_SMF2SEQ_stdPortamentoValueperTimefromPitchBend{
 
 							#	「$ipitchbend」時点から傾きの変化があるのでKey分割が必要
 							if($$ref_array_ref_hash_pitchbend[$ipitchbend-1]{'TimeOffset'}!=$$ref_hash_pitchbend{'TimeOffset'}){
-								#	同一「'TimeOffset'」での変化ではないので、「$ipitchbend-1」を変化開始位置と見なす
-								--$ipitchbend;
+								#	同一「'TimeOffset'」での変化ではないので、「$ipitchbend-1」を変化開始位置と見なす。
+								#
+								#		-3 -2 -1  0 +1
+								#		 |  |  |  |  |
+								#		 |  |／ ＼|  |
+								#		 |／       ＼|
+								#
+								#	変化前側にも「-1」相当のKeyが必要なのでコピーする。
+								#
+								#		-3 -2 -1  0 +1 +2
+								#		 |  |  |  |  |  |
+								#		 |  |／    ＼|  |
+								#		 |／          ＼|
+								#
+								#	コピー後は「$ipitchbend」がそのまま変化開始位置になる。
+
+								#	新しい境界になるのでコピー前に量子化しておく。
+								&USR_SMF2SEQ_stQuantizePitchBend($ref_array_ref_hash_pitchbend,$ipitchbend-1,\$npitchbend,\$ipitchbend);
+								{
+									#	@array_ref_hash_pitchbend_tail
+									#		旧「$ipitchbend-1」以降の配列
+									my(@array_ref_hash_pitchbend_tail)=splice(@$ref_array_ref_hash_pitchbend,$ipitchbend-1);
+									#	%hash_pitchbend_border
+									#		新「$ipitchbend-1」位置に置くコピー。
+									#		情報として独立させる必要があるため、ハッシュ変数としてディープコピーを作る。
+									my(%hash_pitchbend_border)=%{$array_ref_hash_pitchbend_tail[0]};
+
+									@$ref_array_ref_hash_pitchbend=(@$ref_array_ref_hash_pitchbend,\%hash_pitchbend_border,@array_ref_hash_pitchbend_tail);
+									++$npitchbend;
+								}
 								$ref_hash_pitchbend=$$ref_array_ref_hash_pitchbend[$ipitchbend];
 							}
 							$dtimeoffset=$$ref_hash_pitchbend{'TimeOffset'};
@@ -1388,9 +1480,11 @@ sub USR_SMF2SEQ_stdPortamentoValueperTimefromPitchBend{
 							}
 							last;
 						}
-						$ref_hash_pitchbend_start=$ref_hash_pitchbend;
+						$ref_hash_pitchbend_previous=$ref_hash_pitchbend;
 					}
 					#	「$ipitchbend-1」まで傾きの変化は無かった
+					#	末尾補間、途中分割のいづれも無い場合に向けて、ここでも量子化必要。
+					&USR_SMF2SEQ_stQuantizePitchBend($ref_array_ref_hash_pitchbend,$ipitchbend-1,\$npitchbend,\$ipitchbend);
 					$ref_hash_pitchbend=$$ref_array_ref_hash_pitchbend[$ipitchbend-1];
 					$dtimeoffset=$$ref_hash_pitchbend{'TimeOffset'};
 					if(0<$dtimeoffset){

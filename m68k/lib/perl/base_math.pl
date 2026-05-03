@@ -3,7 +3,7 @@
 ##																			##
 ##									OFW										##
 ##																			##
-##	'base_math.pl'									2024 written by int71	##
+##	'base_math.pl'									2026 written by int71	##
 ##############################################################################
 
 use strict;
@@ -16,14 +16,14 @@ use strict;
 	package BASE_MATH;
 
 	BEGIN{
-		our($Version,$Date)=('2.00','2021/03/27');
+		our($Version,$Date)=('2.10','2026/03/27');
 		our($Angle1,$Angle2,$Angle4,$Angle8,$Pi,$AngleMultiply,$AngleMultiplyInverse,$Root22);
 
 		return;
 	}
 
 	sub new{
-		my($angleround)=@_;
+		my($class,$angleround)=@_;
 
 		if($angleround==0){
 			$angleround=360;
@@ -1052,6 +1052,7 @@ use strict;
 		my($class,$rotation)=@_;
 		my($this);
 
+		#	clockwise
 		$this=[];
 		bless($this,$class);
 		$this->SetRotation2($rotation);
@@ -1062,6 +1063,7 @@ use strict;
 		my($class,$rotation)=@_;
 		my($this);
 
+		#	counterclockwise
 		$this=[];
 		bless($this,$class);
 		$this->SetReciprocalRotation2($rotation);
