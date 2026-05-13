@@ -2832,11 +2832,11 @@ private:
 		CAUTO					cv2iposition_upper=PLAYER_plyrThis.cv2iGetPosition()>>FIXEDL_stcui8nBit;
 
 		SCROLL_v2iPosition_Upper={
-			STD::stxFit(
+			STD::stxClamp(
 				INT16((cv2iposition_upper.i16iX()&1023)-128),
 				INT16(       0),
 				INT16(1024-256)
-			),STD::stxFit(
+			),STD::stxClamp(
 				INT16((cv2iposition_upper.i16iY()&1023)-106),
 				INT16(       0),
 				INT16(1024-212)

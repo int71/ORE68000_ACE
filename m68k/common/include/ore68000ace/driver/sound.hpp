@@ -360,7 +360,7 @@ namespace m68k::ore68000ace::driver{
 					{
 						CAUTO					ci16doffset=i16dDetune+SOUND_stci16dToneAdjust;
 
-						i16iTone=STD::stxFit(i16iTone+i16dPortamento,-ci16doffset,0x5fff-ci16doffset);
+						i16iTone=STD::stxClamp(i16iTone+i16dPortamento,-ci16doffset,0x5fff-ci16doffset);
 						if(i16iTone!=i16iTonePrevious){
 							CAUTO					ci16itone=i16iTone+ci16doffset;
 							CAUTO					cui16itone_real=UINT16((UINT16(stacui8iNote[ci16itone>>8])<<8)|UINT16(ci16itone&0xfc));
@@ -723,7 +723,7 @@ namespace m68k::ore68000ace::driver{
 						{
 							CAUTO					ci16doffset=Normal.i16dDetune+Normal.i16iToneAdjust;
 
-							Normal.i16iTone=STD::stxFit(Normal.i16iTone+Normal.i16dPortamento,-ci16doffset,0x5fff-ci16doffset);
+							Normal.i16iTone=STD::stxClamp(Normal.i16iTone+Normal.i16dPortamento,-ci16doffset,0x5fff-ci16doffset);
 							if(Normal.i16iTone!=Normal.i16iTonePrevious){
 								CAUTO					ci16itone=Normal.i16iTone+ci16doffset;
 								CAUTO					cui16itone_real=UINT16((UINT16(stacui8iNote[ci16itone>>8])<<8)|UINT16(ci16itone&0xfc));

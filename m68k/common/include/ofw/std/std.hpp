@@ -511,10 +511,10 @@ namespace m68k::ofw{
 				return cxdestination;
 			}
 		}
-		//	CLASS					stxFit(const CLASS& cxdestination,const CLASS& cxminimum,const CLASS& cxmaximum)
+		//	CLASS					stxClamp(const CLASS& cxdestination,const CLASS& cxminimum,const CLASS& cxmaximum)
 		//		「cxdestination」を最小「cxminimum」、最大「cxmaximum」に丸めて返します。
 		template<class CLASS>
-		static constexpr CLASS	stxFit(const CLASS& cxdestination,const CLASS& cxminimum,const CLASS& cxmaximum)noexcept{
+		static constexpr CLASS	stxClamp(const CLASS& cxdestination,const CLASS& cxminimum,const CLASS& cxmaximum)noexcept{
 			if(cxdestination<cxminimum)return cxminimum;
 			if(cxmaximum<cxdestination)return cxmaximum;
 			return cxdestination;
