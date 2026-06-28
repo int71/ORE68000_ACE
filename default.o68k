@@ -3,7 +3,7 @@
 **																			**
 **									m68k									**
 **																			**
-**	'default.o68k'									2025 written by int71	**
+**	'default.o68k'									2026 written by int71	**
  ****************************************************************************/
 
 //
@@ -25,11 +25,12 @@ using namespace m68k::i71::sub;
 VOID					USER_New(VOID)noexcept{
 	FAMILYBASIC::stNew();
 	FAMILYBASIC::PALETTE_stWriteSet(0,1);
-	FAMILYBASIC::BG0_stPrint({0,0},"WELCOME TO ORE68000 ACE.\n\2642025 INT71 ALL RIGHTS RESERVED.\nDROP ME \"*.XML\" OR \"*.O68K\".",0);
+	FAMILYBASIC::BG0_stPrint({0,0},"WELCOME TO ORE68000 ACE.\n\2642026 INT71 ALL RIGHTS RESERVED.\nDROP ME \"*.XML\" OR \"*.O68K\".",0);
 	return;
 }
 
 VOID					USER_Delete(VOID)noexcept{
+	FAMILYBASIC::stDelete();
 	return;
 }
 

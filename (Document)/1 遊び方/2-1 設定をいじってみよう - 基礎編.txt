@@ -27,7 +27,7 @@
 ・俯瞰
     <?xml version="1.0" encoding="UTF-8"?>
     <ORE68000ACE>
-        <APPLICATION>
+        <ORE68000ACE>
             <AudioFrequency value="Unknown"/>
               →「2-3 設定をいじってみよう - サウンド編」参照の事
             <AudioMode value="Cooperative"/>
@@ -38,119 +38,65 @@
               →「2-2 設定をいじってみよう - ビデオ編」参照の事
             <GraphicScanLine value="Progressive"/>
               →「2-2 設定をいじってみよう - ビデオ編」参照の事
-        </APPLICATION>
-        <GPU/>
-        <HID>
-            <CAPTUREMOUSE value="((Keyboard,255,Space,TRUE,00000000,(Keyboard,
-            255,Alt,FALSE,00000000,,4096,0),4096,0))"/>
-              マウスキャプチャ(非表示)切り替えキー割り当てです。
-              「Keyboard,255,Space,TRUE,00000000」がトリガを、「(Keyboard,255,
-              Alt,FALSE,00000000,,4096,0)」が条件を示しており、この場合「Alt+
-              Space」が割り当てとなります。
-            <FULLSCREEN value="((Keyboard,255,Enter,TRUE,00000000,(Keyboard,255,
-            Alt,FALSE,00000000,,4096,0),4096,0))"/>
-              フルスクリーン切り替えキー割り当てです。
-            <IgnoreSuspiciousDevice value="FALSE"/>
-              現状未使用です。
-            <JOYSTICK-A value="((External,0,Digital01,FALSE,00000000,,4096,0))"
-            />
-              「ORE68000 ACE」仮想ジョイスティック「Aボタン」への割り当てです。
-              「CAPTUREMOUSE」同様の記述でキーボード割り当ても出来ますが、この例
-              ではゲームコントローラを割り当てています。
-              「External,0,Digital01」の「0」がコントローラ通し番号、
-              「Digital『01』」がボタン通し番号です。
-              ボタン通し番号は、Windowsアプレット「ゲーム コントローラー→XXXXの
-              プロパティ」、もしくは「bin/CHECK_HID.exe」で表示されるボタン番号
-              に対応します。
-              なお、通し番号は16進数表記であるので、通し番号「14」は
-              「Digital0E」になります。
-            <JOYSTICK-B value="((External,0,Digital02,FALSE,00000000,,4096,0))"
-            />
-              「ORE68000 ACE」仮想ジョイスティック「Bボタン」への割り当てです。
-            <JOYSTICK-D value="((External,0,HatSwitchYP,FALSE,00000000,,4096,
-            0))"/>
-              「ORE68000 ACE」仮想ジョイスティック「下」への割り当てです。
-            <JOYSTICK-L value="((External,0,HatSwitchXM,FALSE,00000000,,4096,
-            0))"/>
-              「ORE68000 ACE」仮想ジョイスティック「左」への割り当てです。
-            <JOYSTICK-R value="((External,0,HatSwitchXP,FALSE,00000000,,4096,
-            0))"/>
-              「ORE68000 ACE」仮想ジョイスティック「右」への割り当てです。
-            <JOYSTICK-U value="((External,0,HatSwitchYM,FALSE,00000000,,4096,
-            0))"/>
-              「ORE68000 ACE」仮想ジョイスティック「上」への割り当てです。
-            <LOADSTATE value="((Keyboard,255,F3,TRUE,00000000,(Keyboard,255,Alt,
-            FALSE,00000000,,4096,0),4096,0))"/>
-              「状態復元」機能への割り当てです。
-              「状態ファイル名」は実行中のプログラム名によって決定されます。
-            <PAUSE value="((Keyboard,255,P,TRUE,00000000,(Keyboard,255,Alt,
-            FALSE,00000000,,4096,0),4096,0))"/>
-              「一時停止」機能への割り当てです。
-            <RESET value="((Keyboard,255,R,TRUE,00000000,(Keyboard,255,Alt,
-            FALSE,00000000,,4096,0),4096,0))"/>
-              リセットキー割り当てです。
-              リセットは飽くまで仮想コンピューター「ORE68000 ACE」のリセットなの
-              で、アプリケーション設定「ORE68000 ACE.xml」再読み込みを行いたい場
-              合は「アプリケーション再起動」を使用してください。
-            <RESTART value="((Keyboard,255,R,TRUE,00000000,(Keyboard,255,Alt,
-            FALSE,00000000,(Keyboard,255,Ctrl,FALSE,00000000,,4096,0),4096,0),
-            4096,0))"/>
-              アプリケーション再起動キー割り当てです。
-              アプリケーション再起動はアプリケーション設定「ORE68000 ACE.xml」再
-              読み込みを行います。
-            <SAVESTATE value="((Keyboard,255,F1,TRUE,00000000,(Keyboard,255,Alt,
-            FALSE,00000000,,4096,0),4096,0))"/>
-              「状態保存」機能への割り当てです。
-              「状態ファイル名」は実行中のプログラム名によって決定されます。
-            <SHUTDOWN value="((Keyboard,255,F4,TRUE,00000000,(Keyboard,255,Alt,
-            FALSE,00000000,,4096,0),4096,0))"/>
-              アプリケーション終了キー割り当てです。
-        </HID>
-        <PARAMETER>
-            <AspectAdjustment value="(0,0)"/>
-              →「2-2 設定をいじってみよう - ビデオ編」参照の事
-            <BeamRaceRatioScanLineMargin value="1."/>
-              →「2-2 設定をいじってみよう - ビデオ編」参照の事
-            <DisplayState value="SwitchableWindowed"/>
-              →「2-2 設定をいじってみよう - ビデオ編」参照の事
-            <FullScreenDisplayIndex value="0"/>
-              →「2-2 設定をいじってみよう - ビデオ編」参照の事
-            <FullScreenDisplayLock value="FALSE"/>
-              →「2-2 設定をいじってみよう - ビデオ編」参照の事
-            <FullScreenFPS value="239964/1000"/>
-              →「2-2 設定をいじってみよう - ビデオ編」参照の事
-            <FullScreenResolution value="(1920,1080)"/>
-              →「2-2 設定をいじってみよう - ビデオ編」参照の事
-            <GPUAttaching value="Auto"/>
-              →「2-2 設定をいじってみよう - ビデオ編」参照の事
-            <MouseState value="CapturableReleased"/>
-              マウスキャプチャ(非表示)状態を保持します。
-            <OnScreenDisplay value="FALSE"/>
+            <WatchSourceUpdate value="TRUE"/>
+              「TRUE」にすると、実行中「.o68k」プログラムの更新を検知して自動リ
+              セットします。
+              最前面表示されている時は検知処理を止めるため、「機械処理で自動更
+              新」へは対応できません。飽くまで「人による手修正」を補助する機能、
+              という事です。
+        </ORE68000ACE>
+        <_SYSTEM_>
+            <Font value="Yu Gothic UI Light"/>
+              スプラッシュ画面、補助情報で使われる文字のフォントを設定します。
+            <OSDEnabled value="FALSE"/>
               「TRUE」にすると、解像度、仮想リフレッシュレート等の補助情報を表示
               します。
-            <RenderUnit value="8"/>
+            <DISPLAY>
               →「2-2 設定をいじってみよう - ビデオ編」参照の事
-            <RestoreTaskSwitcher value="FALSE"/>
-              リセット時にタスクスイッチャー上の並びを復元するかどうかを指定しま
-              す。
-              「TRUE」にすると復元されるようになりますが、ウィンドウZオーダ変更
-              の「ちらつき」が発生します。
-            <SPUAttaching value="TRUE"/>
+            </DISPLAY>
+            <GPU>
+                <BeamRaceRatioScanLineMargin value="1."/>
+                  →「2-2 設定をいじってみよう - ビデオ編」参照の事
+                <Device value="0"/>
+                  →「2-2 設定をいじってみよう - ビデオ編」参照の事
+                <DevicePriority value="Auto"/>
+                  →「2-2 設定をいじってみよう - ビデオ編」参照の事
+                <DisplayState value="SwitchableWindowed"/>
+                  →「2-2 設定をいじってみよう - ビデオ編」参照の事
+                <FullScreenDisplay value="0"/>
+                  →「2-2 設定をいじってみよう - ビデオ編」参照の事
+                <FullScreenDisplayLock value="FALSE"/>
+                  →「2-2 設定をいじってみよう - ビデオ編」参照の事
+                <FullScreenFPS value="239964/1000"/>
+                  →「2-2 設定をいじってみよう - ビデオ編」参照の事
+                <FullScreenResolution value="(1920,1080)"/>
+                  →「2-2 設定をいじってみよう - ビデオ編」参照の事
+                <HighPrecisionScan value="TRUE"/>
+                  →「2-2 設定をいじってみよう - ビデオ編」参照の事
+                <RenderUnit value="8"/>
+                  →「2-2 設定をいじってみよう - ビデオ編」参照の事
+                <SPUAttaching value="TRUE"/>
+                  →「2-3 設定をいじってみよう - サウンド編」参照の事
+            </GPU>
+            <HID>
+              →「2-4 設定をいじってみよう - コントローラ編」参照の事
+            </HID>
+            <SPU>
               →「2-3 設定をいじってみよう - サウンド編」参照の事
-            <SoundMSecMarginCooperative value="1."/>
-              →「2-3 設定をいじってみよう - サウンド編」参照の事
-            <SoundMSecMarginExclusive value="0.25"/>
-              →「2-3 設定をいじってみよう - サウンド編」参照の事
-            <ValidateEnvironment value="FALSE"/>
-              起動時にスペック確認を行うかどうかを指定します。
-              「TRUE」にするとスペック確認を行い、問題無し判定、もしくは不足で
-              あっても警告ダイアログで「はい」を選択して実行継続した場合、自動的
-              に「FALSE」に変化します。
-            <WindowedDisplayLock value="FALSE"/>
-              →「2-2 設定をいじってみよう - ビデオ編」参照の事
-            <WindowedMetrics value="((404,61),(1285,968))"/>
-              →「2-2 設定をいじってみよう - ビデオ編」参照の事
-        </PARAMETER>
-        <SPU/>
-          →「2-3 設定をいじってみよう - サウンド編」参照の事
+            </SPU>
+            <WINDOW>
+                <RestoreTaskSwitcher value="FALSE"/>
+                  リセット時にタスクスイッチャー上の並びを復元するかどうかを指定
+                  します。
+                  「TRUE」にすると復元されるようになりますが、ウィンドウZオーダ
+                  変更の「ちらつき」が発生します。
+                <ValidateEnvironment value="FALSE"/>
+                  起動時にスペック確認を行うかどうかを指定します。
+                  「TRUE」にするとスペック確認を行い、問題無し判定、もしくは不足
+                  であっても警告ダイアログで「はい」を選択して実行継続した場合、
+                  自動的に「FALSE」に変化します。
+                <WindowedDisplayLock value="FALSE"/>
+                  →「2-2 設定をいじってみよう - ビデオ編」参照の事
+            </WINDOW>
+        </_SYSTEM_>
     </ORE68000ACE>

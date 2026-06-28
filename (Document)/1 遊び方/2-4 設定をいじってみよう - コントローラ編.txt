@@ -3,43 +3,96 @@
   ピュータ「ORE68000 ACE」が使用する「仮想ジョイスティック」への割り当てを行いま
   す。
   「ORE68000 ACE」は「キーボード、ジョイスティックが使えるコンピュータ」という設
-  定なので、「Altを除く」物理キーボードの入力はそのまま拾う事ができます。「Alt」
-  を除いているのはアプリケーション「ORE68000 ACE.exe」操作用に棲み分けしたいから
-  で、デフォルトショートカットは全て「Altを押しながら」という設定になっていま
-  す。
+  定なので、「Altを除く」物理キーボードの入力はそのまま拾う事ができます。
+  「Alt」を除いているのはアプリケーション「ORE68000 ACE.exe」操作用に棲み分けし
+  たいからで、デフォルトのキーボード使用ショートカットは全て「Altを押しながら」
+  という設定になっています。
   以下、凡例です。
 
-    <HID>
-        <CAPTUREMOUSE value="((Keyboard,255,Space,TRUE,00000000,(Keyboard,255,
-        Alt,FALSE,00000000,,4096,0),4096,0))"/>
-        <FULLSCREEN value="((Keyboard,255,Enter,TRUE,00000000,(Keyboard,255,Alt,
-        FALSE,00000000,,4096,0),4096,0))"/>
-        <IgnoreSuspiciousDevice value="FALSE"/>
-        <JOYSTICK-A value="((XInput,0,DigitalB,FALSE,00000000,,4096,0),(XInput,
-        0,DigitalA,FALSE,00000000,,4096,0))"/>
-        <JOYSTICK-B value="((XInput,0,DigitalY,FALSE,00000000,,4096,0),(XInput,
-        0,DigitalX,FALSE,00000000,,4096,0))"/>
-        <JOYSTICK-D value="((XInput,0,DigitalDown,FALSE,00000000,,4096,0),(
-        XInput,0,SignedThumbLYP,FALSE,00000000,,4096,24576))"/>
-        <JOYSTICK-L value="((XInput,0,DigitalLeft,FALSE,00000000,,4096,0),(
-        XInput,0,SignedThumbLXM,FALSE,00000000,,4096,24576))"/>
-        <JOYSTICK-R value="((XInput,0,DigitalRight,FALSE,00000000,,4096,0),(
-        XInput,0,SignedThumbLXP,FALSE,00000000,,4096,24576))"/>
-        <JOYSTICK-U value="((XInput,0,DigitalUp,FALSE,00000000,,4096,0),(XInput,
-        0,SignedThumbLYM,FALSE,00000000,,4096,24576))"/>
-        <LOADSTATE value="((Keyboard,255,F3,TRUE,00000000,(Keyboard,255,Alt,
-        FALSE,00000000,,4096,0),4096,0))"/>
-        <PAUSE value="((Keyboard,255,P,TRUE,00000000,(Keyboard,255,Alt,FALSE,
-        00000000,,4096,0),4096,0))"/>
-        <RESET value="((Keyboard,255,R,TRUE,00000000,(Keyboard,255,Alt,FALSE,
-        00000000,,4096,0),4096,0))"/>
-        <RESTART value="((Keyboard,255,R,TRUE,00000000,(Keyboard,255,Alt,FALSE,
-        00000000,(Keyboard,255,Ctrl,FALSE,00000000,,4096,0),4096,0),4096,0))"/>
-        <SAVESTATE value="((Keyboard,255,F1,TRUE,00000000,(Keyboard,255,Alt,
-        FALSE,00000000,,4096,0),4096,0))"/>
-        <SHUTDOWN value="((Keyboard,255,F4,TRUE,00000000,(Keyboard,255,Alt,
-        FALSE,00000000,,4096,0),4096,0))"/>
-    </HID>
+    <?xml version="1.0" encoding="UTF-8"?>
+    <ORE68000ACE>
+        <_SYSTEM_>
+            <HID>
+                <IgnoreSuspiciousDevice value="FALSE"/>
+                  現状未使用です。
+                <MouseState value="CapturableReleased"/>
+                  マウスキャプチャ(非表示)状態を保持します。
+                <MAP>
+                    <CAPTUREMOUSE value="((Keyboard,255,Space,TRUE,00000000,
+                    (Keyboard,255,Alt,FALSE,00000000,,4096,0),4096,0))"/>
+                      マウスキャプチャ(非表示)切り替えキー割り当てです。
+                      「Keyboard,255,Space,TRUE,00000000」がトリガを、
+                      「(Keyboard,255,Alt,FALSE,00000000,,4096,0)」が条件を示し
+                      ており、この場合「Alt+Space」が割り当てとなります。
+                    <FULLSCREEN value="((Keyboard,255,Enter,TRUE,00000000,
+                    (Keyboard,255,Alt,FALSE,00000000,,4096,0),4096,0))"/>
+                      フルスクリーン切り替えキー割り当てです。
+                    <JOYSTICK-A value="((External,0,Digital01,FALSE,00000000,,
+                    4096,0))"/>
+                      「ORE68000 ACE」仮想ジョイスティック「Aボタン」への割り当
+                      てです。
+                      「CAPTUREMOUSE」同様の記述でキーボード割り当ても出来ます
+                      が、この例ではゲームコントローラを割り当てています。
+                      「External,0,Digital01」の「0」がコントローラ通し番号、
+                      「Digital『01』」がボタン通し番号です。
+                      ボタン通し番号は、Windowsアプレット「ゲーム コントローラー
+                      →XXXXのプロパティ」、もしくは「bin/CHECK_HID.exe」で表示
+                      されるボタン番号に対応します。
+                      なお、通し番号は16進数表記であるので、通し番号「14」は
+                      「Digital0E」になります。
+                    <JOYSTICK-B value="((External,0,Digital02,FALSE,00000000,,
+                    4096,0))"/>
+                      「ORE68000 ACE」仮想ジョイスティック「Bボタン」への割り当
+                      てです。
+                    <JOYSTICK-D value="((External,0,HatSwitchYP,FALSE,00000000,,
+                    4096,0))"/>
+                      「ORE68000 ACE」仮想ジョイスティック「下」への割り当てで
+                      す。
+                    <JOYSTICK-L value="((External,0,HatSwitchXM,FALSE,00000000,,
+                    4096,0))"/>
+                      「ORE68000 ACE」仮想ジョイスティック「左」への割り当てで
+                      す。
+                    <JOYSTICK-R value="((External,0,HatSwitchXP,FALSE,00000000,,
+                    4096,0))"/>
+                      「ORE68000 ACE」仮想ジョイスティック「右」への割り当てで
+                      す。
+                    <JOYSTICK-U value="((External,0,HatSwitchYM,FALSE,00000000,,
+                    4096,0))"/>
+                      「ORE68000 ACE」仮想ジョイスティック「上」への割り当てで
+                      す。
+                    <LOADSTATE value="((Keyboard,255,F3,TRUE,00000000,(Keyboard,
+                    255,Alt,FALSE,00000000,,4096,0),4096,0))"/>
+                      「状態復元」機能への割り当てです。
+                      「状態ファイル名」は実行中のプログラム名によって決定されま
+                      す。
+                    <PAUSE value="((Keyboard,255,P,TRUE,00000000,(Keyboard,255,
+                    Alt,FALSE,00000000,,4096,0),4096,0))"/>
+                      「一時停止」機能への割り当てです。
+                    <RESET value="((Keyboard,255,R,TRUE,00000000,(Keyboard,255,
+                    Alt,FALSE,00000000,,4096,0),4096,0))"/>
+                      リセットキー割り当てです。
+                      リセットは飽くまで仮想コンピューター「ORE68000 ACE」のリセ
+                      ットなので、アプリケーション設定「ORE68000 ACE.xml」再読み
+                      込みを行いたい場合は「アプリケーション再起動」を使用してく
+                      ださい。
+                    <RESTART value="((Keyboard,255,R,TRUE,00000000,(Keyboard,
+                    255,Alt,FALSE,00000000,(Keyboard,255,Ctrl,FALSE,00000000,,
+                    4096,0),4096,0),4096,0))"/>
+                      アプリケーション再起動キー割り当てです。
+                      アプリケーション再起動はアプリケーション設定
+                      「ORE68000 ACE.xml」再読み込みを行います。
+                    <SAVESTATE value="((Keyboard,255,F1,TRUE,00000000,(Keyboard,
+                    255,Alt,FALSE,00000000,,4096,0),4096,0))"/>
+                      「状態保存」機能への割り当てです。
+                      「状態ファイル名」は実行中のプログラム名によって決定されま
+                      す。
+                    <SHUTDOWN value="((Keyboard,255,F4,TRUE,00000000,(Keyboard,
+                    255,Alt,FALSE,00000000,,4096,0),4096,0))"/>
+                      アプリケーション終了キー割り当てです。
+                </MAP>
+            </HID>
+        </_SYSTEM_>
+    </ORE68000ACE>
 
 ・使用可能なジョイスティック
   USB接続の汎用ゲームコントローラ、もしくはXBOX互換コントローラ(手元に無いので確

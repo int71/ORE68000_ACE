@@ -3,7 +3,7 @@
 **																			**
 **									m68k									**
 **																			**
-**	'keyboard.o68k'									2025 written by int71	**
+**	'test_debug.o68k'								2026 written by int71	**
  ****************************************************************************/
 
 //
@@ -36,6 +36,8 @@ VOID					USER_New(VOID)noexcept{
 	FAMILYBASIC::stNew();
 	FAMILYBASIC::PALETTE_stWriteSet(0,1);
 	FAMILYBASIC::BG0_stWriteAttribute({0,8},stcui16cattribute,UINT16(SIZEOF(stcui16cattribute)));
+	VIDEO_DRIVER::VRAM_TEXT_stWrite(0,0,"グラフィック画面でのテキスト表示",1);
+	DEBUG::stWriteLine("仮想シリアル出力");
 	return;
 }
 
@@ -45,19 +47,12 @@ VOID					USER_Delete(VOID)noexcept{
 }
 
 VOID					USER_Main(VOID)noexcept{
-	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
-
-	FAMILYBASIC::SPRITE_stWrite16(0,VECTOR2(128,ui16iY+ 0),(ui16iPattern0>>1)+0x00,0);
-	FAMILYBASIC::SPRITE_stWrite16(1,VECTOR2(160,ui16iY+ 0),(ui16iPattern0>>1)+0x1c,2);
-	if(FAMILYBASIC::KEY_steIsDown(FAMILYBASIC::IDKEY::Space))++ui16iX;
-	else --ui16iX;
+	FAMILYBASIC::SPRITE_stWrite16(0,VECTOR2((ui16iX>>1)+ 0,ui16iY+ 0),(ui16iPattern0>>1)+0x1c,2);
+	FAMILYBASIC::SPRITE_stWrite16(1,VECTOR2((ui16iX>>1)+32,ui16iY+ 0),(ui16iPattern1>>1)+0x70,3);
+	--ui16iX;
 	++ui16iPattern0;
 	if(ui16iPattern0==0x18)ui16iPattern0=0;
 	ui16iPattern1+=2;
 	if(ui16iPattern1==0x10)ui16iPattern1=0;
-	VIDEO_DRIVER::stWrite(
-		IDREGISTERW::BG0OffsetX,
-		0x2000+(ui16iX&0xff)
-	);
 	return;
 }

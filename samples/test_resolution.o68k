@@ -1,0 +1,57 @@
+/****************************************************************************
+**																			**
+**																			**
+**									m68k									**
+**																			**
+**	'test_resolution.o68k'							2026 written by int71	**
+ ****************************************************************************/
+
+//
+//		include
+//
+
+#include				<sub/familybasic.hpp>
+
+//
+//		using
+//
+
+using namespace m68k::i71::sub;
+
+//
+//		user
+//
+
+UINT16					ui16iX=0;
+UINT16					ui16iY=48;
+UINT16					ui16iPattern0=0;
+UINT16					ui16iPattern1=0;
+
+VOID					USER_New(VOID)noexcept{
+	FAMILYBASIC::stNew();
+	FAMILYBASIC::PALETTE_stWriteSet(0,1);
+	FAMILYBASIC::BG0_stPrint({0,0},"HIT KEY 1-4",0);
+	return;
+}
+
+VOID					USER_Delete(VOID)noexcept{
+	FAMILYBASIC::stDelete();
+	return;
+}
+
+VOID					USER_Main(VOID)noexcept{
+	if(FAMILYBASIC::KEY_steIsDown(FAMILYBASIC::IDKEY::n1)){
+		VIDEO_DRIVER::stSetCRT256x212P();
+		FAMILYBASIC::BG0_stPrint({0,0},"256 \265 212 P",0);
+	}else if(FAMILYBASIC::KEY_steIsDown(FAMILYBASIC::IDKEY::n2)){
+		VIDEO_DRIVER::stSetCRT320x240P();
+		FAMILYBASIC::BG0_stPrint({0,0},"320 \265 240 P",0);
+	}else if(FAMILYBASIC::KEY_steIsDown(FAMILYBASIC::IDKEY::n3)){
+		VIDEO_DRIVER::stSetCRT320x240I();
+		FAMILYBASIC::BG0_stPrint({0,0},"320 \265 240 I",0);
+	}else if(FAMILYBASIC::KEY_steIsDown(FAMILYBASIC::IDKEY::n4)){
+		VIDEO_DRIVER::stSetCRT640x480P();
+		FAMILYBASIC::BG0_stPrint({0,0},"640 \265 480 P",0);
+	}
+	return;
+}

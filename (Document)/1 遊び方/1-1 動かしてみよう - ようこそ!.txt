@@ -17,13 +17,13 @@
   ベ」フォントで表示されるでしょう。
 
     WELCOME TO ORE68000 ACE.
-    (C)2025 INT71 ALL RIGHTS RESERVED.
+    (C)2026 INT71 ALL RIGHTS RESERVED.
     DROP ME "*.XML" OR "*.O68K".
 
 ・コンピュータのスペックが不足していた場合
-  「ORE68000 ACE.exe」は、初回起動時(正確には設定値「ORE68000ACE/PARAMETER/
-  ValidateEnvironment」が「TRUE」時)にスペック確認を行います。そこで「不足」と判
-  定された場合は警告が出るので、適宜判断ください。「はい」を選択して実行継続した
-  場合、次回以降警告は出ません。
+  「ORE68000 ACE.exe」は、初回起動時(正確には設定値「ORE68000ACE/_SYSTEM_/
+  WINDOW/ValidateEnvironment」が「TRUE」時)にスペック確認を行います。そこで「不
+  足」と判定された場合は警告が出るので、適宜判断ください。「はい」を選択して実行
+  継続した場合、次回以降警告は出ません。
   ただし、特に実行可能スレッド数の不足は警告表示までの時間にすら影響しますので、
   無理はお勧めしません。

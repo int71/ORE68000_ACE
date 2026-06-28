@@ -195,7 +195,6 @@ OFWBOOL					eKeyDownPrevious=FALSE;
 
 VOID					USER_New(VOID)noexcept{
 	FAMILYBASIC::stNew();
-
 	FAMILYBASIC::PALETTE_stWriteSet(0,1);
 	FAMILYBASIC::BG0_stPrint({0,0},"LESSON 03:SOUND(1)",0);
 	FAMILYBASIC::BG1_stFill({0,8},{128,4},0xc3,1);
