@@ -10,7 +10,7 @@ use strict;
 use integer;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'base.pl';
-my($sVersion,$sDate)=('1.46','2026/04/25');
+my($sVersion,$sDate)=('1.51','2026/07/26');
 my($CLASS_sStage)='STAGE';
 my($CLASS_STAGE_sArea)='AREA';
 my($CLASS_STAGE_sBGM)='BGM_PLAY';
@@ -483,6 +483,21 @@ sub USR_stTMX2BIN{
 
 				#	イベントデータまとめ
 				$img_destination_c=new BASE_IMAGE::();
+				for($ievent=0;$ievent<$nevent;++$ievent){
+					my($ref_event)=$array_ref_event[$ievent];
+
+					if(exists $$ref_event{'parent'}){
+						my($idparent)=$$ref_event{'parent'};
+						my($ref_event_parent);
+
+						foreach $ref_event_parent(@array_ref_event){
+							if($$ref_event_parent{'ID'} eq $idparent){
+								$$ref_event{'Parent'}=$ref_event_parent;
+								last;
+							}
+						}
+					}
+				}
 				#	エリア情報整理
 				for($ievent=0;$ievent<$nevent;++$ievent){
 					my($ref_event)=$array_ref_event[$ievent];
@@ -528,7 +543,7 @@ sub USR_stTMX2BIN{
 					my($ref_event)=$array_ref_event[$ievent];
 					my($ref_area);
 
-					&USR_Adjust($ref_event);
+					&USR_Make($ref_event);
 					if($$ref_event{'Class'} eq $CLASS_sTerrain){
 						my($narea)=scalar(@array_ref_area);
 						my($iarea);
@@ -572,6 +587,12 @@ sub USR_stTMX2BIN{
 							}
 						}
 					}
+				}
+				#	親子参照解決
+				for($ievent=0;$ievent<$nevent;++$ievent){
+					my($ref_event)=$array_ref_event[$ievent];
+
+					&USR_SolveParent($ref_event);
 				}
 			}
 			#	同じく復活用イベントも降順ソート
@@ -711,7 +732,11 @@ END
 						@$ref_array_ref_event=sort{
 							($$a{'SortKey'}==$$b{'SortKey'})?(
 								($$a{'HScroll'}==$$b{'HScroll'})?(
-									$$a{'Y'}<=>$$b{'Y'}
+									($$a{'SortSubKey'}==$$b{'SortSubKey'})?(
+										$$a{'Y'}<=>$$b{'Y'}
+									):(
+										$$a{'SortSubKey'}<=>$$b{'SortSubKey'}
+									)
 								):(
 									$$b{'HScroll'}<=>$$a{'HScroll'}	#	遅延せき止め用「STAGE_NONE」イベントを前方に持ってくるため降順に
 								)
@@ -781,7 +806,11 @@ END
 						@$ref_array_ref_eventrestart=sort{
 							($$a{'SortKey'}==$$b{'SortKey'})?(
 								($$a{'HScroll'}==$$b{'HScroll'})?(
-									$$a{'Y'}<=>$$b{'Y'}
+									($$a{'SortSubKey'}==$$b{'SortSubKey'})?(
+										$$a{'Y'}<=>$$b{'Y'}
+									):(
+										$$a{'SortSubKey'}<=>$$b{'SortSubKey'}
+									)
 								):(
 									$$b{'HScroll'}<=>$$a{'HScroll'}	#	遅延せき止め用「STAGE_NONE」イベントを前方に持ってくるため降順に
 								)
@@ -945,7 +974,7 @@ sub USR_RemoveComment{
 	return $ssource;
 }
 
-sub USR_Adjust{
+sub USR_Make{
 	my($ref_event)=@_;
 
 	if($$ref_event{'GID'} ne ''){
@@ -970,37 +999,74 @@ sub USR_Adjust{
 		$$ref_event{'HScroll'}=0;
 	}
 	$$ref_event{'SortKey'}=$$ref_event{'HScroll'};
+	$$ref_event{'SortSubKey'}=0;
 	if($$ref_event{'delay'}=~/\d+/){
 		if($$ref_event{'HScroll'}<$$ref_event{'delay'}){
 			$$ref_event{'SortKey'}=$$ref_event{'delay'};
+			$$ref_event{'SortSubKey'}=1;
 		}
 	}elsif($$ref_event{'precede'}=~/\d+/){
 		if(0<$$ref_event{'precede'}){
 			$$ref_event{'HScrollOriginal'}=$$ref_event{'HScroll'};
 			$$ref_event{'HScroll'}-=$$ref_event{'precede'};
 			$$ref_event{'SortKey'}=$$ref_event{'HScroll'};
-		}
-	}
-	$$ref_event{'Name'}=&USR_Adjust_sReplace($ref_event,$$ref_event{'Name'});
-	{
-		my($ref_argument);
-
-		foreach $ref_argument(@{$$ref_event{'Argument'}}){
-			$$ref_argument{'Name'}=&USR_Adjust_sReplace($ref_event,$$ref_argument{'Name'});
-			$$ref_argument{'Value'}=&USR_Adjust_sReplace($ref_event,$$ref_argument{'Value'});
+			$$ref_event{'SortSubKey'}=1;
 		}
 	}
 	return;
 }
 
-sub USR_Adjust_sReplace{
-	my($ref_event,$ssource)=@_;
-	my($sh)=$$ref_event{'HInvert'}?'L':'R';
-	my($sv)=$$ref_event{'VInvert'}?'D':'U';
+sub USR_SolveParent{
+	my($ref_event)=@_;
 
-	$ssource=BASE::STRING_Replace($ssource,'${H}',$sh);
-	$ssource=BASE::STRING_Replace($ssource,'${V}',$sv);
-	return $ssource;
+	if(exists $$ref_event{'Parent'}){
+		my($ref_event_parent)=$$ref_event{'Parent'};
+
+		$$ref_event{'HScrollOriginal'}=$$ref_event{'HScroll'}-($$ref_event_parent{'Width'}-$$ref_event{'Width'})/2;
+		$$ref_event{'HScroll'}=$$ref_event_parent{'HScroll'};
+		$$ref_event{'SortKey'}=$$ref_event{'HScroll'};
+		$$ref_event{'SortSubKey'}=$$ref_event_parent{'Y'};
+	}
+	&USR_SolveParent_Replace($ref_event,$ref_event,'Name');
+	{
+		my($ref_argument);
+
+		foreach $ref_argument(@{$$ref_event{'Argument'}}){
+			&USR_SolveParent_Replace($ref_event,$ref_argument,'Name');
+			&USR_SolveParent_Replace($ref_event,$ref_argument,'Value');
+		}
+	}
+	return;
+}
+
+sub USR_SolveParent_Replace{
+	my($ref_event,$ref_this,$key)=@_;
+
+	$$ref_this{$key}=BASE::STRING_Replace($$ref_this{$key},
+		'${H}',
+		$$ref_event{'HInvert'}?'L':'R'
+	);
+	$$ref_this{$key}=BASE::STRING_Replace($$ref_this{$key},
+		'${V}',
+		$$ref_event{'VInvert'}?'D':'U'
+	);
+	if(($key eq 'Value')&&(0<=index($$ref_this{$key},'${Parent}'))){
+		if(exists $$ref_event{'Parent'}){
+			my($ref_argument);
+
+			foreach $ref_argument(@{$$ref_event{'Parent'}{'Argument'}}){
+				if($$ref_this{'Name'} eq $$ref_argument{'Name'}){
+					$$ref_this{$key}=BASE::STRING_Replace($$ref_this{$key},
+						'${Parent}',
+						$$ref_argument{'Value'}
+					);
+					last;
+				}
+			}
+		}
+		$$ref_this{$key}=BASE::STRING_Replace($$ref_this{$key},'${Parent}','');
+	}
+	return;
 }
 
 sub USR_sGetCode{

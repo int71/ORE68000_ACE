@@ -9,7 +9,7 @@
 use strict;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'smf.pl';
-my($sVersion,$sDate)=('2.41','2026/05/02');
+my($sVersion,$sDate)=('2.42','2026/07/24');
 my($COM_sDirectory)=('/d/Sync/Package/Cross/ORE68000_ACE/m68k');
 my($sChannelAdditionalVariableName)=('_INIT');
 new BASE::();
@@ -219,7 +219,17 @@ $BASE::Self (入力).mid [-v] [-h] [-o (演奏テキスト).sh] [-u (音符長�
   ・傾きの変化は上昇下降だけで解釈し、上昇、下降中の傾き変化は一直線の変化と解釈
   ・傾き変化ポイントには適宜「継続的(アタック無し)KeyOn」を追加
 
-  ピッチモジュレーションは精度が悪い場合があるようなので、16段階に丸めます。
+  そしていくつか注意点があります。
+
+  ・ピッチベンド編集点の解像度は16段階である
+    SMFファイル出力元、もしくは規格の精度的都合による制限です。
+    これ以上の段階が必要であれば、ピッチベンドセンシティビティの変更で対応してください。
+  ・ピッチベンド編集点は「音程」である必要がある
+    ピッチベンド値が「-1.0」、「.0」、「+1.0」であれば「音程」から外れる事はありませんが、例えば「RPN#0」でピッチベンドセンシティビティを「1」とした状態でピッチベンド値を「.5」とすると、半音の半分、つまり「1/4音」とでも言うべき音程となり、音符になりません。
+    この時、演奏テキスト中には「近い音符」として記述され、精度が落ちる事になります。
+  ・ピッチベンドセンシティビティはピッチベンド編集点で指定したい段階の倍数とする必要がある
+    「ピッチベンド編集点は『音程』である必要がある」という事と同じ事を言っています。
+    「音程」から外れないようにするため、自然と守らねばならないルールです。
 
   マーカーが設定されていると演奏テキストに「#LABEL=(マーカー名)」が出力され、「LoopEnd」マーカーは特別に「#JUMP=LoopStart」になり、ループ再生指示となります。
   「マーカーが設定されている箇所」は「移動先になり得る箇所」と見なされ、「マーカー以後の初回イベント」は、値に変化が無かろうとイベントとして出力されます。
@@ -1055,11 +1065,7 @@ sub USR_stSMF2SEQ{
 										#	「16時間単位で12音階」等、1時間単位当たりの変化音階が整数でない場合、
 										#	所要フレーム数を与えて誤差が出ないようにする。
 										while(.25<BASE::Absolute($dportamentoresult-BASE::Round($dportamentoresult))){
-											if($nportamentoframe==1){
-												$nportamentoframe=$$ref_switch{'UnitperMeasureBeat'};
-											}else{
-												$nportamentoframe*=2;
-											}
+											++$nportamentoframe;
 											$dportamentoresult=$dportamento*$nportamentoframe;
 										}
 										$dportamentoresult=BASE::Round($dportamentoresult);
@@ -1204,8 +1210,8 @@ sub USR_SMF2SEQ_stnQuantizeFrameperUnit{
 sub USR_SMF2SEQ_stdQuantizeTimeOffset{
 	my($itimeoffset)=@_;
 
-	#	「'TimeOffset'」も最小単位5で丸める
-	return BASE::Round($itimeoffset/5)*5;
+	#	「'TimeOffset'」は最小単位1で丸める
+	return BASE::Round($itimeoffset);
 }
 
 sub USR_SMF2SEQ_stQuantizePitchBend{
@@ -1237,8 +1243,8 @@ sub USR_SMF2SEQ_stQuantizePitchBend{
 sub USR_SMF2SEQ_stdQuantizePitchBendValue{
 	my($dvalue)=@_;
 
-	#	乱暴であるが2段階以上の細かい指定は無かろうという想定
-	return BASE::Round($dvalue*2)/2;
+	#	16段階(0、正負それぞれ16段階で合計33段階)で丸める
+	return BASE::Round($dvalue*16)/16;
 }
 
 sub USR_SMF2SEQ_stdPortamentoValueperTimefromPitchBend{

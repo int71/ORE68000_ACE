@@ -1699,6 +1699,7 @@ namespace m68k::sound{
 			};
 		};
 		using					IDREGISTERR=_IDREGISTERR::BODY;
+		static constexpr UINT32	stcui32nReferenceFrequencyHz=	3'580'000;
 		static constexpr UINT16	stcui16nRegisterW=		0x100;
 		static constexpr UINT16	stcui16nRegisterR=		0x100;
 		static constexpr UINT32	PCMRAM_stcui32nSize=	0x010000;
