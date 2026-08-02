@@ -10,7 +10,7 @@ use strict;
 use integer;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'base.pl';
-my($sVersion,$sDate)=('1.51','2026/07/26');
+my($sVersion,$sDate)=('1.52','2026/07/30');
 my($CLASS_sStage)='STAGE';
 my($CLASS_STAGE_sArea)='AREA';
 my($CLASS_STAGE_sBGM)='BGM_PLAY';
@@ -79,6 +79,13 @@ sub main{
 		}else{
 			$switch{'PaletteSpecific'}={};
 		}
+		if($$option{'f'} ne ''){
+			foreach(split(/\,/,$$option{'f'})){
+				$switch{'StageSpecific'}{$_}='';
+			}
+		}else{
+			undef $switch{'StageSpecific'};
+		}
 		if($$option{'t'} ne ''){
 			$switch{'Transpose'}=$$option{'t'}
 		}else{
@@ -131,7 +138,7 @@ sub USR_stShowHelp{
   「.tmx」形式マップファイルをBGアトリビュート形式バイナリに変換します。
 
 <書式>
-$BASE::Self (入力).tmx [-v] [-h] [-o (出力).bin] [-c (Cソース).cpp] [-j (プロジェクト名)] [-p (パレット番号)] [-ps (タイルY座標)=(パレット番号)[,...]] [-t 0|1] [-d] [-dx]
+$BASE::Self (入力).tmx [-v] [-h] [-o (出力).bin] [-c (Cソース).cpp] [-j (プロジェクト名)] [-p (パレット番号)] [-ps (タイルY座標)=(パレット番号)[,...]] [-t 0|1] [-f (ステージ固有フラグ)[,...]] [-d] [-dx]
 
 <オプション>
 -v: バージョンを表示します。
@@ -142,6 +149,8 @@ $BASE::Self (入力).tmx [-v] [-h] [-o (出力).bin] [-c (Cソース).cpp] [-j (
 -p: パレット番号を指定します。デフォルト値は「0」です。パレット違いの同一画像を複数タイルセットとする場合、この指定値は「基準値」となり、タイルセット番号がオフセットとなります。例えば4タイルセット存在する状態で「-p 2」と指定すると、パレット番号は「2～5」が使用される事になります。
 -ps:パレット番号をタイルY座標単位で個別指定します。カンマ区切りで列挙でき、「30=15,31=15」と書けば「タイルY座標30、31のタイルのみパレット15」という意味になります。
 -t: 「0」を指定すると「横(列)方向のデータを縦(行)方向」に、「1」を指定すると「縦(行)方向のデータを横(列)方向」に出力します。デフォルト値は「0」です。
+-f: 当該「ステージ固有フラグ」をONにします。カンマ区切りで列挙でき、現状下記を指定できます。
+    RistrictedMissile:ミサイルが地形で這わなくなります。
 -d: ファイルでなく標準出力に出力します。現状「Cソースファイル」のみの出力です。
 -dx: 「(出力).bin」データの内容「のみ」を1行のC配列形式「0xnn[,...]」で表示します。
 
@@ -176,6 +185,7 @@ $BASE::Self (入力).tmx [-v] [-h] [-o (出力).bin] [-c (Cソース).cpp] [-j (
     「(Cソース).cpp」内に記載される「発生タイミング」座標は「Tiled」座標そのもの(もしくは「オブジェクト幅÷2」分だけプラス)になります。
     「イベントオブジェクト起点の右1画面全体が表示された時点」を契機にしたい場合の他、「画面左から出現」させたいオブジェクトにも使用できます。
     「Tiled」オブジェクトに左右反転属性付与、もしくは「カスタムプロパティ」に名前「.trigger」、値「left」を指定する事でこの扱いになります。
+    ただし左右反転属性を付与していても、「.trigger」に「right」を指定している場合は通常通り「画面右表示開始」がイベント契機となります。
 
   ・イベント発生と無関係
     「(Cソース).cpp」内に記載されない「発生タイミング」無関係のオブジェクトで、座標補正は行われません。
@@ -639,7 +649,20 @@ END
 //		include
 //
 
+END
+				);
+				if(defined $$ref_switch{'StageSpecific'}){
+					$img_destination_c->AddTEXT(<<END
+#include				"../game.hpp"
+END
+					);
+				}else{
+					$img_destination_c->AddTEXT(<<END
 #include				"../event.hpp"
+END
+					);
+				}
+				$img_destination_c->AddTEXT(<<END
 #include				"$sfile.hpp"
 
 //
@@ -658,6 +681,29 @@ using namespace m68k::oredius68k::main::stage;
 VOID					${sclass}::Attach_Self(VOID)noexcept{
 	OREDIUS68K_CHECKINHERITANCE;
 	STAGE_::Attach_Self();
+END
+				);
+				if(defined $$ref_switch{'StageSpecific'}){
+					my($sflag);
+
+					$img_destination_c->AddTEXT(<<END
+	{
+		AUTO&					spcfthis=GAME::STAGE_stspcfDelegateThis();
+
+END
+					);
+					foreach $sflag(keys %{$$ref_switch{'StageSpecific'}}){
+						$img_destination_c->AddTEXT(<<END
+		spcfthis.e$sflag=TRUE;
+END
+						);
+					}
+					$img_destination_c->AddTEXT(<<END
+	}
+END
+					);
+				}
+				$img_destination_c->AddTEXT(<<END
 	idClass=IDCLASS::$sidclass;
 	return;
 }
@@ -988,7 +1034,11 @@ sub USR_Make{
 		$$ref_event{'X'}+=$$ref_event{'Width'}/2;
 		$$ref_event{'Y'}+=$$ref_event{'Height'}/2;
 	}
-	if($$ref_event{'HInvert'}||($$ref_event{'trigger'} eq 'left')){
+	if(
+		($$ref_event{'trigger'} eq 'left')||(
+			$$ref_event{'HInvert'}&&($$ref_event{'trigger'} ne 'right')
+		)
+	){
 		#	「スクロール位置の到達」がイベント契機
 		$$ref_event{'HScroll'}=$$ref_event{'X'}+$$ref_event{'Width'}/2;
 	}else{

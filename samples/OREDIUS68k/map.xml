@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <MAP>
-	<VERSION value="0.20"/>
+	<VERSION value="0.21"/>
 	<ROM_MAIN>
 		<ATAN source="*ATAN"/>
 		<TRIG source="*TRIG"/>
