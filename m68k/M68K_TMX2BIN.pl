@@ -10,7 +10,7 @@ use strict;
 use integer;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'base.pl';
-my($sVersion,$sDate)=('1.52','2026/07/30');
+my($sVersion,$sDate)=('1.54','2026/08/08');
 my($CLASS_sStage)='STAGE';
 my($CLASS_STAGE_sArea)='AREA';
 my($CLASS_STAGE_sBGM)='BGM_PLAY';
@@ -155,9 +155,12 @@ $BASE::Self (入力).tmx [-v] [-h] [-o (出力).bin] [-c (Cソース).cpp] [-j (
 -dx: 「(出力).bin」データの内容「のみ」を1行のC配列形式「0xnn[,...]」で表示します。
 
 <「(入力).tmx」について>
+・マップサイズ
+  スクロール前景(「MAP」)/背景(「BACK」)用途なら「縦幅」、特殊画像(「SPECIAL」)用途なら「横幅」が「2の累乗である」必要があります。
+
 ・タイルサイズ
-  自動判別しますが、マップを構成するタイルは「正方形である」事を前提とします。
-  もし正方形でなければ、「左端2タイル分はパレット定義領域である」と解釈します。
+  自動判別しますが、マップを構成するタイルの横幅は「2の累乗である」事を前提とします。
+  もしそうでなければ、「左端2タイル分はパレット定義領域である」と解釈します。
 
 ・イベント属性
   「イベント」扱いさせるためには、属性値「名前」と「Class」の設定が必須です。
@@ -222,10 +225,9 @@ sub USR_stTMX2BIN{
 	my($cpalettebase)=$$ref_switch{'Palette'};
 	my($ref_palettespecific)=$$ref_switch{'PaletteSpecific'};
 	my($inpatternwidthbit);
-	my($inpalettebit);
+	my($inpaletteunit);
 	my($inpatternwidth);
 	my($inpatternwidthwithpalette);
-	my($icpatternmask);
 	my($sub_pattern);
 
 	$nwidth=0;
@@ -247,17 +249,16 @@ sub USR_stTMX2BIN{
 						$inpatternwidth=1<<$inpatternwidthbit;
 					}
 					--$inpatternwidthbit;
-					$inpalettebit=$inpatternwidthbit<<1;
+					$inpaletteunit=$intile;
 					$inpatternwidthwithpalette=$inpatternwidth+2;
-					$icpatternmask=$inpatternwidth*$inpatternwidth-1;
-					#	端数無ければ「NxN」サイズ、あればパレット指定ありの「(N+2)xN」サイズと解釈
+					#	端数無ければ横幅「2の累乗ジャスト」、あればパレット指定ありの「2の累乗+2」と解釈
 					$sub_pattern=($inpatternwidth==$inwidth)?sub{
 						my($ipattern)=@_;
 						my($cpalette);
 
 						--$ipattern;
-						$cpalette=($cpalettebase+($ipattern>>$inpalettebit))<<12;
-						$ipattern&=$icpatternmask;
+						$cpalette=($cpalettebase+int($ipattern/$inpaletteunit))<<12;
+						$ipattern&=1023;
 						{
 							my($iiy)=$ipattern>>$inpatternwidthbit;
 
@@ -272,8 +273,8 @@ sub USR_stTMX2BIN{
 
 						--$ipattern;
 						$ipattern=(($ipattern/$inpatternwidthwithpalette)<<$inpatternwidthbit)+($ipattern%$inpatternwidthwithpalette)-2;
-						$cpalette=($cpalettebase+($ipattern>>$inpalettebit))<<12;
-						$ipattern&=$icpatternmask;
+						$cpalette=($cpalettebase+int($ipattern/$inpaletteunit))<<12;
+						$ipattern&=1023;
 						{
 							my($iiy)=$ipattern>>$inpatternwidthbit;
 
@@ -489,18 +490,14 @@ sub USR_stTMX2BIN{
 
 			{
 				my($nevent)=scalar(@array_ref_event);
-				my($ievent);
 
 				#	イベントデータまとめ
 				$img_destination_c=new BASE_IMAGE::();
-				for($ievent=0;$ievent<$nevent;++$ievent){
-					my($ref_event)=$array_ref_event[$ievent];
-
+				foreach my($ref_event)(@array_ref_event){
 					if(exists $$ref_event{'parent'}){
 						my($idparent)=$$ref_event{'parent'};
-						my($ref_event_parent);
 
-						foreach $ref_event_parent(@array_ref_event){
+						foreach my($ref_event_parent)(@array_ref_event){
 							if($$ref_event_parent{'ID'} eq $idparent){
 								$$ref_event{'Parent'}=$ref_event_parent;
 								last;
@@ -509,7 +506,7 @@ sub USR_stTMX2BIN{
 					}
 				}
 				#	エリア情報整理
-				for($ievent=0;$ievent<$nevent;++$ievent){
+				for(my($ievent)=0;$ievent<$nevent;++$ievent){
 					my($ref_event)=$array_ref_event[$ievent];
 
 					if($$ref_event{'Class'} eq $CLASS_sStage){
@@ -546,14 +543,22 @@ sub USR_stTMX2BIN{
 						}
 					}
 				}
+				#	データ整理
+				foreach my($ref_event)(@array_ref_event){
+					&USR_Make($ref_event);
+				}
+				#	親子参照解決
+				#	データ整理と分けているのは、前方参照がありうるから。
+				foreach my($ref_event)(@array_ref_event){
+					&USR_SolveParent($ref_event);
+				}
 				#	所属エリアは右から左に検索するので一旦降順ソート
 				@array_ref_area=sort{$$b{'HScroll'}<=>$$a{'HScroll'}}(@array_ref_area);
 				#	イベント整理
-				for($ievent=0;$ievent<$nevent;++$ievent){
+				for(my($ievent)=0;$ievent<$nevent;++$ievent){
 					my($ref_event)=$array_ref_event[$ievent];
 					my($ref_area);
 
-					&USR_Make($ref_event);
 					if($$ref_event{'Class'} eq $CLASS_sTerrain){
 						my($narea)=scalar(@array_ref_area);
 						my($iarea);
@@ -597,12 +602,6 @@ sub USR_stTMX2BIN{
 							}
 						}
 					}
-				}
-				#	親子参照解決
-				for($ievent=0;$ievent<$nevent;++$ievent){
-					my($ref_event)=$array_ref_event[$ievent];
-
-					&USR_SolveParent($ref_event);
 				}
 			}
 			#	同じく復活用イベントも降順ソート

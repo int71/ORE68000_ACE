@@ -16,7 +16,16 @@
                 <IgnoreSuspiciousDevice value="FALSE"/>
                   現状未使用です。
                 <MouseState value="CapturableReleased"/>
-                  マウスキャプチャ(非表示)状態を保持します。
+                  CapturableCaptured:
+                    マウスキャプチャ(非表示)切り替え可で、非表示状態です。
+                  CapturableReleased:
+                    マウスキャプチャ(非表示)切り替え可で、表示状態です。
+                  UncapturableShown:
+                    マウスキャプチャ(非表示)切り替え不可で、表示固定です。
+                    が、「ORE68000 ACE」では「CapturableReleased」と解釈します。
+                  UncapturableHidden:
+                    マウスキャプチャ(非表示)切り替え不可で、非表示固定です。
+                    が、「ORE68000 ACE」では「CapturableCaptured」と解釈します。
                 <MAP>
                     <CAPTUREMOUSE value="((Keyboard,255,Space,TRUE,00000000,
                     (Keyboard,255,Alt,FALSE,00000000,,4096,0),4096,0))"/>

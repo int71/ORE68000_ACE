@@ -9,7 +9,7 @@
 use strict;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'smf.pl';
-my($sVersion,$sDate)=('2.42','2026/07/24');
+my($sVersion,$sDate)=('2.44','2026/08/21');
 my($COM_sDirectory)=('/d/Sync/Package/Cross/ORE68000_ACE/m68k');
 my($sChannelAdditionalVariableName)=('_INIT');
 new BASE::();
@@ -230,6 +230,9 @@ $BASE::Self (入力).mid [-v] [-h] [-o (演奏テキスト).sh] [-u (音符長�
   ・ピッチベンドセンシティビティはピッチベンド編集点で指定したい段階の倍数とする必要がある
     「ピッチベンド編集点は『音程』である必要がある」という事と同じ事を言っています。
     「音程」から外れないようにするため、自然と守らねばならないルールです。
+  ・音符長最短は16分音符を目安に
+    少なくとも64分音符だとピッチベンド情報の粒度が怪しくなります。
+    ただし、「テンポ75で64分音符」で問題が起きても「テンポ300で16分音符」とすると解決する可能性があります。
 
   マーカーが設定されていると演奏テキストに「#LABEL=(マーカー名)」が出力され、「LoopEnd」マーカーは特別に「#JUMP=LoopStart」になり、ループ再生指示となります。
   「マーカーが設定されている箇所」は「移動先になり得る箇所」と見なされ、「マーカー以後の初回イベント」は、値に変化が無かろうとイベントとして出力されます。
@@ -736,6 +739,132 @@ sub USR_stSMF2SEQ{
 				last;
 			}
 		}
+		#	1フレーム未満の間隔を詰める(合成する)
+		for(my($iline,$nline)=(0,scalar(@array_ref_line));$iline<$nline;++$iline){
+			my($ref_line)=$array_ref_line[$iline];
+
+			if($$ref_line{'Type'} eq 'Channel'){
+				if($$ref_line{'Frame'}<1.0){
+					my($iline_next);
+
+					for($iline_next=$iline+1;$iline_next<$nline;++$iline_next){
+						if($array_ref_line[$iline_next]{'Type'} eq 'Channel'){
+							last;
+						}
+					}
+					if($iline_next<$nline){
+						my($ref_line_next)=$array_ref_line[$iline_next];
+
+						$$ref_line{'Frame'}+=$$ref_line_next{'Frame'};
+						for(my($ichannel)=0;$ichannel<$nchannel;++$ichannel){
+							my($snote,@array_parameter)=@{$$ref_line{'Event'}[$ichannel]};
+							my($snote_next,@array_parameter_next)=@{$$ref_line_next{'Event'}[$ichannel]};
+
+							#	ノート合成
+							if($snote ne ''){
+								if($snote_next ne ''){
+									my($smodify)=substr($snote,0,1);
+									my($soctave)=substr($snote,1,1);
+
+									#	修飾子の合成
+									{
+										my($smodify_next)=substr($snote_next,0,1);
+
+										#	合成が必要
+										#	処理中「 」、合成対象「+」の場合に限り、処理中「 」を優先
+										#	それ以外の場合、合成対象の修飾子を使用
+										if(($smodify ne ' ')||($smodify_next ne '+')){
+											$smodify=$smodify_next;
+										}
+									}
+									#	オクターブの合成
+									{
+										my($soctave_next)=substr($snote_next,1,1);
+
+										if($soctave eq ' '){
+											if($soctave_next eq ' '){
+												#	何もする必要無し
+											}elsif($soctave_next eq '<'){
+												--$array_ioctave_last[$ichannel];
+												$soctave='<';
+											}elsif($soctave_next eq '>'){
+												++$array_ioctave_last[$ichannel];
+												$soctave='>';
+											}else{
+												$array_ioctave_last[$ichannel]=$soctave_next;
+												$soctave=$soctave_next;
+											}
+										}elsif($soctave eq '<'){
+											if($soctave_next eq ' '){
+												--$array_ioctave_last[$ichannel];
+											}elsif($soctave_next eq '<'){
+												$array_ioctave_last[$ichannel]-=2;
+												$soctave=$array_ioctave_last[$ichannel];
+											}elsif($soctave_next eq '>'){
+												$soctave=' ';
+											}else{
+												$array_ioctave_last[$ichannel]=$soctave_next;
+												$soctave=$soctave_next;
+											}
+										}elsif($soctave eq '>'){
+											if($soctave_next eq ' '){
+												++$array_ioctave_last[$ichannel];
+											}elsif($soctave_next eq '<'){
+												$soctave=' ';
+											}elsif($soctave_next eq '>'){
+												$array_ioctave_last[$ichannel]+=2;
+												$soctave=$array_ioctave_last[$ichannel];
+											}else{
+												$array_ioctave_last[$ichannel]=$soctave_next;
+												$soctave=$soctave_next;
+											}
+										}else{
+											if($soctave_next eq ' '){
+											}elsif($soctave_next eq '<'){
+												--$soctave;
+											}elsif($soctave_next eq '>'){
+												++$soctave;
+											}else{
+												$soctave=$soctave_next;
+											}
+											$array_ioctave_last[$ichannel]=$soctave;
+										}
+									}
+									$snote=$smodify.$soctave.substr($snote_next,2);
+								}
+							}else{
+								#	処理中ラインのノートは空白なんで、合成対象ラインのノートを持ち込み
+								$snote=$snote_next;
+							}
+							#	パラメータ合成
+							{
+								my(%hash_parameter);
+
+								foreach my($sparameter)(@array_parameter){
+									my($sname,$svalue)=split(/\=/,$sparameter);
+
+									$hash_parameter{$sname}=$svalue;
+								}
+								foreach my($sparameter)(@array_parameter_next){
+									my($sname,$svalue)=split(/\=/,$sparameter);
+
+									$hash_parameter{$sname}=$svalue;
+								}
+								undef @array_parameter;
+								foreach my($sname)(sort keys %hash_parameter){
+									push(@array_parameter,"$sname=$hash_parameter{$sname}");
+								}
+							}
+							$$ref_line{'Event'}[$ichannel]=[$snote,@array_parameter];
+						}
+						splice(@array_ref_line,$iline_next,1);
+						--$nline;
+					}else{
+						$$ref_line{'Frame'}=1;
+					}
+				}
+			}
+		}
 		#	ループ終了音鳴りっぱなし防止のためのキーオフ補完
 		if((defined $ref_line_marker0)&&(defined $ref_line_markerlast)){
 			my($ref_array_event0)=$$ref_line_marker0{'Event'};
@@ -945,6 +1074,85 @@ sub USR_stSMF2SEQ{
 				&USR_SMF2SEQ_stPushEvent($ref_array_event,&USR_SMF2SEQ_stsChannelEventVolume($nvolume));
 			}
 		}
+		#	冒頭無音にボリューム0のダミー音符を追加
+		#	チャンネル単位で事を進める
+		for(my($ichannel)=0;$ichannel<$nchannel;++$ichannel){
+			#	ライン0番が「チャンネル」かは分からないので辿る
+			for(my($iline,$nline)=(0,scalar(@array_ref_line));$iline<$nline;++$iline){
+				my($ref_line)=$array_ref_line[$iline];
+
+				if(
+					($$ref_line{'Type'} eq 'Channel')&&
+					(defined $$ref_line{'Event'}[$ichannel])
+				){
+					#	冒頭「チャンネル」イベントに到達
+					my($snote,@array_parameter)=@{$$ref_line{'Event'}[$ichannel]};
+
+					while($snote eq ''){
+						#	冒頭無音であった
+						for(my($iline_next)=$iline+1;$iline_next<$nline;++$iline_next){
+							my($ref_line_next)=$array_ref_line[$iline_next];
+
+							if(
+								($$ref_line_next{'Type'} eq 'Channel')&&
+								(defined $$ref_line_next{'Event'}[$ichannel])
+							){
+								#	2(以降)番目「チャンネル」イベントに到達
+								my($snote_next,@array_parameter_next)=@{$$ref_line_next{'Event'}[$ichannel]};
+
+								if($snote_next ne ''){
+									#	発音イベントに到達したので、音量指定を移動させる
+									my(%hash_parameter,$nvolume);
+
+									#	ダミー無音イベント化する
+									$snote=' 0C ';
+									$nvolume=$array_nvolume_initial[$ichannel];
+									#	冒頭無音「チャンネル」イベントのパラメータを収集
+									undef %hash_parameter;
+									foreach my($sparameter)(@array_parameter){
+										my($sname,$svalue)=split(/\=/,$sparameter);
+
+										if($sname eq 'VM'){
+											$nvolume=$svalue+0;
+											$svalue='0';
+										}
+										$hash_parameter{$sname}=$svalue;
+									}
+									if(not exists $hash_parameter{'VM'}){
+										$hash_parameter{'VM'}='0';
+									}
+									#	冒頭無音「チャンネル」イベントのパラメータ指定を作り直す
+									undef @array_parameter;
+									foreach my($sname)(sort keys %hash_parameter){
+										push(@array_parameter,"$sname=$hash_parameter{$sname}");
+									}
+									#	発音「チャンネル」イベントのパラメータを収集
+									undef %hash_parameter;
+									foreach my($sparameter)(@array_parameter_next){
+										my($sname,$svalue)=split(/\=/,$sparameter);
+
+										$hash_parameter{$sname}=$svalue;
+									}
+									$hash_parameter{'VM'}=$nvolume;
+									#	発音「チャンネル」イベントのパラメータ指定を作り直す
+									undef @array_parameter_next;
+									foreach my($sname)(sort keys %hash_parameter){
+										push(@array_parameter_next,"$sname=$hash_parameter{$sname}");
+									}
+									$$ref_line_next{'Event'}[$ichannel]=[$snote_next,@array_parameter_next];
+									last;
+								}
+							}
+						}
+						last;
+					}
+					if($snote ne ''){
+						$$ref_line{'Event'}[$ichannel]=[$snote,@array_parameter];
+					}
+					last;
+				}
+			}
+		}
 	}
 	{
 		my($img_return);
@@ -1064,10 +1272,12 @@ sub USR_stSMF2SEQ{
 
 										#	「16時間単位で12音階」等、1時間単位当たりの変化音階が整数でない場合、
 										#	所要フレーム数を与えて誤差が出ないようにする。
+										#	半端閾値「.25」だと爆発する場合あるんで「.5」でいく。
 										while(.25<BASE::Absolute($dportamentoresult-BASE::Round($dportamentoresult))){
 											++$nportamentoframe;
 											$dportamentoresult=$dportamento*$nportamentoframe;
 										}
+										#	一旦「BASE::Round」でなく切り捨てでいく。
 										$dportamentoresult=BASE::Round($dportamentoresult);
 										if(0<=$dportamentoresult){
 											$dportamentoresult='+'.$dportamentoresult;
