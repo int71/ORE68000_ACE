@@ -231,6 +231,28 @@ VOID					SOUND::SetMasterVolume(
 	return;
 }
 
+VOID					SOUND::SetPan(
+	CINT8					ci8ipan
+)noexcept{
+	if(ui16cChannelMask&stcui16cChannelMaskFM0)FM::stchnDelegate(0).SetPan(ci8ipan);
+	if(ui16cChannelMask&stcui16cChannelMaskFM1)FM::stchnDelegate(1).SetPan(ci8ipan);
+	if(ui16cChannelMask&stcui16cChannelMaskFM2)FM::stchnDelegate(2).SetPan(ci8ipan);
+	if(ui16cChannelMask&stcui16cChannelMaskFM3)FM::stchnDelegate(3).SetPan(ci8ipan);
+	if(ui16cChannelMask&stcui16cChannelMaskFM4)FM::stchnDelegate(4).SetPan(ci8ipan);
+	if(ui16cChannelMask&stcui16cChannelMaskFM5)FM::stchnDelegate(5).SetPan(ci8ipan);
+	if(ui16cChannelMask&stcui16cChannelMaskFM6)FM::stchnDelegate(6).SetPan(ci8ipan);
+	if(ui16cChannelMask&stcui16cChannelMaskFM7)FM::stchnDelegate(7).SetPan(ci8ipan);
+	if(ui16cChannelMask&stcui16cChannelMaskPCM0)PCM::stchnDelegate(0).SetPan(ci8ipan);
+	if(ui16cChannelMask&stcui16cChannelMaskPCM1)PCM::stchnDelegate(1).SetPan(ci8ipan);
+	if(ui16cChannelMask&stcui16cChannelMaskPCM2)PCM::stchnDelegate(2).SetPan(ci8ipan);
+	if(ui16cChannelMask&stcui16cChannelMaskPCM3)PCM::stchnDelegate(3).SetPan(ci8ipan);
+	if(ui16cChannelMask&stcui16cChannelMaskPCM4)PCM::stchnDelegate(4).SetPan(ci8ipan);
+	if(ui16cChannelMask&stcui16cChannelMaskPCM5)PCM::stchnDelegate(5).SetPan(ci8ipan);
+	if(ui16cChannelMask&stcui16cChannelMaskPCM6)PCM::stchnDelegate(6).SetPan(ci8ipan);
+	if(ui16cChannelMask&stcui16cChannelMaskPCM7)PCM::stchnDelegate(7).SetPan(ci8ipan);
+	return;
+}
+
 VOID					SOUND::PlayVoice(
 	_UNDISCARDABLE_ CUINT8* const	cpcui8source,
 	CUINT16					cui16nsourceblock,
@@ -553,5 +575,6 @@ UINT32					SOUND::ROM_ui32dGetCursorOffset(
 		(UINT32(cui8m)<< 8)|
 		(UINT32(cui8l)<< 0)
 	);
+
 	return (cui32dcursoroffset&0x00200000)?(cui32dcursoroffset|0xffe00000):(cui32dcursoroffset&0x001fffff);
 }

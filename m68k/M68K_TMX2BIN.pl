@@ -10,7 +10,7 @@ use strict;
 use integer;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'base.pl';
-my($sVersion,$sDate)=('1.54','2026/08/08');
+my($sVersion,$sDate)=('1.55','2026/09/03');
 my($CLASS_sStage)='STAGE';
 my($CLASS_STAGE_sArea)='AREA';
 my($CLASS_STAGE_sBGM)='BGM_PLAY';
@@ -229,6 +229,7 @@ sub USR_stTMX2BIN{
 	my($inpatternwidth);
 	my($inpatternwidthwithpalette);
 	my($sub_pattern);
+	my($icfirstid_current);
 
 	$nwidth=0;
 	{
@@ -240,6 +241,7 @@ sub USR_stTMX2BIN{
 			if(/\<tileset\s+firstgid\=\"(\d+)\"\s+name\=\"(\S+)\"\s+tilewidth\=\"(\d+)\"\s+tileheight\=\"(\d+)\"\s+tilecount\=\"(\d+)\"\s+columns\=\"(\d+)\"/){
 				my($icfirstid,$sname,$intilewidth,$intileheight,$intile,$inwidth)=($1,$2,$3,$4,$5,$6);
 
+				$icfirstid_current=$icfirstid;
 				#	タイルセット
 				if($icfirstid==1){
 					#	マップデータを成すタイルセットは複数あるやも知れぬが、
@@ -258,7 +260,7 @@ sub USR_stTMX2BIN{
 
 						--$ipattern;
 						$cpalette=($cpalettebase+int($ipattern/$inpaletteunit))<<12;
-						$ipattern&=1023;
+						$ipattern=($ipattern%$inpaletteunit)&1023;
 						{
 							my($iiy)=$ipattern>>$inpatternwidthbit;
 
@@ -274,7 +276,7 @@ sub USR_stTMX2BIN{
 						--$ipattern;
 						$ipattern=(($ipattern/$inpatternwidthwithpalette)<<$inpatternwidthbit)+($ipattern%$inpatternwidthwithpalette)-2;
 						$cpalette=($cpalettebase+int($ipattern/$inpaletteunit))<<12;
-						$ipattern&=1023;
+						$ipattern=($ipattern%$inpaletteunit)&1023;
 						{
 							my($iiy)=$ipattern>>$inpatternwidthbit;
 

@@ -1,0 +1,52 @@
+/****************************************************************************
+**																			**
+**																			**
+**									m68k									**
+**																			**
+**	'test_fullcolor.o68k'							2026 written by int71	**
+ ****************************************************************************/
+
+//
+//		include
+//
+
+#include				<sub/familybasic.hpp>
+
+//
+//		using
+//
+
+using namespace m68k::i71::sub;
+
+//
+//		user
+//
+
+VOID					USER_New(VOID)noexcept{
+	FAMILYBASIC::stNew();
+	VIDEO_DRIVER::stSetCRT640x480P();
+	VIDEO_DRIVER::stWrite(VIDEO_DRIVER::IDREGISTERW::Composite0,0x0000);
+	VIDEO_DRIVER::stWrite(VIDEO_DRIVER::IDREGISTERW::Composite1,0x0000);
+	VIDEO_DRIVER::stWrite(VIDEO_DRIVER::IDREGISTERW::TextAddress,0x1100);
+	MEMORY::VRAM_stui32DelegateThis(0x000000)=0x00000000;
+	MEMORY::VRAM_stui32DelegateThis(0x000200)=0x0f0f0f0f;
+	MEMORY::VRAM_stui32DelegateThis(0x020000)=0x0000ffff;
+	MEMORY::VRAM_stui32DelegateThis(0x020200)=0xffffffff;
+	MEMORY::VRAM_stui32DelegateThis(0x040000)=0xffffffff;
+	MEMORY::VRAM_stui32DelegateThis(0x040200)=0xffffffff;
+	return;
+}
+
+VOID					USER_Delete(VOID)noexcept{
+	FAMILYBASIC::stDelete();
+	return;
+}
+
+VOID					USER_Main(VOID)noexcept{
+	static UINT16			stui16iposition=0;
+
+	VIDEO_DRIVER::stWrite(VIDEO_DRIVER::IDREGISTERW::TextOffsetX,0x2000|(stui16iposition&127));
+	VIDEO_DRIVER::stWrite(VIDEO_DRIVER::IDREGISTERW::TextOffsetY,0x2000|(stui16iposition&127));
+	++stui16iposition;
+	return;
+}

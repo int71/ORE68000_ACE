@@ -827,7 +827,15 @@ namespace m68k::ore68000ace::driver{
 			if((ROM_pcui8Cursor==NULL)||(cpcui8source<ROM_pcui8Cursor))Play(cpcui8source);
 			return;
 		}
+		_INLINE_ VOID			PlayDynamic(_UNDISCARDABLE_ CUINT8* const cpcui8source,CINT8 ci8ipan)noexcept{
+			if((ROM_pcui8Cursor==NULL)||(cpcui8source<ROM_pcui8Cursor)){
+				SetPan(ci8ipan);
+				Play(cpcui8source);
+			}
+			return;
+		}
 		VOID					SetMasterVolume(CUINT8 cui8nvolume)noexcept;
+		VOID					SetPan(CINT8 ci8ipan)noexcept;
 		VOID					PlayVoice(_UNDISCARDABLE_ CUINT8* const cpcui8source,CUINT16 cui16nsourceblock,CUINT8 cui8ibufferblockaddress=0xfe)noexcept;
 		VOID					Progress(VOID)noexcept;
 	private:

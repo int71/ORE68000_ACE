@@ -9,7 +9,7 @@
 use strict;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'smf.pl';
-my($sVersion,$sDate)=('2.44','2026/08/21');
+my($sVersion,$sDate)=('2.45','2026/08/26');
 my($COM_sDirectory)=('/d/Sync/Package/Cross/ORE68000_ACE/m68k');
 my($sChannelAdditionalVariableName)=('_INIT');
 new BASE::();
@@ -87,6 +87,11 @@ sub main{
 			}
 		}else{
 			$switch{'VolumeOffset'}=0;
+		}
+		if(defined $$option{'ip'}){
+			$switch{'IgnorePan'}=$$option{'ip'};
+		}else{
+			$switch{'IgnorePan'}=0;
 		}
 		if(defined $$option{'m'}){
 			if($$option{'m'} ne '-'){
@@ -171,6 +176,8 @@ $BASE::Self (入力).mid [-v] [-h] [-o (演奏テキスト).sh] [-u (音符長�
 -ov:チャンネル音量(「VM=n」)にオフセット「(音量オフセット)」を与えます。
   「(音量オフセット)」は数値で指定しますが、「_数値」と表記するとマイナス値として扱います。
   デフォルト値は「0」です。
+-ip:パン値を読み飛ばし、「PN=0」が出力されないようにします。
+  アプリケーションによるパン指定がそのまま演奏に反映されます。
 -m: 「0」以外のピッチモジュレーション値を「0～127」の値で固定します。デフォルト値は「-(固定無し)」です。
 -z: 冒頭の無音時間フレーム数を指定します。「1」なら1フレームに切り詰めます。「2」以上を指定すると初期化が分散され、瞬間的負荷上昇を緩和できます。デフォルト値は「0(切り詰め無し)」です。
 -f: 指定チャンネルについて、「KeyOn」時の無変化パラメータ省略を行わないようにします。
@@ -597,7 +604,9 @@ sub USR_stSMF2SEQ{
 								$epush=1;
 							}
 							if($epush){
-								&USR_SMF2SEQ_stPushEvent($array_ref_channel[$ichannel],&USR_SMF2SEQ_stsChannelEventPan($ipan));
+								if(!$$ref_switch{'IgnorePan'}){
+									&USR_SMF2SEQ_stPushEvent($array_ref_channel[$ichannel],&USR_SMF2SEQ_stsChannelEventPan($ipan));
+								}
 							}
 							$array_ipan_last[$ichannel]=$ipan;
 							$array_epan_undiscardable[$ichannel]=0;
@@ -605,7 +614,9 @@ sub USR_stSMF2SEQ{
 							#	明示的数値指定無しかつ出力固定
 							$array_ipan_last[$ichannel]+=0;
 							#	初期値としても出力され得るだろうが重複除去されるため構わずpushする
-							&USR_SMF2SEQ_stPushEvent($array_ref_channel[$ichannel],&USR_SMF2SEQ_stsChannelEventPan($array_ipan_last[$ichannel]));
+							if(!$$ref_switch{'IgnorePan'}){
+								&USR_SMF2SEQ_stPushEvent($array_ref_channel[$ichannel],&USR_SMF2SEQ_stsChannelEventPan($array_ipan_last[$ichannel]));
+							}
 						}
 						#	ピッチモジュレーション(出力固定化可能)
 						if(defined $array_nmodulation[$ichannel]){
@@ -1068,7 +1079,9 @@ sub USR_stSMF2SEQ{
 				my($nvolume)=(defined $array_nvolume_initial[$ichannel])?$array_nvolume_initial[$ichannel]:127;
 
 				&USR_SMF2SEQ_stPushEvent($ref_array_event,&USR_SMF2SEQ_stsChannelEventProgram($iprogram));
-				&USR_SMF2SEQ_stPushEvent($ref_array_event,&USR_SMF2SEQ_stsChannelEventPan($ipan));
+				if(!$$ref_switch{'IgnorePan'}){
+					&USR_SMF2SEQ_stPushEvent($ref_array_event,&USR_SMF2SEQ_stsChannelEventPan($ipan));
+				}
 				&USR_SMF2SEQ_stPushEvent($ref_array_event,&USR_SMF2SEQ_stsChannelEventModulation($nmodulation));
 				&USR_SMF2SEQ_stPushEvent($ref_array_event,&USR_SMF2SEQ_stsChannelEventVelocity($nvelocity));
 				&USR_SMF2SEQ_stPushEvent($ref_array_event,&USR_SMF2SEQ_stsChannelEventVolume($nvolume));
