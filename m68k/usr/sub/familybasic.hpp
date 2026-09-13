@@ -18,14 +18,6 @@
 #include				"os.hpp"
 
 //
-//		macro
-//
-
-#define __O68K_FILE(cpcustrfilename)	{}
-#define __O68K_MAKESEQUENCE(cpcustrsource)	{0xff}
-#define __O68K_TMX2BIN(cpcustrfilename)	{}
-
-//
 //		namespace:m68k::i71::sub
 //
 
@@ -58,6 +50,11 @@ namespace m68k::i71::sub{
 		static constexpr AUTO	stcui8cMaskButtonUp=	m68k::hid::JOYSTICK::stcui8cMaskButtonUp;
 		static constexpr AUTO	stcui8cMaskButtonA=		m68k::hid::JOYSTICK::stcui8cMaskButtonA;
 		static constexpr AUTO	stcui8cMaskButtonB=		m68k::hid::JOYSTICK::stcui8cMaskButtonB;
+		enum class IDRESOLUTION{
+			n256x212,
+			n320x240,
+			n640x480
+		};
 		class _IDSIZE{
 		public:
 			enum BODY:UINT8{
@@ -146,7 +143,7 @@ namespace m68k::i71::sub{
 	private:
 		static inline ST		st;
 	public:
-		static VOID				stNew(COFWBOOL ceshow=TRUE)noexcept;
+		static VOID				stNew(COFWBOOL ceshow=TRUE,COFWBOOL cewritepattern=TRUE,const IDRESOLUTION cidresolution=IDRESOLUTION::n256x212)noexcept;
 		static VOID				stDelete(VOID)noexcept;
 		static VOID				stShow(COFWBOOL ceshow)noexcept;
 		static _INLINE_ UINT16	stui16GetRandom(VOID)noexcept{

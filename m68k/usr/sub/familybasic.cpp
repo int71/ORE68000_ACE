@@ -27,36 +27,62 @@ using namespace m68k::i71::sub;
 //	public
 
 VOID					FAMILYBASIC::stNew(
-	COFWBOOL				ceshow
+	COFWBOOL				ceshow,
+	COFWBOOL				cewritepattern,
+	const IDRESOLUTION		cidresolution
 )noexcept{
-	VIDEO_DRIVER::stSetCRT256x212P();
-	stShow(ceshow);
-	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_SPRITE_stcui16iAddress,PATTERN::IDPATTERN::SPRITE_SYSTEM);
-	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG0_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
-	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG1_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
-	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG2_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
-	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG3_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
+	stShow(FALSE);
+	switch(cidresolution){
+	case IDRESOLUTION::n256x212:
+		VIDEO_DRIVER::stSetCRT256x212P();
+		break;
+	case IDRESOLUTION::n320x240:
+		VIDEO_DRIVER::stSetCRT320x240P();
+		break;
+	case IDRESOLUTION::n640x480:
+		VIDEO_DRIVER::stSetCRT640x480P();
+		break;
+	}
+	if(cewritepattern){
+		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_SPRITE_stcui16iAddress,PATTERN::IDPATTERN::SPRITE_SYSTEM);
+		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG0_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
+		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG1_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
+		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG2_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
+		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG3_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
+		BG0_stFillAttribute({0,0},{128,128},0x8020);
+		BG1_stFillAttribute({0,0},{128,128},0x8020);
+		BG2_stFillAttribute({0,0},{128,128},0x8020);
+		BG3_stFillAttribute({0,0},{128,128},0x8020);
+		PALETTE_stWriteBack(0x3f);
+		PALETTE_stWriteSet(0,1);
+	}
 	st.SPRITE_ui16dOffsetX=0;
 	st.SPRITE_ui16dOffsetY=0;
-	SPRITE_stSetSize(IDSIZE::n256);
-	st.BG0_ui16dOffsetX=0;
-	st.BG0_ui16dOffsetY=0;
-	BG0_stSetSize(IDSIZE::n256);
-	st.BG1_ui16dOffsetX=0;
-	st.BG1_ui16dOffsetY=0;
-	BG1_stSetSize(IDSIZE::n256);
-	st.BG2_ui16dOffsetX=0;
-	st.BG2_ui16dOffsetY=0;
-	BG2_stSetSize(IDSIZE::n256);
-	st.BG3_ui16dOffsetX=0;
-	st.BG3_ui16dOffsetY=0;
-	BG3_stSetSize(IDSIZE::n256);
-	BG0_stFillAttribute({0,0},{128,128},0x8020);
-	BG1_stFillAttribute({0,0},{128,128},0x8020);
-	BG2_stFillAttribute({0,0},{128,128},0x8020);
-	BG3_stFillAttribute({0,0},{128,128},0x8020);
-	PALETTE_stWriteBack(0x3f);
-	PALETTE_stWriteSet(0,1);
+	{
+		CAUTO					cidsize=(cidresolution==IDRESOLUTION::n256x212)?(
+			IDSIZE::n256
+		):(
+			(cidresolution==IDRESOLUTION::n320x240)?(
+				IDSIZE::n512
+			):(
+				IDSIZE::n1024
+			)
+		);
+
+		SPRITE_stSetSize(cidsize);
+		st.BG0_ui16dOffsetX=0;
+		st.BG0_ui16dOffsetY=0;
+		BG0_stSetSize(cidsize);
+		st.BG1_ui16dOffsetX=0;
+		st.BG1_ui16dOffsetY=0;
+		BG1_stSetSize(cidsize);
+		st.BG2_ui16dOffsetX=0;
+		st.BG2_ui16dOffsetY=0;
+		BG2_stSetSize(cidsize);
+		st.BG3_ui16dOffsetX=0;
+		st.BG3_ui16dOffsetY=0;
+		BG3_stSetSize(cidsize);
+	}
 	OS::BGM_stSetMask(
 		SOUND_DRIVER::stcui16cChannelMaskPCM0|
 		SOUND_DRIVER::stcui16cChannelMaskPCM1|
@@ -69,6 +95,7 @@ VOID					FAMILYBASIC::stNew(
 		SOUND_DRIVER::stcui16cChannelMaskPCM4|
 		SOUND_DRIVER::stcui16cChannelMaskFM7
 	);
+	if(ceshow)stShow(TRUE);
 	return;
 }
 

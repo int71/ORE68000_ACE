@@ -115,6 +115,7 @@ VOID					OS::stNew(VOID)noexcept{
 
 	OFW::stDisableInterrupt();
 	BASE::stNew();
+	st.INT_fp_callbackThis=NULL;
 	VIDEO_DRIVER::stNew();
 	SOUND_DRIVER::stNew();
 	st.BGM_drvThis.New(
@@ -190,10 +191,37 @@ VOID					OS::stMain(VOID)noexcept{
 	return;
 }
 
+VOID					OS::INT_stSetHBlank(
+	CUINT16					cui16ivline
+)noexcept{
+	if(cui16ivline!=0xffff){
+		VIDEO_DRIVER::stWrite(VIDEO_DRIVER::IDREGISTERW::Interrupt,UINT16(
+			(/*VI*/1<<15)|
+			(/*HI*/1<<14)|
+			(/*Š„‚èž‚Ý‘–¸ü”Ô†*/(cui16ivline&511)<<0)
+		));
+	}else{
+		VIDEO_DRIVER::stWrite(VIDEO_DRIVER::IDREGISTERW::Interrupt,UINT16(
+			(/*VI*/1<<15)|
+			(/*HI*/0<<14)|
+			(/*Š„‚èž‚Ý‘–¸ü”Ô†*/0<<0)
+		));
+	}
+	return;
+}
+
 //	private
 
 _HANDLER_ VOID			OS::stINT1(VOID)noexcept{
-	st.eVBlank=TRUE;
+	if(
+		CAUTO					cui16cstatus=VIDEO_DRIVER::stui16Read(VIDEO_DRIVER::IDREGISTERR::Status);
+		cui16cstatus&VIDEO_DEVICE::REGISTERR_Status_stcui16cHBlankInterruptedMask
+	){
+		if(st.INT_fp_callbackThis)st.INT_fp_callbackThis(IDCALLBACK::HBlank,st.INT_pObject);
+	}else{
+		if(st.INT_fp_callbackThis)st.INT_fp_callbackThis(IDCALLBACK::VBlank,st.INT_pObject);
+		st.eVBlank=TRUE;
+	}
 //	INTERRUPTER::stRaiseS2M(1);
 	return;
 }

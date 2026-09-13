@@ -1,0 +1,753 @@
+/****************************************************************************
+**																			**
+**																			**
+**									m68k									**
+**																			**
+**	'lesson12.o68k'									2026 written by int71	**
+ ****************************************************************************/
+
+//
+//		include
+//
+
+#include				<sub/pattern.hpp>
+#include				<sub/familybasic.hpp>
+
+//
+//		using
+//
+
+using namespace m68k::ore68000ace;
+using namespace m68k::i71::sub;
+
+//
+//		ÉNÉâÉX:USER
+//
+
+class USER{
+public:
+
+	//
+	//		íËêî
+	//
+
+	static constexpr UINT16	stacui16iPattern[]={
+		0x02<<3,0x02<<3,0x02<<3,0x02<<3,	//	àÍ‰›
+		0x03<<3,0x03<<3,0x03<<3,0x03<<3,	//	ìÒ‰›
+		0x04<<3,0x04<<3,0x04<<3,0x04<<3,	//	éO‰›
+		0x05<<3,0x05<<3,0x05<<3,0x05<<3,	//	él‰›
+		0x06<<3,0x06<<3,0x06<<3,0x06<<3,	//	åﬁ‰›
+		0x07<<3,0x07<<3,0x07<<3,0x07<<3,	//	òZ‰›
+		0x08<<3,0x08<<3,0x08<<3,0x08<<3,	//	éµ‰›
+		0x09<<3,0x09<<3,0x09<<3,0x09<<3,	//	î™‰›
+		0x0a<<3,0x0a<<3,0x0a<<3,0x0a<<3,	//	ã„‰›
+		0x0b<<3,0x0b<<3,0x0b<<3,0x0b<<3,	//	àÍçı
+		0x0c<<3,0x0c<<3,0x0c<<3,0x0c<<3,	//	ìÒçı
+		0x0d<<3,0x0d<<3,0x0d<<3,0x0d<<3,	//	éOçı
+		0x0e<<3,0x0e<<3,0x0e<<3,0x0e<<3,	//	élçı
+		0x0f<<3,0x0f<<3,0x0f<<3,0x0f<<3,	//	åﬁçı
+		0x10<<3,0x10<<3,0x10<<3,0x10<<3,	//	òZçı
+		0x11<<3,0x11<<3,0x11<<3,0x11<<3,	//	éµçı
+		0x12<<3,0x12<<3,0x12<<3,0x12<<3,	//	î™çı
+		0x13<<3,0x13<<3,0x13<<3,0x13<<3,	//	ã„çı
+		0x14<<3,0x14<<3,0x14<<3,0x14<<3,	//	àÍìõ
+		0x15<<3,0x15<<3,0x15<<3,0x15<<3,	//	ìÒìõ
+		0x16<<3,0x16<<3,0x16<<3,0x16<<3,	//	éOìõ
+		0x17<<3,0x17<<3,0x17<<3,0x17<<3,	//	élìõ
+		0x18<<3,0x18<<3,0x18<<3,0x18<<3,	//	åﬁìõ
+		0x19<<3,0x19<<3,0x19<<3,0x19<<3,	//	òZìõ
+		0x1a<<3,0x1a<<3,0x1a<<3,0x1a<<3,	//	éµìõ
+		0x1b<<3,0x1b<<3,0x1b<<3,0x1b<<3,	//	î™ìõ
+		0x1c<<3,0x1c<<3,0x1c<<3,0x1c<<3,	//	ã„ìõ
+		0x1d<<3,0x1d<<3,0x1d<<3,0x1d<<3,	//	ìå
+		0x1e<<3,0x1e<<3,0x1e<<3,0x1e<<3,	//	ìÏ
+		0x1f<<3,0x1f<<3,0x1f<<3,0x1f<<3,	//	êº
+		0x20<<3,0x20<<3,0x20<<3,0x20<<3,	//	ñk
+		0x21<<3,0x21<<3,0x21<<3,0x21<<3,	//	îí
+		0x22<<3,0x22<<3,0x22<<3,0x22<<3,	//	·¢
+		0x23<<3,0x23<<3,0x23<<3,0x23<<3,	//	íÜ
+		0x24<<3,0x25<<3,0x26<<3,0x27<<3,	//	ãGêﬂ
+		0x28<<3,0x29<<3,0x2a<<3,0x2b<<3		//	â‘
+	};
+	static constexpr UINT8	stcui8nTile=UINT8(SIZEOF(stacui16iPattern)/SIZEOF(UINT16));
+	static constexpr UINT8	stcui8iXBasis=4;
+	static constexpr UINT8	stcui8iYBasis=4;
+	static constexpr UINT8	stcui8nWidth=15*2;
+	static constexpr UINT8	stcui8nHeight=8*2;
+	static constexpr UINT8	stcui8nLayer=5;
+	static constexpr BYTE	stacbPattern[]=__O68K_MAKEPATTERN("(Resource)/lesson12_BG0.png");
+	static constexpr UINT16	stacui16Palette[]=__O68K_MAKEPALETTE("(Resource)/lesson12_BG0.png");
+
+	//
+	//		íËã`ñ{ëÃ:USER
+	//
+
+public:
+	static _INLINE_ UINT16	staaaui16cTile[stcui8nLayer][stcui8nHeight][stcui8nWidth];
+public:
+	static VOID				stNew(VOID)noexcept{
+		stNew_VIDEO();
+		STD::stFill(staaaui16cTile,SIZEOF(staaaui16cTile),0x00);
+		return;
+	}
+	static VOID				stDelete(VOID)noexcept{
+		stDelete_VIDEO();
+		return;
+	}
+	static VOID				stWrite(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,CUINT8 cui8itile)noexcept{
+		if(cui8itile){
+			CAUTO					cui16ctile=UINT16(cui8itile);
+
+			staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+0]=cui16ctile|0x0000;
+			staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+1]=cui16ctile|0x0100;
+			staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+0]=cui16ctile|0x0200;
+			staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+1]=cui16ctile|0x0300;
+		}else{
+			if(staaaui16cTile[cui8ilayer][cui8iy][cui8ix])switch(staaaui16cTile[cui8ilayer][cui8iy][cui8ix]&0x0300){
+			case 0x0000:
+				staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+0]=0x0000;
+				staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+1]=0x0000;
+				staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+0]=0x0000;
+				staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+1]=0x0000;
+				break;
+			case 0x0100:
+				staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix-1]=0x0000;
+				staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+0]=0x0000;
+				staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix-1]=0x0000;
+				staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+0]=0x0000;
+				break;
+			case 0x0200:
+				staaaui16cTile[cui8ilayer][cui8iy-1][cui8ix+0]=0x0000;
+				staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+1]=0x0000;
+				staaaui16cTile[cui8ilayer][cui8iy-1][cui8ix+0]=0x0000;
+				staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+1]=0x0000;
+				break;
+			case 0x0300:
+				staaaui16cTile[cui8ilayer][cui8iy-1][cui8ix-1]=0x0000;
+				staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+0]=0x0000;
+				staaaui16cTile[cui8ilayer][cui8iy-1][cui8ix-1]=0x0000;
+				staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+0]=0x0000;
+				break;
+			}
+		}
+		return;
+	}
+	static VOID				stDraw(VOID)noexcept{
+		for(UINT8 ui8ix=0;ui8ix<stcui8nWidth;++ui8ix)for(UINT8 ui8iy=0;ui8iy<stcui8nHeight;++ui8iy)stDraw(ui8ix,ui8iy);
+		return;
+	}
+	static VOID				stDraw(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer=stcui8nLayer-1)noexcept{
+		CAUTO					ceeven=OFWBOOL((cui8ilayer&1)==0);
+		CAUTO					cui8iadjust=UINT8(cui8ilayer>>1);
+		CAUTO					cpui16cattribute_face=PUINT16(
+			MAP::VRAM::stcui32iAddressS+(
+				ceeven?MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset:MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset
+			)-(
+				(UINT16(cui8iadjust)<<9)+((cui8iadjust)<<1)
+			)+(
+				+(UINT16(cui8iy+cui8iy+cui8iy+stcui8iYBasis)<<8)
+				+(((cui8ix<<1)+stcui8iXBasis)<<1)
+			)
+		);
+
+		if((cui8ix<stcui8nWidth)&&(cui8iy<stcui8nHeight))if(
+			CAUTO					cui16ctile=staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
+			cui16ctile
+		){
+			CAUTO					cui16ipattern_base=stacui16iPattern[(cui16ctile&0xff)-1];
+
+			switch(cui16ctile&0x0300){
+			case 0x0000:
+				stDrawFace(
+					cui8ix,cui8iy,cui8ilayer+1,
+					cpui16cattribute_face,
+					cui16ipattern_base+0x000+0,
+					cui16ipattern_base+0x000+1,
+					cui16ipattern_base+0x150+0
+				);
+				break;
+			case 0x0100:
+				stDrawFace(
+					cui8ix,cui8iy,cui8ilayer+1,
+					cpui16cattribute_face,
+					cui16ipattern_base+0x000+4,
+					cui16ipattern_base+0x000+5,
+					cui16ipattern_base+0x150+4
+				);
+				break;
+			case 0x0200:
+				stDrawFace(
+					cui8ix,cui8iy,cui8ilayer+1,
+					cpui16cattribute_face,
+					cui16ipattern_base+0x150+1,
+					cui16ipattern_base+0x2a0+0,
+					cui16ipattern_base+0x2a0+1
+				);
+				break;
+			case 0x0300:
+				stDrawFace(
+					cui8ix,cui8iy,cui8ilayer+1,
+					cpui16cattribute_face,
+					cui16ipattern_base+0x150+5,
+					cui16ipattern_base+0x2a0+4,
+					cui16ipattern_base+0x2a0+5
+				);
+				break;
+			}
+			return;
+		}
+		//	Ç±Ç±Ç©ÇÁÅuîvñ≥Çµïîï™ï`âÊÅvèàóù
+		//	Åucui8ixÅvÅAÅucui8iyÅvÇÕîÕàÕäOÇÃâ¬î\ê´Ç†ÇË
+		if(cui8ilayer){
+			stDraw(cui8ix,cui8iy,cui8ilayer-1);
+		}else{
+			cpui16cattribute_face[0x000]=0x0000;
+			cpui16cattribute_face[0x001]=0x0000;
+			cpui16cattribute_face[0x080]=0x0000;
+			cpui16cattribute_face[0x081]=0x0000;
+			cpui16cattribute_face[0x100]=0x0000;
+			cpui16cattribute_face[0x101]=0x0000;
+			stDrawFace(
+				cui8ix,cui8iy,0,
+				PUINT16(
+					MAP::VRAM::stcui32iAddressS+MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset
+					+((1<<9)+(1<<1))+(
+						+(UINT16(cui8iy+cui8iy+cui8iy+stcui8iYBasis)<<8)
+						+(((cui8ix<<1)+stcui8iXBasis)<<1)
+					)
+				),
+				0x010,
+				0x010,
+				0x010
+			);
+		}
+		{
+			CAUTO					cex0=OFWBOOL(cui8ix<stcui8nWidth);
+			CAUTO					cex1=OFWBOOL(1<=cui8ix);
+			CAUTO					cey0=OFWBOOL(cui8iy<stcui8nHeight);
+			CAUTO					cey1=OFWBOOL(1<=cui8iy);
+			CAUTO					cex0y0=OFWBOOL(cex0&&cey0);
+			CAUTO					cui16cx0y1=cex0y0?(
+				(cey1)      ?staaaui16cTile[cui8ilayer][cui8iy-1][cui8ix+0]:UINT16(0x0000)
+			):UINT16(0x0000);
+			CAUTO					cui16cx1y1=cex0y0?(
+				(cex1&&cey1)?staaaui16cTile[cui8ilayer][cui8iy-1][cui8ix-1]:UINT16(0x0000)
+			):UINT16(0x0000);
+			CAUTO					cui16cx1y0=cex0y0?(
+				(cex1)      ?staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix-1]:UINT16(0x0000)
+			):UINT16(0x0000);
+			CAUTO					cpui16cattribute_side=ceeven?PUINT16(
+				PUINT8(cpui16cattribute_face)+MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset-MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset
+			):(
+				cpui16cattribute_face
+			);
+
+			if(cui16cx1y1){
+				switch(cui16cx1y1&0x0300){
+				case 0x0000:
+					//	èÛãµìIÇ…Ç†ÇËìæÇ»Ç¢
+					break;
+				case 0x0100:
+					if(cui16cx0y1){
+						//	+-----------+--   + //
+						//	|     |X1Y1 |X0Y1   //
+						//	|           |       //
+						//	|           |       //
+						//	|           |       //
+						//	|0000  0100 |0200 | //
+						//	|--   +   --|------ //
+						//	|           |\X0Y0  //	6	d
+						//	|           | +---- //
+						//	|           | |     //	a	0
+						//	|           | |     //
+						//	|0200 |0300 | |     //	b	0
+						//	+-----------+ |     //
+						cpui16cattribute_side[0x000]=0x0006;
+						cpui16cattribute_side[0x001]=0x000d;
+						cpui16cattribute_side[0x080]=0x000a;
+						cpui16cattribute_side[0x100]=0x000b;
+						if(cui8ilayer==0){
+							cpui16cattribute_side[0x081]=0x0000;
+							cpui16cattribute_side[0x101]=0x0000;
+						}
+					}else{
+						//	+-----------+X0Y1   //
+						//	|     |X1Y1 |\      //
+						//	|           | +     //
+						//	|           | |     //
+						//	|           | |     //
+						//	|0000  0100 | |     //
+						//	|--   +   --| |     //
+						//	|           | |X0Y0 //	a	0
+						//	|           | |     //
+						//	|           | |     //	a	0
+						//	|           | |     //
+						//	|0200 |0300 | |     //	b	0
+						//	+-----------+ |     //
+						cpui16cattribute_side[0x000]=0x000a;
+						cpui16cattribute_side[0x080]=0x000a;
+						cpui16cattribute_side[0x100]=0x000b;
+						if(cui8ilayer==0){
+							cpui16cattribute_side[0x001]=0x0000;
+							cpui16cattribute_side[0x081]=0x0000;
+							cpui16cattribute_side[0x101]=0x0000;
+						}
+					}
+					break;
+				case 0x0200:
+					if(cui16cx1y0){
+						//	+   --|--   +   --| //
+						//	      |X1Y1       | //
+						//	      |           | //
+						//	      |           | //
+						//	      |           | //
+						//	|     |0200 |0300 | //
+						//	------+-----------+ //
+						//	|     |X1Y0 |\X0Y0  //	4	d
+						//	|           | +---- //
+						//	|           | |     //	9	0
+						//	|           | |     //
+						//	|0000  0100 | |     //	a	0
+						//	|--   +   --| |     //
+						cpui16cattribute_side[0x000]=0x0004;
+						cpui16cattribute_side[0x001]=0x000d;
+						cpui16cattribute_side[0x080]=0x0009;
+						cpui16cattribute_side[0x100]=0x000a;
+						if(cui8ilayer==0){
+							cpui16cattribute_side[0x081]=0x0000;
+							cpui16cattribute_side[0x101]=0x0000;
+						}
+					}else{
+						//	+   --|--   +   --| //
+						//	      |X1Y1       | //
+						//	      |           | //
+						//	      |           | //
+						//	      |           | //
+						//	|     |0200 |0300 | //
+						//	------+-----------+ //
+						//	       \X1Y0  X0Y0  //	d	e
+						//	--------+---------- //
+						//	                    //	0	0
+						//	                    //
+						//	                    //	0	0
+						//	                    //
+						cpui16cattribute_side[0x000]=0x000d;
+						cpui16cattribute_side[0x001]=0x000e;
+						if(cui8ilayer==0){
+							cpui16cattribute_side[0x080]=0x0000;
+							cpui16cattribute_side[0x081]=0x0000;
+							cpui16cattribute_side[0x100]=0x0000;
+							cpui16cattribute_side[0x101]=0x0000;
+						}
+					}
+					break;
+				case 0x0300:
+					if(cui16cx0y1){
+						if(cui16cx1y0){
+							//	|--   +   --|--   + //
+							//	|           |X0Y1   //
+							//	|           |       //
+							//	|           |       //
+							//	|           |       //
+							//	|0200 |0300 |0200 | //
+							//	+-----------+------ //
+							//	|     |X1Y0 |\X0Y0  //	2	d
+							//	|           | +---- //
+							//	|           | |     //	9	0
+							//	|           | |     //
+							//	|0000  0100 | |     //	a	0
+							//	|--   +   --| |     //
+							cpui16cattribute_side[0x000]=0x0002;
+							cpui16cattribute_side[0x001]=0x000d;
+							cpui16cattribute_side[0x080]=0x0009;
+							cpui16cattribute_side[0x100]=0x000a;
+							if(cui8ilayer==0){
+								cpui16cattribute_side[0x081]=0x0000;
+								cpui16cattribute_side[0x101]=0x0000;
+							}
+						}else{
+							//	|--   +   --|--   + //
+							//	|           |X0Y1   //
+							//	|           |       //
+							//	|           |       //
+							//	|           |       //
+							//	|0200 |0300 |0200 | //
+							//	+-----------+------ //
+							//	 \     X1Y0  \X0Y0  //	5	d
+							//	  +-----------+---- //
+							//	                    //	0	0
+							//	                    //
+							//	                    //	0	0
+							//	                    //
+							cpui16cattribute_side[0x000]=0x0005;
+							cpui16cattribute_side[0x001]=0x000d;
+							if(cui8ilayer==0){
+								cpui16cattribute_side[0x080]=0x0000;
+								cpui16cattribute_side[0x081]=0x0000;
+								cpui16cattribute_side[0x100]=0x0000;
+								cpui16cattribute_side[0x101]=0x0000;
+							}
+						}
+					}else{
+						if(cui16cx1y0){
+							//	|--   +   --| |X0Y1 //
+							//	|           | |     //
+							//	|           | |     //
+							//	|           | |     //
+							//	|           | |     //
+							//	|0200 |0300 | |     //
+							//	+-----------+ |     //
+							//	|     |X1Y0 |\|X0Y0 //	3	0
+							//	|           | +     //
+							//	|           | |     //	9	0
+							//	|           | |     //
+							//	|0000  0100 | |     //	a	0
+							//	|--   +   --| |     //
+							cpui16cattribute_side[0x000]=0x0003;
+							cpui16cattribute_side[0x080]=0x0009;
+							cpui16cattribute_side[0x100]=0x000a;
+							if(cui8ilayer==0){
+								cpui16cattribute_side[0x001]=0x0000;
+								cpui16cattribute_side[0x081]=0x0000;
+								cpui16cattribute_side[0x101]=0x0000;
+							}
+						}else{
+							//	|--   +   --| |X0Y1 //
+							//	|           | |     //
+							//	|           | |     //
+							//	|           | |     //
+							//	|           | |     //
+							//	|0200 |0300 | |     //
+							//	+-----------+ |     //
+							//	 \           \|X0Y0 //	f	0
+							//	  +-----------+     //
+							//	                    //	0	0
+							//	                    //
+							//	                    //	0	0
+							//	                    //
+							cpui16cattribute_side[0x000]=0x000f;
+							if(cui8ilayer==0){
+								cpui16cattribute_side[0x001]=0x0000;
+								cpui16cattribute_side[0x080]=0x0000;
+								cpui16cattribute_side[0x081]=0x0000;
+								cpui16cattribute_side[0x100]=0x0000;
+								cpui16cattribute_side[0x101]=0x0000;
+							}
+						}
+					}
+					break;
+				}
+			}else{
+				if(cui16cx0y1){
+					if(cui16cx1y0){
+						//	            +--   + //
+						//	            |X0Y1   //
+						//	            |       //
+						//	            |       //
+						//	            |       //
+						//	            |0200 | //
+						//	+-----------+------ //
+						//	|     |X1Y0 |\X0Y0  //	2	d
+						//	|           | +---- //
+						//	|           | |     //	9	0
+						//	|           | |     //
+						//	|0000  0100 | |     //	a	0
+						//	|--   +   --| |     //
+						cpui16cattribute_side[0x000]=0x0002;
+						cpui16cattribute_side[0x001]=0x000d;
+						cpui16cattribute_side[0x080]=0x0009;
+						cpui16cattribute_side[0x100]=0x000a;
+						if(cui8ilayer==0){
+							cpui16cattribute_side[0x081]=0x0000;
+							cpui16cattribute_side[0x101]=0x0000;
+						}
+					}else{
+						//	            +--   + //
+						//	            |X0Y1   //
+						//	            |       //
+						//	            |       //
+						//	            |       //
+						//	            |0200 | //
+						//	            +------ //
+						//	        X1Y0 \X0Y0  //	c	d
+						//	              +---- //
+						//	                    //	0	0
+						//	                    //
+						//	                    //	0	0
+						//	                    //
+						cpui16cattribute_side[0x000]=0x000c;
+						cpui16cattribute_side[0x001]=0x000d;
+						if(cui8ilayer==0){
+							cpui16cattribute_side[0x080]=0x0000;
+							cpui16cattribute_side[0x081]=0x0000;
+							cpui16cattribute_side[0x100]=0x0000;
+							cpui16cattribute_side[0x101]=0x0000;
+						}
+					}
+				}else{
+					if(cui16cx1y0){
+						//	                    //
+						//	                    //
+						//	                    //
+						//	                    //
+						//	                    //
+						//	                    //
+						//	+-----------+       //
+						//	|     |X1Y0 |\X0Y0  //	8	0
+						//	|           | +     //
+						//	|           | |     //	9	0
+						//	|           | |     //
+						//	|0000  0100 | |     //	a	0
+						//	|--   +   --| |     //	
+						cpui16cattribute_side[0x000]=0x0008;
+						cpui16cattribute_side[0x080]=0x0009;
+						cpui16cattribute_side[0x100]=0x000a;
+						if(cui8ilayer==0){
+							cpui16cattribute_side[0x001]=0x0000;
+							cpui16cattribute_side[0x081]=0x0000;
+							cpui16cattribute_side[0x101]=0x0000;
+						}
+					}else{
+						//	             X0Y1   //
+						//	                    //
+						//	                    //
+						//	                    //
+						//	                    //
+						//	                    //
+						//	                    //
+						//	        X1Y0 X0Y0   //	0	0
+						//	                    //
+						//	                    //	0	0
+						//	                    //
+						//	                    //	0	0
+						//	                    //
+						if(cui8ilayer==0){
+							cpui16cattribute_side[0x000]=0x0000;
+							cpui16cattribute_side[0x001]=0x0000;
+							cpui16cattribute_side[0x080]=0x0000;
+							cpui16cattribute_side[0x081]=0x0000;
+							cpui16cattribute_side[0x100]=0x0000;
+							cpui16cattribute_side[0x101]=0x0000;
+						}
+					}
+				}
+			}
+		}
+		return;
+	}
+private:
+	static VOID				stNew_VIDEO(VOID)noexcept{
+		using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
+		using					IDLAYER=VIDEO_DRIVER::IDLAYER;
+
+		FAMILYBASIC::stNew(FALSE,FALSE,FAMILYBASIC::IDRESOLUTION::n640x480);
+		//	BG1/2ÇÃÉpÉ^Å[ÉìÇÕBG0Ç∆ìØÇ∂Ç…Ç»ÇÈÇÊÇ§Ç…
+		VIDEO_DRIVER::stWrite(IDREGISTERW::BG1Address,UINT16(
+			(/*BG1ÉAÉgÉäÉrÉÖÅ[ÉgíPà ÉAÉhÉåÉX*/((VRAM_ATTRIBUTE_BG1_stcui32dDefaultOffset>>15)&31)<<11)|
+			(/*BG1ÉpÉ^Å[ÉìíPà ÉAÉhÉåÉX*/((VRAM_PATTERN_BG0_stcui32dDefaultOffset>>15)&31)<<0)
+		));
+		VIDEO_DRIVER::stWrite(IDREGISTERW::BG2Address,UINT16(
+			(/*BG1ÉAÉgÉäÉrÉÖÅ[ÉgíPà ÉAÉhÉåÉX*/((VRAM_ATTRIBUTE_BG2_stcui32dDefaultOffset>>15)&31)<<11)|
+			(/*BG1ÉpÉ^Å[ÉìíPà ÉAÉhÉåÉX*/((VRAM_PATTERN_BG0_stcui32dDefaultOffset>>15)&31)<<0)
+		));
+		PATTERN::stWrite(
+			MAP::VRAM::PATTERNCHR_BG0_stcui16iAddress,
+			SIZEOF(stacbPattern),
+			stacbPattern
+		);
+		VIDEO_DRIVER::PALETTE_stSetWrite(0);
+		VIDEO_DRIVER::PALETTE_stWrite(0x040);
+		//	ÉpÉåÉbÉgÉZÉbÉg0:	êF 0:îwåi   êF 1:îvñæ   êF 2:îvíÜ   Åc   êF15:îvñæ
+		VIDEO_DRIVER::PALETTE_stWrite(0x01,stacui16Palette+ 1, 1);
+		VIDEO_DRIVER::PALETTE_stWrite(0x02,stacui16Palette+ 2,13);
+		VIDEO_DRIVER::PALETTE_stWrite(0x0f,stacui16Palette+ 1, 1);
+		//	ÉpÉåÉbÉgÉZÉbÉg1:	êF 0:-      êF 1:îvñæ   êF 2:îvíÜ   Åc   êF15:âe
+		VIDEO_DRIVER::PALETTE_stWrite(0x11,stacui16Palette+ 1, 1);
+		VIDEO_DRIVER::PALETTE_stWrite(0x12,stacui16Palette+ 2,13);
+		VIDEO_DRIVER::PALETTE_stWrite(0x1f,stacui16Palette+ 2, 1);
+		//	ÉpÉåÉbÉgÉZÉbÉg2:	êF 0:-      êF 1:âe     êF 2:îvíÜ   Åc   êF15:îvñæ
+		VIDEO_DRIVER::PALETTE_stWrite(0x21,stacui16Palette+ 2, 1);
+		VIDEO_DRIVER::PALETTE_stWrite(0x22,stacui16Palette+ 2,13);
+		VIDEO_DRIVER::PALETTE_stWrite(0x2f,stacui16Palette+ 1, 1);
+		//	ÉpÉåÉbÉgÉZÉbÉg3:	êF 0:-      êF 1:âe     êF 2:îvíÜ   Åc   êF15:âe
+		VIDEO_DRIVER::PALETTE_stWrite(0x31,stacui16Palette+ 2, 1);
+		VIDEO_DRIVER::PALETTE_stWrite(0x32,stacui16Palette+ 2,13);
+		VIDEO_DRIVER::PALETTE_stWrite(0x3f,stacui16Palette+ 2, 1);
+		FAMILYBASIC::BG0_stSetOffset({0,0});
+		FAMILYBASIC::BG1_stSetOffset({4,8});
+		FAMILYBASIC::BG2_stSetOffset({0,0});
+		FAMILYBASIC::BG0_stFillAttribute({0,0},{80,60},0x0000);
+		FAMILYBASIC::BG1_stFillAttribute({0,0},{80,60},0x0000);
+		FAMILYBASIC::BG2_stFillAttribute({0,0},{80,60},0x0000);
+		VIDEO_DRIVER::stWrite(
+			IDREGISTERW::Composite1,
+			(/*ï\é¶ñ 7(ç≈ëO)*/	IDLAYER::Text<<0xc)|
+			(/*ï\é¶ñ 6*/		IDLAYER::BG3<<0x8)|
+			(/*ï\é¶ñ 5*/		IDLAYER::SpritePriority0<<0x4)|
+			(/*ï\é¶ñ 4*/		IDLAYER::BG2<<0x0)
+		);
+		VIDEO_DRIVER::stWrite(
+			VIDEO_DRIVER::IDREGISTERW::Composite0,
+			(/*ï\é¶ñ 3*/		IDLAYER::SpritePriority1<<0xc)|
+			(/*ï\é¶ñ 2*/		IDLAYER::BG1<<0x8)|
+			(/*ï\é¶ñ 1*/		IDLAYER::SpritePriority2<<0x4)|
+			(/*ï\é¶ñ 0(ç≈âú)*/	IDLAYER::BG0<<0x0)
+		);
+		return;
+	}
+	static VOID				stDelete_VIDEO(VOID)noexcept{
+		FAMILYBASIC::stDelete();
+		return;
+	}
+	static constexpr UINT16	stui16cGetPalette(COFWBOOL cea,COFWBOOL ceb)noexcept{
+		//	+----+----+
+		//	|Å_0A|Å_1A|
+		//	|0BÅ_|1BÅ_|
+		//	|----+----+
+		//	|Å_2A|Å_3A|
+		//	|2BÅ_|3BÅ_|
+		//	|----+----+
+		//	|Å_4A|Å_5A|
+		//	|4BÅ_|5BÅ_|
+		//	+---------+
+		//	ÉpÉåÉbÉgÉZÉbÉg0:	êF 0:îwåi   êF 1:îvñæ   êF 2:îvíÜ   Åc   êF15:îvñæ
+		//	ÉpÉåÉbÉgÉZÉbÉg1:	êF 0:-      êF 1:îvñæ   êF 2:îvíÜ   Åc   êF15:âe
+		//	ÉpÉåÉbÉgÉZÉbÉg2:	êF 0:-      êF 1:âe     êF 2:îvíÜ   Åc   êF15:îvñæ
+		//	ÉpÉåÉbÉgÉZÉbÉg3:	êF 0:-      êF 1:âe     êF 2:îvíÜ   Åc   êF15:âe
+		return (cea?0x2000:0x0000)+(ceb?0x1000:0x0000);
+	}
+	static VOID				stDrawFace(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer1,const PUINT16 cpui16cattribute,CUINT16 cui16csource0,CUINT16 cui16csource1,CUINT16 cui16csource2)noexcept{
+		//	âe
+		//	<X1Y0>    |  +              <X2Y0>    |  |  +                           <X0Y1>    |  |  +   <X1Y1>-+  |  |  +           <X2Y1>-+  |  |  +                       <X1Y2>-+  |  |  +           <X2Y2>-+  |  |  +                       //
+		//	|         |  |\             |         |  |  |\                          |         |  |  |           \ |  |  |Å_                 \ |  |  |Å_                             \ |  |  |Å_                 \ |  |  |Å_                     //
+		//	|         |  | \            |         |  |  | \                         |         |  |  |   L3       \|  |  |  Å_       L3       \|  |  |  Å_                   L3       \|  |  |  Å_       L3       \|  |  |  Å_                   //
+		//	|         |  |  +---------+ +---------+  |  |  +         +---------+    +---------+  |  |   +---------+  |  |    \      +---------+  |  |    \                  +---------+  |  |    \      +---------+  |  |    \                  //
+		//	|         |  |  |Å_  |Å_  |  \         \ |  |  |Å_       |Å_  |Å_  |     \         \ |  |    \         \ |  |    |Å_     \         \ |  |    |Å_                 \         \ |  |    |Å_     \         \ |  |    |Å_                //
+		//	|         |  |  |L1Å_|  Å_|   \L3       \|  |  |  Å_     |  Å_|  Å_|      \L2       \|  |     \L2       \|  |    |  Å_    \L2       \|  |    |  Å_                \L2       \|  |    |  Å_    \L2       \|  |    |  Å_              //
+		//	+---------+  |  |----+----|    +---------+  |  |    \    |----+----|       +---------+  |      +---------+  |    |    \    +---------+  |    |    \                +---------+  |    |    \    +---------+  |    |    \             //
+		//	 \         \ |  |Å_L1|Å_  |     \         \ |  |    |Å_  |Å_  |Å_  |        \         \ |       \         \ |    |    |     \         \ |    |    |Å_               \         \ |    |    |     \         \ |    |    |Å_           //
+		//	  \L2       \|  |L1Å_|L2Å_|      \L2       \|  |    |  Å_|  Å_|  Å_|         \L1       \|        \L1       \|(L1)|(L2)|      \L1       \|(L1)|(L2)|  Å_              \L1       \|    |    |      \L1       \|    |    |  Å_         //
+		//	   +---------+  |----+----|       +---------+  |    |    |----+----|          +---------+         +---------+---------+       +---------+---------+---------+         +---------+(L1)|    |       +---------+(L1)|    |    \        //
+		//	    \         \ |Å_L1|Å_L2|        \         \ |    |    |Å_  |Å_  |          |Å_L1|Å_L1|          Å_       |Å_L1|Å_L2|        Å_        Å_  |    |Å_L3|Å_  |          Å_        Å_  |    |        Å_        Å_  |    |    |Å_      //
+		//	     \L1       \|L1Å_|L2Å_|         \L1       \|    |    |L3Å_|  Å_|          |  Å_|L1Å_|            Å_(L1) |L1Å_|L2Å_|          Å_(L1)    Å_|    |L3Å_|L4Å_|            Å_(L1)    Å_|    |          Å_(L1)    Å_|    |    |  Å_    //
+		//	      +---------+---------+          +---------+(L1)|(L2)+---------+          |----+----|              \----|----+----|            \---------\----|----+----|              \---------\(L2)|            \---------\(L2)|    |    \   //
+		//	                                                                              |Å_  |Å_L2|               Å_  |Å_L2|Å_L2|             Å_        Å_  |Å_L3|Å_L4|               Å_        Å_  |             Å_        Å_  |    |    |   //
+		//	                                                                              |  Å_|  Å_|                 Å_|L2Å_|L2Å_|               Å_(L2)    Å_|L3Å_|L4Å_|                 Å_(L2)    Å_|               Å_(L2)    Å_|    |    |   //
+		//	                                                                              |----+----|                   |----+----|                 \---------|----+----|                   \---------\                 \---------\(L3)|    |   //
+		//	                                                                              |Å_  |Å_  |                   |Å_L3|Å_L3|                  Å_       |Å_L3|Å_L4|                    Å_                          Å_        Å_  |(L4)|   //
+		//	                                                                              |  Å_|  Å_|                   |  Å_|L3Å_|                    Å_(L3) |L3Å_|L4Å_|                      Å_(L3)                      Å_(L3)    Å_|    |   //
+		//	                                                                              +---------+                   +---------+                      \--- +---------+                   +----+----+                      \----+----+----+   //
+		//	                                                                                                                                                                                |Å_  |Å_L4|                       Å_  |Å_L4|Å_L4|   //
+		//	                                                                                                                                                                                |  Å_|  Å_|                         Å_|L4Å_|L4Å_|   //
+		//	                                                                                                                                                                                |----+----|                           |----+----|   //
+		//	                                                                                                                                                                                |Å_  |Å_  |                           |Å_  |Å_  |   //
+		//	                                                                                                                                                                                |  Å_|  Å_|                           |  Å_|  Å_|   //
+		//	                                                                                                                                                                                |----+----|                           |----+----|   //
+		//	                                                                                                                                                                                |Å_  |Å_  |                           |Å_  |Å_  |   //
+		//	                                                                                                                                                                                |  Å_|  Å_|                           |  Å_|  Å_|   //
+		//	                                                                                                                                                                                +---------+                           +---------+   //
+		CAUTO					cex0=OFWBOOL(cui8ix<stcui8nWidth);
+		CAUTO					cex1=OFWBOOL(cex0&&(1<=cui8ix));
+		CAUTO					cex2=OFWBOOL(cex0&&(2<=cui8ix));
+		CAUTO					cey0=OFWBOOL(cui8iy<stcui8nHeight);
+		CAUTO					cey1=OFWBOOL(cey0&&(1<=cui8iy));
+		CAUTO					cey2=OFWBOOL(cey0&&(2<=cui8iy));
+		CAUTO					cex1y0=OFWBOOL(cex1&&cey0);
+		CAUTO					cex2y0=OFWBOOL(cex2&&cey0);
+		CAUTO					cex0y1=OFWBOOL(cex0&&cey1);
+		CAUTO					cex1y1=OFWBOOL(cex1&&cey1);
+		CAUTO					cex2y1=OFWBOOL(cex2&&cey1);
+		CAUTO					cex1y2=OFWBOOL(cex1&&cey2);
+		CAUTO					cex2y2=OFWBOOL(cex2&&cey2);
+		CAUTO					cel1=OFWBOOL((cui8ilayer1+0)<stcui8nLayer);
+		CAUTO					cel2=OFWBOOL((cui8ilayer1+1)<stcui8nLayer);
+		CAUTO					cel3=OFWBOOL((cui8ilayer1+2)<stcui8nLayer);
+		CAUTO					cel4=OFWBOOL((cui8ilayer1+3)<stcui8nLayer);
+		CAUTO					cui8ix0=UINT8(cui8ix);
+		CAUTO					cui8ix1=UINT8(cui8ix-1);
+		CAUTO					cui8ix2=UINT8(cui8ix-2);
+		CAUTO					cui8iy0=UINT8(cui8iy);
+		CAUTO					cui8iy1=UINT8(cui8iy-1);
+		CAUTO					cui8iy2=UINT8(cui8iy-2);
+		//	<X1Y0>
+		CAUTO					cex1y0l1=(cex1y0&&cel1)?OFWBOOL(staaaui16cTile[cui8ilayer1+0][cui8iy0][cui8ix1]):FALSE;
+		CAUTO					cex1y0l2=(cex1y0&&cel2)?OFWBOOL(staaaui16cTile[cui8ilayer1+1][cui8iy0][cui8ix1]):FALSE;
+		//	<X2Y0>
+		CAUTO					cex2y0l3=(cex2y0&&cel2)?OFWBOOL(staaaui16cTile[cui8ilayer1+2][cui8iy0][cui8ix2]):FALSE;
+		//	<X0Y1>
+		CAUTO					cex0y1l1=(cex0y1&&cel1)?OFWBOOL(staaaui16cTile[cui8ilayer1+0][cui8iy1][cui8ix0]):FALSE;
+		CAUTO					cex0y1l2=(cex0y1&&cel2)?OFWBOOL(staaaui16cTile[cui8ilayer1+1][cui8iy1][cui8ix0]):FALSE;
+		//	<X1Y1>
+		CAUTO					cex1y1l1=(cex1y1&&cel1)?OFWBOOL(staaaui16cTile[cui8ilayer1+0][cui8iy1][cui8ix1]):FALSE;
+		CAUTO					cex1y1l2=(cex1y1&&cel2)?OFWBOOL(staaaui16cTile[cui8ilayer1+1][cui8iy1][cui8ix1]):FALSE;
+		CAUTO					cex1y1l3=(cex1y1&&cel3)?OFWBOOL(staaaui16cTile[cui8ilayer1+2][cui8iy1][cui8ix1]):FALSE;
+		//	<X2Y1>
+		CAUTO					cex2y1l3=(cex2y1&&cel3)?OFWBOOL(staaaui16cTile[cui8ilayer1+2][cui8iy1][cui8ix2]):FALSE;
+		CAUTO					cex2y1l4=(cex2y1&&cel4)?OFWBOOL(staaaui16cTile[cui8ilayer1+3][cui8iy1][cui8ix2]):FALSE;
+		//	<X1Y2>
+		CAUTO					cex1y2l4=(cex1y2&&cel4)?OFWBOOL(staaaui16cTile[cui8ilayer1+3][cui8iy2][cui8ix1]):FALSE;
+		//	<X2Y2>
+		CAUTO					cex2y2l4=(cex1y2&&cel4)?OFWBOOL(staaaui16cTile[cui8ilayer1+3][cui8iy2][cui8ix2]):FALSE;
+		//	+---------+
+		//	|Å_0A|Å_1A|
+		//	|0BÅ_|1BÅ_|
+		//	|----+----|
+		//	|Å_2A|Å_3A|
+		//	|2BÅ_|3BÅ_|
+		//	|----+----|
+		//	|Å_4A|Å_5A|
+		//	|4BÅ_|5BÅ_|
+		//	+---------+
+		CAUTO					ce0a=OFWBOOL(cex0y1l1||cex1y1l1||cex2y1l3||cex2y2l4);
+		CAUTO					ce0b=OFWBOOL(cex1y0l1||cex1y1l1||cex2y1l3||cex2y2l4);
+		CAUTO					ce1a=OFWBOOL(cex0y1l1||cex1y1l2||cex1y2l4||cex2y2l4);
+		CAUTO					ce1b=OFWBOOL(cex0y1l1||cex1y1l2||cex2y1l4||cex2y2l4);
+		CAUTO					ce2a=OFWBOOL(cex1y0l1||cex1y1l2||cex2y1l3);
+		CAUTO					ce2b=OFWBOOL(cex1y0l1||cex1y1l2||cex2y1l3);
+		CAUTO					ce3a=OFWBOOL(cex0y1l2||cex1y1l2||cex2y1l4);
+		CAUTO					ce3b=OFWBOOL(cex1y0l2||cex1y1l2||cex2y1l4);
+		CAUTO					ce4a=OFWBOOL(cex1y0l1||cex1y1l3||cex2y1l3);
+		CAUTO					ce4b=OFWBOOL(cex1y0l1||cex2y0l3||cex2y1l3);
+		CAUTO					ce5a=OFWBOOL(cex1y0l2||cex1y1l3||cex2y1l4);
+		CAUTO					ce5b=OFWBOOL(cex1y0l2||cex1y1l3||cex2y1l4);
+		CAUTO					cui16c0=stui16cGetPalette(ce0a,ce0b);
+		CAUTO					cui16c1=stui16cGetPalette(ce1a,ce1b);
+		CAUTO					cui16c2=stui16cGetPalette(ce2a,ce2b);
+		CAUTO					cui16c3=stui16cGetPalette(ce3a,ce3b);
+		CAUTO					cui16c4=stui16cGetPalette(ce4a,ce4b);
+		CAUTO					cui16c5=stui16cGetPalette(ce5a,ce5b);
+
+		cpui16cattribute[0x000]=(cui16csource0+0)|cui16c0;
+		cpui16cattribute[0x001]=(cui16csource0+2)|cui16c1;
+		cpui16cattribute[0x080]=(cui16csource1+0)|cui16c2;
+		cpui16cattribute[0x081]=(cui16csource1+2)|cui16c3;
+		cpui16cattribute[0x100]=(cui16csource2+0)|cui16c4;
+		cpui16cattribute[0x101]=(cui16csource2+2)|cui16c5;
+		return;
+	}
+};
+
+//
+//		user
+//
+
+VOID					USER_New(VOID)noexcept{
+	USER::stNew();
+	USER::stWrite(1,1,1,140);
+	USER::stWrite(3,1,1,141);
+	USER::stWrite(1,3,1,142);
+	USER::stWrite(3,3,1,143);
+
+	USER::stWrite(2,2,2,120);
+	USER::stDraw();
+	return;
+}
+
+VOID					USER_Delete(VOID)noexcept{
+	USER::stDelete();
+	return;
+}
+
+VOID					USER_Main(VOID)noexcept{
+	return;
+}

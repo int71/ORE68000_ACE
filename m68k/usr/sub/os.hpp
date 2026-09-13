@@ -16,6 +16,17 @@
 #include				"collider.hpp"
 
 //
+//		macro
+//
+
+#define __O68K_FILE(cpcustrfilename,...)	{}
+#define __O68K_MAKEPATTERN(cpcustrfilename,...)	{}
+#define __O68K_MAKEPALETTE(cpcustrfilename,...)	{}
+#define __O68K_MAKEBITMAP(cpcustrfilename,...)	{0x0001,0x0001,0x0000}
+#define __O68K_MAKESEQUENCE(cpcustrsource,...)	{0xff}
+#define __O68K_TMX2BIN(cpcustrfilename,...)	{}
+
+//
 //		namespace:m68k::i71::sub
 //
 
@@ -34,6 +45,22 @@ namespace m68k::i71::sub{
 
 	class OS{
 	public:
+
+		//
+		//		const
+		//
+
+		enum class IDCALLBACK{
+			VBlank,
+			HBlank
+		};
+
+		//
+		//		primitive
+		//
+
+		//	FP_CALLBACK
+		using					FP_CALLBACK=VOID(*)(const IDCALLBACK cidcallback,const PVOID cpobject)noexcept;
 
 		//
 		//		const
@@ -58,6 +85,8 @@ namespace m68k::i71::sub{
 		class ST{
 		public:
 			_UNDISCARDABLE_ OFWBOOL	eVBlank;
+			FP_CALLBACK				INT_fp_callbackThis;
+			PVOID					INT_pObject;
 			SOUND_DRIVER			BGM_drvThis;
 			SOUND_DRIVER			SE0_drvThis;
 			SOUND_DRIVER			SE1_drvThis;
@@ -78,6 +107,12 @@ namespace m68k::i71::sub{
 		static VOID				stNew(VOID)noexcept;
 		static VOID				stDelete(VOID)noexcept;
 		static VOID				stMain(VOID)noexcept;
+		static _INLINE_ VOID	INT_stSetCallback(const FP_CALLBACK cfp_callbackthis,const PVOID cpobject)noexcept{
+			st.INT_fp_callbackThis=cfp_callbackthis;
+			st.INT_pObject=cpobject;
+			return;
+		}
+		static VOID				INT_stSetHBlank(CUINT16 cui16ivline=0xffff)noexcept;
 		static _INLINE_ VOID	BGM_stSetMask(CUINT16 cui16cchannelmask)noexcept{
 			st.BGM_drvThis.Delete();
 			st.BGM_drvThis.New(cui16cchannelmask);

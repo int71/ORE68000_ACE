@@ -13,7 +13,6 @@
 //
 
 #include				"../common/rom_video.hpp"
-#include				"base.hpp"
 
 //
 //		namespace:m68k::i71::sub
@@ -51,16 +50,15 @@ namespace m68k::i71::sub{
 	public:
 		static VOID				stNew(VOID)noexcept;
 		static VOID				stDelete(VOID)noexcept;
-		static _INLINE_ VOID	stWrite(CUINT16 patternchr_cui16iaddress,const IDPATTERN cidpattern)noexcept{
-			stWrite_Body(
-				PUINT32(MAP::VRAM::stcui32iAddressS+(UINT32(patternchr_cui16iaddress)<<5)),
-				OFWSIZE(stacui32nSize[cidpattern]),
-				PCUINT32(stacui32iAddressS[cidpattern])
+		static _INLINE_ VOID	stWrite(CUINT16 patternchr_cui16iaddressdestination,const IDPATTERN cidpatternsource)noexcept{
+			stWrite(
+				patternchr_cui16iaddressdestination,
+				OFWSIZE(stacui32nSize[cidpatternsource]),
+				PCVOID(stacui32iAddressS[cidpatternsource])
 			);
 			return;
 		}
-	private:
-		static VOID				stWrite_Body(const PUINT32 cpui32destination,COFWSIZE cszndestination,const PCUINT32 cpcui32source)noexcept;
+		static VOID				stWrite(CUINT16 patternchr_cui16iaddressdestination,COFWSIZE cszndestination,const PCVOID cpcsource)noexcept;
 	};
 }
 

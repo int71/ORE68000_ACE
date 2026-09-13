@@ -287,15 +287,15 @@ namespace m68k::i71::common{
 					DEVICE_stustrDelegate()=ustrzero;
 				}
 			}
-			stWrite_Body_Digit(UINT16(ui32source),cui8ndigitminimum,eminus,ustrzero);
+			stWrite_Body_Digit(UINT16(ui32source),cui8ndigitminimum,eminus,ustrzero,4);
 			return;
 		}
-		static VOID				stWrite_Body_Digit(CUINT16 cui16source,CUINT8 cui8ndigitminimum,COFWBOOL ceminus,CUSTR custrzero)noexcept{
+		static VOID				stWrite_Body_Digit(CUINT16 cui16source,CUINT8 cui8ndigitminimum,COFWBOOL ceminus,CUSTR custrzero,CUINT8 cui8ndigitstart=5)noexcept{
 			AUTO					ui16source=cui16source;
 			AUTO					eminus=ceminus;
 			USTR					ustrzero=custrzero;
 
-			for(AUTO ui8ndigit=UINT8(5);2<=ui8ndigit;--ui8ndigit){
+			for(AUTO ui8ndigit=cui8ndigitstart;2<=ui8ndigit;--ui8ndigit){
 				static constexpr UINT16	stacui16unit[]={
 					           10,			//	2
 					          100,			//	3

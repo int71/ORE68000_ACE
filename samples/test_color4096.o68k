@@ -1,0 +1,46 @@
+/****************************************************************************
+**																			**
+**																			**
+**									m68k									**
+**																			**
+**	'test_color4096.o68k'							2026 written by int71	**
+ ****************************************************************************/
+
+//
+//		include
+//
+
+#include				<sub/os.hpp>
+#include				<sub/graphic.hpp>
+
+//
+//		using
+//
+
+using namespace m68k::i71::sub;
+
+//
+//		user
+//
+
+VOID					USER_New(VOID)noexcept{
+	static constexpr UINT16	stacui16cimage[]=__O68K_MAKEBITMAP("(Resource)/OREDIUS68K.png");
+	AUTO					bmpsource=GRAPHIC::BITMAP(stacui16cimage);
+
+	GRAPHIC::stNew(TRUE);
+	GRAPHIC::stDrawRect(0xf7c,{{0,0},{640,480}});
+	GRAPHIC::stCopyRect(bmpsource,{{0,0},{640,480}},{0,0});
+	return;
+}
+
+VOID					USER_Delete(VOID)noexcept{
+	GRAPHIC::stDelete();
+	return;
+}
+
+VOID					USER_Main(VOID)noexcept{
+	static UINT16			stui16iposition=0;
+
+	++stui16iposition;
+	return;
+}

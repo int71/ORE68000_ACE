@@ -1,0 +1,30 @@
+FreeImage:3.18.0
+  以下、再配布条件とされる権利情報
+  ・LibJPEG 9c
+    http://www.ijg.org/
+    このソフトウェアの著作権は(C)1994-2013 Thomas G. Lane、Guido Vollbedingに帰属します。All Rights Reserved.
+  ・LibPNG 1.6.35
+    http://www.libpng.org/
+    このソフトウェアの著作権は、(C)1998-2015 Glenn Randers-Pehrson が所有します。All Rights Reserved.
+  ・LibTIFF 4.0.9
+    http://www.simplesystems.org/libtiff/
+    著作権(C)1988-1997 Sam Leffler
+    著作権(C)1991-1997 Silicon Graphics, Inc.
+  ・オープンEXR 2.2.1
+    http://www.openexr.com
+    このソフトウェアの著作権は(C)2007 Lucas Digital Ltd. LLC が所有します。
+  ・オープンJPEG 2.1.0
+    http://code.google.com/p/openjpeg/
+    このソフトウェアは、ベルギーのルーヴァン・カトリック大学（UCL）の通信およびリモートセンシング研究所（Communications and Remote Sensing Laboratory）の著作権(C)2002-2014に帰属します。
+  ・ZLib 1.2.11
+    http://www.zlib.net
+    このソフトウェアの著作権は、(C)1995-2017 Jean-loup Gailly および Mark Adler が所有します。
+  ・LibRaw 0.19
+    http://www.libraw.org
+    このソフトウェアの著作権は(C)2008-2018 LibRaw LLCが所有します。
+  ・LibJXR 1.1
+    https://jxrlib.codeplex.com
+    このソフトウェアの著作権は(C)2013 Microsoft Corp. が所有します。
+  ・LibWebP 1.0.0
+    https://developers.google.com/speed/webp/
+    このソフトウェアの著作権は(C)2010, Google Inc. が所有します。無断複写・転載を禁じます。

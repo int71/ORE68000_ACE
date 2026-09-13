@@ -7,7 +7,15 @@
 
 # 登録されているファイルについて
 「ORE68000 ACE」実行に必要なファイル、としてサンプルプログラムが置かれています。  
-m68kターゲットiconv対応のGCCと、Perl、一部MSYS2プログラム(dll)を使用しております。  
+m68kターゲットiconv対応のGCCと、Perl、FreeImageライブラリ(dll)、一部MSYS2プログラム(dll)を使用しております。  
+ライブラリは「m68k/gnu/bin」に置かれていますが、フリーウェアとして入手可能なファイルの再配布(念のための写し)です。
+下記から最新版を入手してください。
+
+[FreeImage](https://freeimage.sourceforge.io/)
+
+もしバージョンアップに伴う互換性の問題がありましたら、「(Document)/lib.txt」にバージョンを記載してありますので、これを参考に旧バージョンの入手を行ってください。
+再配布の条件とされる権利情報もここに含まれます。  
+
 具体的ディレクトリ構造は下記の通りです。  
 「gnu」配下はGPLv2に基づく再配布となります。  
 
@@ -16,6 +24,12 @@ m68kターゲットiconv対応のGCCと、Perl、一部MSYS2プログラム(dll)を使用しております
 │├2 手順系/  
 ││├GCCビルド共通.txt←「MSYS2」を使用したGCCビルド手順(共通)  
 ││└MSYS2手順.txt←「MSYS2」インストール手順  
+│├3 仕様/  
+││├0 MC68000.txt←未稿  
+││├1 VI71B.txt←ビデオ機能「VI71B.txt」に関する説明  
+││├2 YM2151B.txt←音源「YM2151B」に関する説明  
+││└3 衝突判定.txt←衝突検出機能に関する説明  
+│├lib.txt←使用ライブラリ再配布に関する説明  
 │└ORE68000 ACE(J).txt←「遊び方」でしたが、スペック的な事だけが残る予定  
 ├bin/  
 │├CHECK_DX12.exe←DirectX12メッシュ表示テストプログラム(赤四角表示で動作OK)  
@@ -42,6 +56,7 @@ m68kターゲットiconv対応のGCCと、Perl、一部MSYS2プログラム(dll)を使用しております
 ││├bin/←ビルド結果+ポータブル化Perl関連  
 │││※サイズの大きい「m68k-elf-gdb.exe」は「m68k-elf-gdb.7z」に圧縮  
 │││※MSYS2ファイル「msys-2.0.dll」も配置  
+│││※FreeImageファイル「FreeImage.dll」も配置  
 ││├include/←ビルド結果  
 ││├lib/←ビルド結果+ポータブル化Perl関連  
 ││├libexec/←ビルド結果  
@@ -74,17 +89,23 @@ m68kターゲットiconv対応のGCCと、Perl、一部MSYS2プログラム(dll)を使用しております
 │├M68K_SMF2SEQ.pl←MIDIデータテキスト化スクリプト(仮置)  
 │├M68K_TMX2BIN.pl←Tiledファイルデータ化スクリプト(仮置)  
 │├M68K_MAKEBIN.exe←GCC実行用ラッパープログラム  
+│├M68K_MAKEFBIMAGE.exe←ファミリーベーシック風画像加工プログラム  
 │├M68K_MAKEFONT.exe←フォントROM作成用プログラム  
-│├M68K_MAKEPATTERN.exe←スプライト/BGパターン作成用プログラム  
+│├M68K_MAKEPATTERN.exe←スプライト/BGパターン、4,096色ビットマップデータ作成用プログラム  
 │└M68K_MAKEVOICE.exe←PCMデータ作成用プログラム  
 ├samples/  
+│├(Resource)/←画像等のリソースファイル  
 │├.vscode/  
 │├OREDIUS68k/←「整数71」作成ゲームプログラムROMイメージ  
+│├OREDIUS68k(無敵+撃ち返し)/←「整数71」作成ゲームプログラムROMイメージ  
 │├.clangd←「clangd」設定ファイル  
 │├samples.code-workspace←「Visual Studio Code」用プロジェクトファイル  
-│├debug.o68k←グラフィック、シリアル文字表示サンプルプログラム(ファミベ風)  
-│├keyboard.o68k←スペースキー入力テストサンプルプログラム(ファミベ風)  
-│└lesson*.o68k←レッスン用プログラム(ファミベ風)  
+│├lesson*.o68k←レッスン用プログラム(ファミベ風)  
+│├test_collider.o68k←衝突判定機能サンプルプログラム(ファミベ風)  
+│├test_color4096.o68k←4096色表示サンプルプログラム  
+│├test_debug.o68k←グラフィック、シリアル文字表示サンプルプログラム(ファミベ風)  
+│├test_keyboard.o68k←スペースキー入力テストサンプルプログラム(ファミベ風)  
+│└test_resolution.o68k←解像度変更サンプルプログラム(ファミベ風)  
 ├.gitignore←「GitHub」連携除外設定ファイル  
 ├README.md←本ファイル  
 ├default.o68k←初期動作プログラム  

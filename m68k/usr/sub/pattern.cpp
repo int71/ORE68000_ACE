@@ -10,6 +10,7 @@
 //		include
 //
 
+#include				"base.hpp"
 #include				"pattern.hpp"
 
 //
@@ -32,16 +33,16 @@ VOID					PATTERN::stDelete(VOID)noexcept{
 	return;
 }
 
-//	private
-
-VOID					PATTERN::stWrite_Body(
-	const PUINT32			cpui32destination,
+VOID					PATTERN::stWrite(
+	CUINT16					patternchr_cui16iaddressdestination,
 	COFWSIZE				cszndestination,
-	const PCUINT32			cpcui32source
+	const PCVOID			cpcsource
 )noexcept{
-	AUTO					pui32destination=cpui32destination;
+	AUTO					pui32destination=PUINT32(
+		MAP::VRAM::stcui32iAddressS+(UINT32(patternchr_cui16iaddressdestination)<<5)
+	);
 	CAUTO					cpui32destination_end=PUINT32(PUINT8(pui32destination)+cszndestination);
-	AUTO					pcui32source=cpcui32source;
+	AUTO					pcui32source=PCUINT32(cpcsource);
 
 	while(pui32destination<cpui32destination_end){
 		*pui32destination=*pcui32source;++pui32destination;++pcui32source;

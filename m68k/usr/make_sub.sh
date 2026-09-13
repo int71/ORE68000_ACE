@@ -41,6 +41,8 @@ $COLLIDER_CPP="$User/collider.cpp";
 $COLLIDER_OBJ="$Object/collider.o";
 $FAMILYBASIC_CPP="$User/familybasic.cpp";
 $FAMILYBASIC_OBJ="$Object/familybasic.o";
+$GRAPHIC_CPP="$User/graphic.cpp";
+$GRAPHIC_OBJ="$Object/graphic.o";
 $INTERRUPTER_CPP="$User/interrupter.cpp";
 $INTERRUPTER_OBJ="$Object/interrupter.o";
 $OS_CPP="$User/os.cpp";
@@ -74,6 +76,7 @@ $FONT='/c/Windows/Fonts//c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
 			$BOOT_OBJ,
 			$COLLIDER_OBJ,
 			$FAMILYBASIC_OBJ,
+			$GRAPHIC_OBJ,
 			$INTERRUPTER_OBJ,
 			$OS_OBJ,
 			$PATTERN_OBJ,
@@ -186,6 +189,12 @@ $FONT='/c/Windows/Fonts//c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
 			$FAMILYBASIC_CPP
 		],
 		exec=>["$C2OBJ \"$FAMILYBASIC_CPP\" -o \"$FAMILYBASIC_OBJ\""]
+	},
+	$GRAPHIC_OBJ=>{
+		depend_c=>[
+			$GRAPHIC_CPP
+		],
+		exec=>["$C2OBJ \"$GRAPHIC_CPP\" -o \"$GRAPHIC_OBJ\""]
 	},
 	$INTERRUPTER_OBJ=>{
 		depend_c=>[
