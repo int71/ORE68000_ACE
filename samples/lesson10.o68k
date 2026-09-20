@@ -105,7 +105,7 @@ public:
 	static constexpr UINT8	ENEMY_stcui8nInstanceMaximum=64;
 	//	static constexpr UINT8	BGM_stacui8cMain
 	//		「ゲーム中BGM」の演奏データです。毎度おなじみドドッチドドッチ。
-	static constexpr UINT8	BGM_stacui8cMain[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr UINT8	BGM_stacui8cMain[]=__O68K_SEQUENCE(R"(
 		my($_INIT)='  C ,PG=127';
 
 		[
@@ -261,7 +261,7 @@ public:
 	)");
 	//	UINT8					SE0_stacui8cPoint[]
 	//		「旗ゲット音」の演奏データです。
-	static constexpr _ORDERED_("SE0-00") UINT8	SE0_stacui8cPoint[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr _ORDERED_("SE0-00") UINT8	SE0_stacui8cPoint[]=__O68K_SEQUENCE(R"(
 		[
 			"#CHANNEL=PCM3",
 			#=============	   0
@@ -275,7 +275,7 @@ public:
 	//	UINT8					SE0_stacui8cJump
 	//		「ジャンプ音」の演奏データです。
 	//		「PT=+1」は連続的音程変化、つまりポルタメントです。
-	static constexpr _ORDERED_("SE0-01") UINT8	SE0_stacui8cJump[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr _ORDERED_("SE0-01") UINT8	SE0_stacui8cJump[]=__O68K_SEQUENCE(R"(
 		[
 			"#CHANNEL=PCM3",
 			#=============	   0
@@ -287,7 +287,7 @@ public:
 	)");
 	//	UINT8					SE0_stacui8cSlip[]
 	//		「スリップ音」の演奏データです。
-	static constexpr _ORDERED_("SE0-02") UINT8	SE0_stacui8cSlip[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr _ORDERED_("SE0-02") UINT8	SE0_stacui8cSlip[]=__O68K_SEQUENCE(R"(
 		[
 			"#CHANNEL=PCM3",
 			#=============	   0
@@ -303,7 +303,7 @@ public:
 	)");
 	//	UINT8					SE0_stacui8cWalk0[]
 	//		「歩行音(1)」の演奏データです。
-	static constexpr _ORDERED_("SE0-03") UINT8	SE0_stacui8cWalk0[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr _ORDERED_("SE0-03") UINT8	SE0_stacui8cWalk0[]=__O68K_SEQUENCE(R"(
 		[
 			"#CHANNEL=PCM3",
 			#=============	   0
@@ -314,7 +314,7 @@ public:
 	)");
 	//	UINT8					SE0_stacui8cWalk1[]
 	//		「歩行音(2)」の演奏データです。
-	static constexpr _ORDERED_("SE0-03") UINT8	SE0_stacui8cWalk1[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr _ORDERED_("SE0-03") UINT8	SE0_stacui8cWalk1[]=__O68K_SEQUENCE(R"(
 		[
 			"#CHANNEL=PCM3",
 			#=============	   0
@@ -325,7 +325,7 @@ public:
 	)");
 	//	UINT8					SE0_stacui8cLadder0[]
 	//		「ハシゴ昇降音(1)」の演奏データです。
-	static constexpr _ORDERED_("SE0-03") UINT8	SE0_stacui8cLadder0[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr _ORDERED_("SE0-03") UINT8	SE0_stacui8cLadder0[]=__O68K_SEQUENCE(R"(
 		[
 			"#CHANNEL=PCM3",
 			#=============	   0
@@ -336,7 +336,7 @@ public:
 	)");
 	//	UINT8					SE0_stacui8cLadder1[]
 	//		「ハシゴ昇降音(2)」の演奏データです。
-	static constexpr _ORDERED_("SE0-03") UINT8	SE0_stacui8cLadder1[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr _ORDERED_("SE0-03") UINT8	SE0_stacui8cLadder1[]=__O68K_SEQUENCE(R"(
 		[
 			"#CHANNEL=PCM3",
 			#=============	   0

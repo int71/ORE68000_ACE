@@ -66,7 +66,7 @@ public:
 	static constexpr UINT8	ENEMY_stcui8nInstanceMaximum=16;
 	//	UINT8					SE0_stacui8cShot
 	//		「ショット」音です。
-	static constexpr UINT8	SE0_stacui8cShot[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr UINT8	SE0_stacui8cShot[]=__O68K_SEQUENCE(R"(
 		[
 			"#CHANNEL=PCM3",
 			#=============	   0
@@ -78,7 +78,7 @@ public:
 	//	UINT8					SE1_stacui8cCrush
 	//		爆発音です。
 	//		YM2151B FM音源部のノイズ機能を利用しています。
-	static constexpr UINT8	SE1_stacui8cCrush[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr UINT8	SE1_stacui8cCrush[]=__O68K_SEQUENCE(R"(
 		[
 			"#CHANNEL=FM7",
 			#=============	   0

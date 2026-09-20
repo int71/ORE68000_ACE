@@ -37,6 +37,10 @@ $BASE_CPP="$User/base.cpp";
 $BASE_OBJ="$Object/base.o";
 $BOOT_CPP="$User/boot.cpp";
 $BOOT_OBJ="$Object/boot.o";
+$CANVAS__CPP="$User/canvas_.cpp";
+$CANVAS__OBJ="$Object/canvas_.o";
+$CANVAS_SIZED_CPP="$User/canvas_sized.cpp";
+$CANVAS_SIZED_OBJ="$Object/canvas_sized.o";
 $COLLIDER_CPP="$User/collider.cpp";
 $COLLIDER_OBJ="$Object/collider.o";
 $FAMILYBASIC_CPP="$User/familybasic.cpp";
@@ -74,6 +78,8 @@ $FONT='/c/Windows/Fonts//c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
 			$COMMON_VECTOR2__OBJ,
 			$BASE_OBJ,
 			$BOOT_OBJ,
+			$CANVAS__OBJ,
+			$CANVAS_SIZED_OBJ,
 			$COLLIDER_OBJ,
 			$FAMILYBASIC_OBJ,
 			$GRAPHIC_OBJ,
@@ -177,6 +183,18 @@ $FONT='/c/Windows/Fonts//c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
 			$BOOT_CPP
 		],
 		exec=>["$C2OBJ \"$BOOT_CPP\" -o \"$BOOT_OBJ\""]
+	},
+	$CANVAS__OBJ=>{
+		depend_c=>[
+			$CANVAS__CPP
+		],
+		exec=>["$C2OBJ \"$CANVAS__CPP\" -o \"$CANVAS__OBJ\""]
+	},
+	$CANVAS_SIZED_OBJ=>{
+		depend_c=>[
+			$CANVAS_SIZED_CPP
+		],
+		exec=>["$C2OBJ \"$CANVAS_SIZED_CPP\" -o \"$CANVAS_SIZED_OBJ\""]
 	},
 	$COLLIDER_OBJ=>{
 		depend_c=>[

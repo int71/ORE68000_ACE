@@ -3,7 +3,7 @@
 **																			**
 **						マイコン ORE68000 ACE Magazine						**
 **																			**
-**	'lesson05.o68k'									2025 written by int71	**
+**	'lesson05.o68k'									2026 written by int71	**
  ****************************************************************************/
 
 //
@@ -82,7 +82,7 @@ public:
 	static constexpr UINT8	ENEMY_stcui8nInstanceMaximum=16;
 	//	static constexpr UINT8	stacui8cBGM
 	//		「ゲーム中BGM」の演奏データです。ドドッチドドッチ。
-	static constexpr UINT8	BGM_stacui8cMain[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr UINT8	BGM_stacui8cMain[]=__O68K_SEQUENCE(R"(
 		my($_INIT)='  C ,PG=127';
 
 		[
@@ -239,7 +239,7 @@ public:
 	//	static constexpr UINT8	stacui8cSE_Jump
 	//		「ニタニタジャンプ音」の演奏データです。
 	//		「PT=+1」は連続的音程変化、つまりポルタメントです。
-	static constexpr UINT8	stacui8cSE_Jump[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr UINT8	stacui8cSE_Jump[]=__O68K_SEQUENCE(R"(
 		[
 			"#CHANNEL=PCM3",
 			#=============	   0
@@ -250,7 +250,7 @@ public:
 	)");
 	//	static constexpr UINT8	stacui8cSE_Get
 	//		「ハエゲット音」の演奏データです。
-	static constexpr UINT8	stacui8cSE_Get[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr UINT8	stacui8cSE_Get[]=__O68K_SEQUENCE(R"(
 		[
 			"#CHANNEL=PCM4",
 			#=============	   0

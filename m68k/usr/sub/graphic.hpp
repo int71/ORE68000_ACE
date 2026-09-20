@@ -13,6 +13,7 @@
 //
 
 #include				"vector2.hpp"
+#include				"canvas_sized.hpp"
 
 //
 //		namespace:m68k::i71::sub
@@ -35,25 +36,15 @@ namespace m68k::i71::sub{
 	public:
 
 		//
-		//		primitive
-		//
-
-		//	FP_BRUSH
-		using					FP_BRUSH=UINT16(*)(CVECTOR2& cv2isource,CUINT16 cui16ccolorback,const PVOID cpobject)noexcept;
-
-		//
 		//		const
 		//
 
+		//	IDBLEND
+		using					IDBLEND=CANVAS_::IDBLEND;
 		//	IDPART
 		enum class IDPART{
 			Upper,
 			Lower
-		};
-		//	IDSIDE
-		enum class IDSIDE{
-			Left,
-			Right
 		};
 
 		//
@@ -61,15 +52,19 @@ namespace m68k::i71::sub{
 		//
 
 		//	SHAPE
-		class SHAPE;
-		using					CSHAPE=const SHAPE;
-		using					PSHAPE=SHAPE*;
-		using					PCSHAPE=CSHAPE*;
-		//	BITMAP
-		class BITMAP;
-		using					CBITMAP=const BITMAP;
-		using					PBITMAP=BITMAP*;
-		using					PCBITMAP=CBITMAP*;
+		using					SHAPE=CANVAS_::SHAPE;
+		using					CSHAPE=CANVAS_::CSHAPE;
+		using					PSHAPE=CANVAS_::PSHAPE;
+		using					PCSHAPE=CANVAS_::PCSHAPE;
+		//	CANVAS_PART
+		template<const IDPART cidPart>
+		class CANVAS_PART;
+		//	CANVAS_PART_UPPER
+		using					CANVAS_PART_UPPER=CANVAS_PART<IDPART::Upper>;
+		using					CCANVAS_PART_UPPER=const CANVAS_PART_UPPER;
+		//	CANVAS_PART_LOWER
+		using					CANVAS_PART_LOWER=CANVAS_PART<IDPART::Lower>;
+		using					CCANVAS_PART_LOWER=const CANVAS_PART_LOWER;
 		//	ST
 		class ST;
 		using					CST=const ST;
@@ -77,144 +72,126 @@ namespace m68k::i71::sub{
 		using					PCST=CST*;
 
 		//
-		//		class:SHAPE
+		//		class:CANVAS_PART
 		//
 
-		class SHAPE{
+		template<const IDPART cidPart>
+		class CANVAS_PART:public CANVAS_RGB_<1024,256>{
 		public:
-			VECTOR2					v2iPosition;
-			VECTOR2					v2nSize;
+
+			//
+			//		const
+			//
+
+			static constexpr AUTO	stcui32iThis=MAP::VRAM::stcui32iAddressS+(
+				(cidPart==IDPART::Upper)?UINT32(
+					0x000000
+				):UINT32(
+					0x080000				//	バンク#1オフセット
+				)
+			);
+
+			//
+			//		class
+			//
+
+			//	SUPER
+			using					SUPER=CANVAS_RGB_;
+			//	CANVAS_PART
+			using					CCANVAS_PART=const CANVAS_PART;
+			using					PCANVAS_PART=CANVAS_PART*;
+			using					PCCANVAS_PART=CCANVAS_PART*;
+
+			//
+			//		body:CANVAS_PART
+			//
+
 		public:
-			template<const IDPART cidPart>
-			SHAPE					shpMakePart(VOID)const noexcept{
-				if constexpr(cidPart==IDPART::Upper){
-					if(v2iPosition.i16iY()<256){
-						if(v2iPosition.i16iY()+v2nSize.i16nHeight()<=256)return *this;
-						else return {
-							v2iPosition,{
-								v2nSize.i16nWidth(),INT16(256-v2iPosition.i16iY())
-							}
-						};
-					}else return {
-						{
-							v2iPosition.i16iX(),INT16(256)
-						},{
-							v2nSize.i16nWidth(),INT16(0)
-						}
-					};
-				}else{
-					if(256<=v2iPosition.i16iY()){
-						return *this;
-					}else{
-						if(
-							CAUTO					ci16iyd=v2iPosition.i16iY()+v2nSize.i16nHeight();
-							ci16iyd<=256
-						)return {
-							{
-								v2iPosition.i16iX(),INT16(256)
-							},{
-								v2nSize.i16nWidth(),INT16(0)
-							}
-						};
-						else return {
-							{
-								v2iPosition.i16iX(),INT16(256)
-							},{
-								v2nSize.i16nWidth(),INT16(ci16iyd-256)
-							}
-						};
-					}
-				}
+			static _INLINE_ VOID	stFill(CUINT16 cui16ccolor,const IDBLEND cidblend)noexcept{
+				SUPER::stFill(PUINT8(stcui32iThis),cui16ccolor,{VECTOR2::stv2ImmediateZero(),stcv2nSize},cidblend);
+				return;
 			}
-			template<CUINT8 cui8nAlignBit>
-			_INLINE_ SHAPE			shpMakeUnit(VOID)const noexcept{
-				constexpr AUTO			ci16naligndot=INT16(cui8nAlignBit>>2);
-				constexpr AUTO			ci16cmask=INT16(ci16naligndot-1);
-				CAUTO					ci16il=v2iPosition.i16iX();
-				CAUTO					ci16ir=INT16(ci16il+v2nSize.i16nWidth());
-				CAUTO					ci16il_aligned=INT16((ci16il+ci16cmask)&~ci16cmask);
-				CAUTO					ci16ir_aligned=INT16(ci16ir&~ci16cmask);
+			static _INLINE_ VOID	stFillRect(CUINT16 cui16ccolor,CSHAPE& cshpshape,const IDBLEND cidblend)noexcept{
+				AUTO					shpshape=cshpshape;
 
-				return {
-					{
-						ci16il_aligned,v2iPosition.i16iY()
-					},{
-						STD::stxGetMaximum(INT16(ci16ir_aligned-ci16il_aligned),INT16(0)),
-						v2nSize.i16nHeight()
-					}
-				};
+				if constexpr(cidPart==IDPART::Lower)shpshape.v2iPosition.i16iY()-=stcv2nSize.i16nHeight();
+				SUPER::stFill(PUINT8(stcui32iThis),cui16ccolor,shpshape,cidblend);
+				return;
 			}
-			template<CUINT8 cui8nAlignBit,const IDSIDE cidSide>
-			SHAPE					shpMakeFraction(VOID)const noexcept{
-				constexpr AUTO			ci16naligndot=INT16(cui8nAlignBit>>2);
-				CAUTO					ci16il=v2iPosition.i16iX();
-				CAUTO					ci16ir=INT16(ci16il+v2nSize.i16nWidth());
+			template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+			static VOID				stFillAlpha(CUINT16 cui16ccolor,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CVECTOR2& cv2iposition,const IDBLEND cidblend)noexcept{
+				using					SCLASS_A=CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>;
 
-				if constexpr(cidSide==IDSIDE::Left){
-					constexpr AUTO			ci16cmask=INT16(ci16naligndot-1);
-					CAUTO					ci16il_aligned=INT16((ci16il+ci16cmask)&~ci16cmask);
-					CAUTO					ci16nwidth=INT16(ci16ir-ci16il_aligned);
-
-					return {
-						{
-							ci16il_aligned,v2iPosition.i16iY()
-						},{
-							(
-								//	「cui8nAlignBit」が「キリ番」になる開始位置であるかどうかで見る。
-								//	「ci16il<=ci16il_aligned」は暗黙的に満たされている。
-								(ci16il_aligned&ci16naligndot)&&
-								(ci16naligndot<=ci16nwidth)
-							)?ci16naligndot:INT16(0),
-							v2nSize.i16nHeight()
-						}
-					};
-				}else{
-					//	INT16					ci16cmask
-					//		「<<1」しているのは、開始位置が「一回り大きな単位でのキリ番」である必要があるから。
-					constexpr AUTO			ci16cmask=INT16((ci16naligndot<<1)-1);
-					CAUTO					ci16ir_aligned=INT16(ci16ir&~ci16cmask);
-					CAUTO					ci16nwidth=INT16(ci16ir-ci16ir_aligned);
-
-					return {
-						{
-							ci16ir_aligned,v2iPosition.i16iY()
-						},{
-							(
-								(ci16il<=ci16ir_aligned)&&
-								(ci16naligndot<=ci16nwidth)
-							)?ci16naligndot:INT16(0),
-							v2nSize.i16nHeight()
-						}
-					};
-				}
+				stFillAlphaRect(cui16ccolor,ccvssourcea,{VECTOR2::stv2ImmediateZero(),SCLASS_A::stcv2nSize},cv2iposition,cidblend);
+				return;
 			}
-		};
+			template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+			static VOID				stFillAlphaRect(CUINT16 cui16ccolor,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend)noexcept{
+				AUTO					v2iposition=cv2iposition;
 
-		//
-		//		class:BITMAP
-		//
+				if constexpr(cidPart==IDPART::Lower)v2iposition.i16iY()-=stcv2nSize.i16nHeight();
+				SUPER::stFillAlpha(PUINT8(stcui32iThis),cui16ccolor,ccvssourcea,cshpsource,v2iposition,cidblend);
+				return;
+			}
+			template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+			static _INLINE_ VOID	stCopy(const CANVAS_RGB_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,CVECTOR2& cv2iposition,const IDBLEND cidblend)noexcept{
+				using					SCLASS=CANVAS_RGB_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>;
 
-		class BITMAP{
-		private:
-			PCUINT16				pcui16cThis;
-			VECTOR2					v2nSize;
-			PCUINT16				pcui16cLast;
-			INT16					i16iYLast;
-		public:
-			_INLINE_ /*VOID*/		BITMAP(const PCUINT16 cpcui16cthis){
-				pcui16cThis=cpcui16cthis+2;
-				v2nSize={INT16(cpcui16cthis[0]),INT16(cpcui16cthis[1])};
-				i16iYLast=-1;
+				stCopyRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition,cidblend);
+				return;
 			}
-			CVECTOR2&				v2nGetSize(VOID)const noexcept{
-				return v2nSize;
+			template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+			static _INLINE_ VOID	stCopy(const CANVAS_RGBA_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,CVECTOR2& cv2iposition,const IDBLEND cidblend)noexcept{
+				using					SCLASS=CANVAS_RGBA_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>;
+
+				stCopyRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition,cidblend);
+				return;
 			}
-			_INLINE_ UINT16			ui16cGetColor(CVECTOR2& cv2iposition)noexcept{
-				if(i16iYLast!=cv2iposition.i16iY()){
-					i16iYLast=cv2iposition.i16iY();
-					pcui16cLast=pcui16cThis+i16iYLast*v2nSize.i16nWidth();
-				}
-				return pcui16cLast[cv2iposition.i16iX()];
+			template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+			static _INLINE_ VOID	stCopyRect(const CANVAS_RGB_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend)noexcept{
+				AUTO					v2iposition=cv2iposition;
+
+				if constexpr(cidPart==IDPART::Lower)v2iposition.i16iY()-=stcv2nSize.i16nHeight();
+				SUPER::stCopy(PUINT8(stcui32iThis),ccvssource,cshpsource,v2iposition,cidblend);
+				return;
+			}
+			template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+			static _INLINE_ VOID	stCopyRect(const CANVAS_RGBA_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend)noexcept{
+				AUTO					v2iposition=cv2iposition;
+
+				if constexpr(cidPart==IDPART::Lower)v2iposition.i16iY()-=stcv2nSize.i16nHeight();
+				SUPER::stCopy(PUINT8(stcui32iThis),ccvssource,cshpsource,v2iposition,cidblend);
+				return;
+			}
+			template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+			static _INLINE_ VOID	stCopyAlpha(const CANVAS_RGB_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CVECTOR2& cv2iposition,const IDBLEND cidblend)noexcept{
+				using					SCLASS=CANVAS_RGB_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>;
+
+				stCopyAlphaRect(ccvssource,ccvssourcea,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition,cidblend);
+				return;
+			}
+			template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+			static _INLINE_ VOID	stCopyAlpha(const CANVAS_RGBA_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CVECTOR2& cv2iposition,const IDBLEND cidblend)noexcept{
+				using					SCLASS=CANVAS_RGBA_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>;
+
+				stCopyAlphaRect(ccvssource,ccvssourcea,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition,cidblend);
+				return;
+			}
+			template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+			static _INLINE_ VOID	stCopyAlphaRect(const CANVAS_RGB_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend)noexcept{
+				AUTO					v2iposition=cv2iposition;
+
+				if constexpr(cidPart==IDPART::Lower)v2iposition.i16iY()-=stcv2nSize.i16nHeight();
+				SUPER::stCopyAlpha(PUINT8(stcui32iThis),ccvssource,ccvssourcea,cshpsource,v2iposition,cidblend);
+				return;
+			}
+			template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+			static _INLINE_ VOID	stCopyAlphaRect(const CANVAS_RGBA_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend)noexcept{
+				AUTO					v2iposition=cv2iposition;
+
+				if constexpr(cidPart==IDPART::Lower)v2iposition.i16iY()-=stcv2nSize.i16nHeight();
+				SUPER::stCopyAlpha(PUINT8(stcui32iThis),ccvssource,ccvssourcea,cshpsource,v2iposition,cidblend);
+				return;
 			}
 		};
 
@@ -239,22 +216,76 @@ namespace m68k::i71::sub{
 		static VOID				stNew(COFWBOOL ceshow=TRUE)noexcept;
 		static VOID				stDelete(VOID)noexcept;
 		static VOID				stShow(COFWBOOL ceshow)noexcept;
-		static VOID				stDrawRect(CUINT16 cui16ccolor,CSHAPE& cshpshape)noexcept;
-		static VOID				stCopy(BITMAP& bmpsource,CVECTOR2& cv2iposition)noexcept;
-		static VOID				stCopyRect(BITMAP& bmpsource,CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept;
-	private:
-		static _INLINE_ UINT16	stui16cGetColorBack0(const PCUINT16 cpcui16csource)noexcept;
-		static _INLINE_ UINT16	stui16cGetColorBack1(const PCUINT16 cpcui16csource)noexcept;
-		template<const IDPART cidPart>
-		static _INLINE_ PUINT8	stpui8cGetDestination(CVECTOR2& cv2iposition)noexcept;
-		template<const FP_BRUSH cfp_brushThis>
-		static _INLINE_ VOID	stProcess(CSHAPE& cshpshape,const PVOID cpobject)noexcept;
-		template<const FP_BRUSH cfp_brushThis,const IDPART cidPart>
-		static VOID				stProcessPart(CSHAPE& cshpshape,const PVOID cpobject)noexcept;
-		template<const FP_BRUSH cfp_brushThis,const IDPART cidPart,CUINT8 cui8nAlignBit>
-		static VOID				stProcessUnit(CVECTOR2& cv2iorigin,CSHAPE& cshppart,const PVOID cpobject)noexcept;
-		template<const FP_BRUSH cfp_brushThis,const IDPART cidPart,CUINT8 cui8nAlignBit,const IDSIDE cidSide>
-		static VOID				stProcessFraction(CVECTOR2& cv2iorigin,CSHAPE& cshppart,const PVOID cpobject)noexcept;
+		static VOID				stFill(CUINT16 cui16ccolor,const IDBLEND cidblend=IDBLEND::Source)noexcept{
+			CANVAS_PART_UPPER::stFill(cui16ccolor,cidblend);
+			CANVAS_PART_LOWER::stFill(cui16ccolor,cidblend);
+			return;
+		}
+		static VOID				stFillRect(CUINT16 cui16ccolor,CSHAPE& cshpshape,const IDBLEND cidblend=IDBLEND::Source)noexcept{
+			CANVAS_PART_UPPER::stFillRect(cui16ccolor,cshpshape,cidblend);
+			CANVAS_PART_LOWER::stFillRect(cui16ccolor,cshpshape,cidblend);
+			return;
+		}
+		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+		static VOID				stFillAlpha(CUINT16 cui16ccolor,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
+			CANVAS_PART_UPPER::stFillAlpha(cui16ccolor,ccvssourcea,cv2iposition,cidblend);
+			CANVAS_PART_LOWER::stFillAlpha(cui16ccolor,ccvssourcea,cv2iposition,cidblend);
+			return;
+		}
+		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+		static VOID				stFillAlphaRect(CUINT16 cui16ccolor,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
+			CANVAS_PART_UPPER::stFillAlphaRect(cui16ccolor,ccvssourcea,cshpsource,cv2iposition,cidblend);
+			CANVAS_PART_LOWER::stFillAlphaRect(cui16ccolor,ccvssourcea,cshpsource,cv2iposition,cidblend);
+			return;
+		}
+		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+		static VOID				stCopy(const CANVAS_RGB_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
+			CANVAS_PART_UPPER::stCopy(ccvssource,cv2iposition,cidblend);
+			CANVAS_PART_LOWER::stCopy(ccvssource,cv2iposition,cidblend);
+			return;
+		}
+		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+		static VOID				stCopy(const CANVAS_RGBA_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
+			CANVAS_PART_UPPER::stCopy(ccvssource,cv2iposition,cidblend);
+			CANVAS_PART_LOWER::stCopy(ccvssource,cv2iposition,cidblend);
+			return;
+		}
+		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+		static VOID				stCopyRect(const CANVAS_RGB_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
+			CANVAS_PART_UPPER::stCopyRect(ccvssource,cshpsource,cv2iposition,cidblend);
+			CANVAS_PART_LOWER::stCopyRect(ccvssource,cshpsource,cv2iposition,cidblend);
+			return;
+		}
+		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+		static VOID				stCopyRect(const CANVAS_RGBA_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
+			CANVAS_PART_UPPER::stCopyRect(ccvssource,cshpsource,cv2iposition,cidblend);
+			CANVAS_PART_LOWER::stCopyRect(ccvssource,cshpsource,cv2iposition,cidblend);
+			return;
+		}
+		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+		static VOID				stCopyAlpha(const CANVAS_RGB_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
+			CANVAS_PART_UPPER::stCopyAlpha(ccvssource,ccvssourcea,cv2iposition,cidblend);
+			CANVAS_PART_LOWER::stCopyAlpha(ccvssource,ccvssourcea,cv2iposition,cidblend);
+			return;
+		}
+		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+		static VOID				stCopyAlpha(const CANVAS_RGBA_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
+			CANVAS_PART_UPPER::stCopyAlpha(ccvssource,ccvssourcea,cv2iposition,cidblend);
+			CANVAS_PART_LOWER::stCopyAlpha(ccvssource,ccvssourcea,cv2iposition,cidblend);
+			return;
+		}
+		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+		static VOID				stCopyAlphaRect(const CANVAS_RGB_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
+			CANVAS_PART_UPPER::stCopyAlphaRect(ccvssource,ccvssourcea,cshpsource,cv2iposition,cidblend);
+			CANVAS_PART_LOWER::stCopyAlphaRect(ccvssource,ccvssourcea,cshpsource,cv2iposition,cidblend);
+			return;
+		}
+		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
+		static VOID				stCopyAlphaRect(const CANVAS_RGBA_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
+			CANVAS_PART_UPPER::stCopyAlphaRect(ccvssource,ccvssourcea,cshpsource,cv2iposition,cidblend);
+			CANVAS_PART_LOWER::stCopyAlphaRect(ccvssource,ccvssourcea,cshpsource,cv2iposition,cidblend);
+			return;
+		}
 	};
 }
 

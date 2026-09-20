@@ -378,3 +378,14 @@ OREDIUS68k 0.24:
             ・「FAMILYBASIC::stNew」にスプライト/BGパターン初期化有無、解像度指
               定オプション追加
             ・垂直/水平同期割り込み処理の追加を可能に
+1.6.2026.3: ・「__O68K_MAKEPATTERN」、「__O68K_MAKEPALETTE」、
+              「__O68K_MAKESEQUENCE」をそれぞれ「__O68K_PATTERN」、
+              「__O68K_PALETTE」、「__O68K_SEQUENCE」に改称
+            ・「__O68K_MAKEBITMAP」は「__O68K_CANVAS_ROM」に置き換え、配列でなく
+              直接描画データ構造として使用可能に
+              ※ビットマップデータも1ドット2バイトの「PACKED」から8ドット1バイト
+                3プレーンの「PLANED」に変更。主に性能改善目的。
+            ・それに伴い「samples/*.o68k」修正
+            ・4,096色モード用描画ライブラリ「GRAPHIC」整備
+              ※RGB、RGBA、A、読み取り専用、読み書き可、VRAMといった特性への対応
+                してますが、現状行える操作は塗りつぶし、転送程度です。

@@ -20,10 +20,9 @@
 //
 
 #define __O68K_FILE(cpcustrfilename,...)	{}
-#define __O68K_MAKEPATTERN(cpcustrfilename,...)	{}
-#define __O68K_MAKEPALETTE(cpcustrfilename,...)	{}
-#define __O68K_MAKEBITMAP(cpcustrfilename,...)	{0x0001,0x0001,0x0000}
-#define __O68K_MAKESEQUENCE(cpcustrsource,...)	{0xff}
+#define __O68K_PATTERN(cpcustrfilename,...)	{}
+#define __O68K_PALETTE(cpcustrfilename,...)	{}
+#define __O68K_SEQUENCE(cpcustrsource,...)	{0xff}
 #define __O68K_TMX2BIN(cpcustrfilename,...)	{}
 
 //

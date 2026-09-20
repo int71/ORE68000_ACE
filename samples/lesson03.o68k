@@ -3,7 +3,7 @@
 **																			**
 **						É}ÉCÉRÉì ORE68000 ACE Magazine						**
 **																			**
-**	'lesson03.o68k'									2025 written by int71	**
+**	'lesson03.o68k'									2026 written by int71	**
  ****************************************************************************/
 
 //
@@ -22,7 +22,7 @@ using namespace m68k::i71::sub;
 //		user
 //
 
-static constexpr UINT8	stacui8cBGM00[]=__O68K_MAKESEQUENCE(R"(
+static constexpr UINT8	stacui8cBGM00[]=__O68K_SEQUENCE(R"(
 my($_INIT)='  C ,PG=127';
 
 [
@@ -176,7 +176,7 @@ my($_INIT)='  C ,PG=127';
 	"#JUMP=LoopStart",
 ];
 )");
-static constexpr UINT8	stacui8cSE00[]=__O68K_MAKESEQUENCE(R"(
+static constexpr UINT8	stacui8cSE00[]=__O68K_SEQUENCE(R"(
 [
 	"#CHANNEL=PCM3",
 	#=============	   0

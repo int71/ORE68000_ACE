@@ -93,7 +93,7 @@ public:
 	static constexpr UINT16	ENEMYGROUP_stcui16nEntity=	12;
 	//	UINT8					SE0_stacui8cShot
 	//		「ショット」音です。
-	static constexpr _ORDERED_("SE0-01") UINT8	SE0_stacui8cShot[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr _ORDERED_("SE0-01") UINT8	SE0_stacui8cShot[]=__O68K_SEQUENCE(R"(
 		[
 			"#CHANNEL=PCM3",
 			#=============	   0
@@ -104,7 +104,7 @@ public:
 	)");
 	//	UINT8					SE0_stacui8cHit
 	//		耐久力持ち敵に「ショット」を当てた時の音です。
-	static constexpr _ORDERED_("SE0-00") UINT8	SE0_stacui8cHit[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr _ORDERED_("SE0-00") UINT8	SE0_stacui8cHit[]=__O68K_SEQUENCE(R"(
 		[
 			"#CHANNEL=PCM3",
 			#=============	   0
@@ -116,7 +116,7 @@ public:
 	//	UINT8					SE1_stacui8cCrush
 	//		爆発音です。
 	//		YM2151B FM音源部のノイズ機能を利用しています。
-	static constexpr _ORDERED_("SE1-00") UINT8	SE1_stacui8cCrush[]=__O68K_MAKESEQUENCE(R"(
+	static constexpr _ORDERED_("SE1-00") UINT8	SE1_stacui8cCrush[]=__O68K_SEQUENCE(R"(
 		[
 			"#CHANNEL=FM7",
 			#=============	   0
