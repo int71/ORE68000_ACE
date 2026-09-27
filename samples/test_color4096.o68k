@@ -73,12 +73,13 @@ VOID					USER_New(VOID)noexcept{
 	AUTO		cvsa=CANVAS_A_RAM<16,16>();
 
 	GRAPHIC::stNew(TRUE);
-	cvsrgb.Fill(0x0707);
-	cvsa.Fill(0x3);
-	for(UINT16 ui16icounter=0;ui16icounter<16;++ui16icounter){
+	GRAPHIC::stCopy(ccvssource,VECTOR2::stv2ImmediateZero());
+//	cvsrgb.Fill(0x0707);
+//	cvsa.Fill(0x3);
+//	for(UINT16 ui16icounter=0;ui16icounter<16;++ui16icounter){
 //		GRAPHIC::stFillRect(0x7f0f,{{INT16(ui16icounter),INT16(ui16icounter<<3)},{INT16(16),INT16(16)}},GRAPHIC::IDBLEND::BackNega_SourceAlpha);
-		GRAPHIC::stCopyAlpha(cvsrgb,cvsa,{INT16(ui16icounter),INT16(ui16icounter<<3)},GRAPHIC::IDBLEND::BackNega_SourceAlpha);
-	}
+//		GRAPHIC::stCopyAlpha(cvsrgb,cvsa,{INT16(ui16icounter),INT16(ui16icounter<<3)},GRAPHIC::IDBLEND::BackNega_SourceAlpha);
+//	}
 	return;
 }
 

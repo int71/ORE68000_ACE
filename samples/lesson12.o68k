@@ -10,6 +10,7 @@
 //		include
 //
 
+#include				<sub/os.hpp>
 #include				<sub/graphic.hpp>
 
 //
@@ -17,6 +18,8 @@
 //
 
 #define SHOWBACKBITMAP
+//#define SHOWARRANGEPROGRESS
+//#define SHOWSHADOWOFFSET
 
 //
 //		using
@@ -37,10 +40,10 @@ public:
 	//
 
 	using					IDBLEND=GRAPHIC::IDBLEND;
-	//	UINT8					staacui8iArrangement[144][3]
+	//	UINT8					GAME_staacui8iPosition[144][3]
 	//		牌の配置を保持します。
 	//		「{横,縦,高さ}」を単位として、牌144ヶ分あります。
-	static constexpr UINT8	staacui8iArrangement[][3]={
+	static constexpr UINT8	GAME_staacui8iPosition[][3]={
 		//	第1層
 		           { 2, 0, 0},{ 4, 0, 0},{ 6, 0, 0},{ 8, 0, 0},{10, 0, 0},{12, 0, 0},{14, 0, 0},{16, 0, 0},{18, 0, 0},{20, 0, 0},{22, 0, 0},{24, 0, 0},
 		                                 { 6, 2, 0},{ 8, 2, 0},{10, 2, 0},{12, 2, 0},{14, 2, 0},{16, 2, 0},{18, 2, 0},{20, 2, 0},
@@ -68,13 +71,13 @@ public:
 		//	第5層
 		                                                                  {13, 7, 4}
 	};
-	//	UINT8					staacui8iPattern[144][2]
+	//	UINT8					GAME_staacui8iPattern[144][2]
 	//		牌と絵柄パターンの対応を保持します。
 	//		「{横,縦}」を単位として、牌144ヶ分あります。
 	//		縦横の値は「lesson12_BITMAP.png」の座標に対応しており、
 	//		わざわざ1牌単位で対応させているのは、
 	//		「季節」と「花」が4牌別絵柄であるためです。
-	static constexpr UINT8	staacui8iPattern[][2]={
+	static constexpr UINT8	GAME_staacui8iPattern[][2]={
 		{0x00,0x00},{0x00,0x00},{0x00,0x00},{0x00,0x00},	//	一萬
 		{0x20,0x00},{0x20,0x00},{0x20,0x00},{0x20,0x00},	//	二萬
 		{0x40,0x00},{0x40,0x00},{0x40,0x00},{0x40,0x00},	//	三萬
@@ -112,155 +115,493 @@ public:
 		{0x40,0xc0},{0x60,0xc0},{0x80,0xc0},{0xa0,0xc0},	//	季節
 		{0xc0,0xc0},{0xe0,0xc0},{0x00,0xf0},{0x20,0xf0}		//	花
 	};
-	static constexpr UINT8	stcui8nTile=UINT8(SIZEOF(staacui8iPattern)/(SIZEOF(UINT8)*2));
-	static constexpr UINT8	stcui8iXBasis=10;
-	static constexpr UINT8	stcui8iYBasis=6;
-	static constexpr UINT8	stcui8nWidth=15*2;
-	static constexpr UINT8	stcui8nHeight=8*2;
-	static constexpr UINT8	stcui8nLayer=5;
-	static constexpr UINT16	stcui16cColorBack=0x141;
-	//	CANVAS_RGBA_ROM			stccvsTile
+	static constexpr UINT8	GAME_stcui8nTile=UINT8(SIZEOF(GAME_staacui8iPattern)/(SIZEOF(UINT8)*2));
+	static constexpr UINT8	GAME_stcui8nWidth=15*2;
+	static constexpr UINT8	GAME_stcui8nHeight=8*2;
+	static constexpr UINT8	GAME_stcui8nLayer=5;
+	static constexpr UINT8	GAME_stcui8nDifficulty=0;
+	static constexpr UINT8	GAME_stcui8iTileUndefined=0xff;
+	static constexpr UINT16	GAME_stcui16cTilePartMask=0x0300;
+	static constexpr UINT16	GAME_stcui16cTilePartLU=0x0000;
+	static constexpr UINT16	GAME_stcui16cTilePartRU=0x0100;
+	static constexpr UINT16	GAME_stcui16cTilePartLD=0x0200;
+	static constexpr UINT16	GAME_stcui16cTilePartRD=0x0300;
+	static constexpr UINT16	GAME_stcui16cTileSelectedMask=0x0400;
+	static constexpr UINT8	IMAGE_stcui8nUnitWidth=16;
+	static constexpr UINT8	IMAGE_stcui8nUnitHeight=24;
+	static constexpr UINT8	IMAGE_stcui8nPerspectiveWidth=4;
+	static constexpr UINT8	IMAGE_stcui8nPerspectiveHeight=8;
+	static constexpr UINT8	IMAGE_stcui8nShadowWidth=8;
+	static constexpr UINT8	IMAGE_stcui8nShadowHeight=8;
+	static constexpr UINT8	IMAGE_stcui8nFaceAlphaWidth=4;
+	static constexpr UINT8	IMAGE_stcui8nFaceAlphaHeight=4;
+	static constexpr AUTO	IMAGE_stcv2nUnit=VECTOR2(INT16(IMAGE_stcui8nUnitWidth),INT16(IMAGE_stcui8nUnitHeight));
+	static constexpr AUTO	IMAGE_stcv2iSideR=VECTOR2(INT16(IMAGE_stcui8nUnitWidth*2)*3,INT16(IMAGE_stcui8nUnitHeight*2)*5);
+	static constexpr AUTO	IMAGE_stcv2iSideD=VECTOR2(INT16(IMAGE_stcui8nUnitWidth*2)*3+8,INT16(IMAGE_stcui8nUnitHeight*2)*5);
+	static constexpr AUTO	IMAGE_stcv2iSideRD=VECTOR2(INT16(IMAGE_stcui8nUnitWidth*2)*4+8,INT16(IMAGE_stcui8nUnitHeight*2)*5);
+	static constexpr AUTO	IMAGE_stcv2iShadow=VECTOR2(INT16(IMAGE_stcui8nUnitWidth*2)*4-8,INT16(IMAGE_stcui8nUnitHeight*2)*6-8);
+
+	static constexpr AUTO	IMAGE_stcv2iSelected=VECTOR2(INT16(IMAGE_stcui8nUnitWidth*2)*2,INT16(IMAGE_stcui8nUnitHeight*2)*5);
+	//	CANVAS_RGBA_ROM			IMAGE_stccvsTile
 	//		牌絵柄ビットマップデータを保持します。
 	//		横32、縦48ドット単位で並べています。
 	//		「-cm 0」は減色方法指示で、「0」は「単純切り捨て」です。
 	//		「1」の誤差拡散はちょっとノイジーだったんで。
-	static _INLINE_ CAUTO	stccvsTile=__O68K_CANVAS_RGBA_ROM("(Resource)/牌_BITMAP_TILE.png","-cm 0");
+	static _INLINE_ CAUTO	IMAGE_stccvsTile=__O68K_CANVAS_RGBA_ROM("(Resource)/牌_BITMAP_TILE.png","-cm 0");
 #ifdef SHOWBACKBITMAP
-	static _INLINE_ CAUTO	stccvsBack=__O68K_CANVAS_RGB_ROM("(Resource)/床面_BITMAP.png");
+	static _INLINE_ CAUTO	IMAGE_stccvsBack=__O68K_CANVAS_RGB_ROM("(Resource)/床面_BITMAP.png");
+#else
+	static constexpr UINT16	stcui16cColorBack=0x141;
 #endif
-	//	CANVAS_RGB_RAM			stcvsWork
-	//		非表示状態処理するためのバッファです。
-	//		牌の大きさは32x48ドットですが、
-	//		「半分ずらし」があるので処理単位は16x24ドットにしています。
-	static _INLINE_ AUTO	stcvsWork=CANVAS_RGB_RAM<16,24>();
+	static constexpr UINT8	SCREEN_stcui8iXBasis=10;
+	static constexpr UINT8	SCREEN_stcui8iYBasis=6;
+
+	//
+	//		クラス
+	//
+
+	class MOUSESTATE;
+	using					CMOUSESTATE=const MOUSESTATE;
+	using					PMOUSESTATE=MOUSESTATE*;
+	using					PCMOUSESTATE=CMOUSESTATE*;
+
+	//
+	//		クラス:MOUSESTATE
+	//
+
+	//	MOUSESTATE
+	class MOUSESTATE{
+	public:
+		VECTOR2					v2iCursor;
+		UINT16					ui16cButtonCurrent;
+		UINT16					ui16cButtonSingle;
+		OFWBOOL					eBusy;
+	};
 
 	//
 	//		定義本体:USER
 	//
 
-public:
-	//	UINT16					staaaui16cTile[stcui8nLayer][stcui8nHeight][stcui8nWidth]
+private:
+	static _INLINE_ MOUSESTATE	MOUSE_ststatState;
+	//	UINT16					GAME_staaaui16cTile[stcui8nLayer][stcui8nHeight][stcui8nWidth]
 	//		牌の配置状況を保持します。
 	//		「半分ずらし」があるので牌1つで田の字「2x2」の領域を占めます。
 	//		位置0～7の8ビットは牌個体識別で、「0」は無し(空白)、「1～144」が牌通し番号になります。
 	//		位置8～9の2ビットは田の字中の位置を示し、左上0、右上1、左下2、右下を設定します。
 	//		これにより、配列1要素だけで牌の位置が分かります。
-	static _INLINE_ UINT16	staaaui16cTile[stcui8nLayer][stcui8nHeight][stcui8nWidth];
+	static _INLINE_ UINT16	GAME_staaaui16cTile[GAME_stcui8nLayer][GAME_stcui8nHeight][GAME_stcui8nWidth];
+	//	CANVAS_RGB_RAM			OFF_stcvsOne
+	//		非表示状態処理するためのバッファです。
+	//		牌の大きさは32x48ドットですが、
+	//		「半分ずらし」があるので処理単位は16x24ドットにしています。
+	static _INLINE_ AUTO	OFF_stcvsOne=CANVAS_RGB_RAM<UINT16(IMAGE_stcui8nUnitWidth),UINT16(IMAGE_stcui8nUnitHeight)>();
+	static _INLINE_ OFWBOOL	OFF_steUpdated;
+	//	VECTOR2					SCREEN_stv2iOne
+	//		描画位置を画面座標で保持します。
+	static _INLINE_ VECTOR2	SCREEN_stv2iOne;
 public:
 	static VOID				stNew(VOID)noexcept{
+		constexpr UINT8			pattern_acui8ccursor[]=__O68K_PATTERN("(Resource)/00_SPRITE_CURSOR.png");
+		constexpr UINT16		palette_acui16ccursor[]=__O68K_PALETTE("(Resource)/00_SPRITE_CURSOR.png");
+		constexpr UINT8			pattern_acui8cgame[]=__O68K_PATTERN("(Resource)/10_SPRITE_lesson12.png");
+		constexpr UINT16		palette_acui16cgame[]=__O68K_PALETTE("(Resource)/10_SPRITE_lesson12.png");
+
+		MOUSE_ststatState.v2iCursor={320,240};
+		MOUSE_ststatState.ui16cButtonCurrent=0x0000;
+		MOUSE_ststatState.eBusy=TRUE;
 		GRAPHIC::stNew(TRUE);
+		GRAPHIC::PALETTE_stWrite(0x01,palette_acui16ccursor+1,15);
+		GRAPHIC::PALETTE_stWrite(0x11,palette_acui16cgame+1,15);
+		GRAPHIC::PATTERN_SPRITE_stWrite(0,8,pattern_acui8ccursor);
+		GRAPHIC::PATTERN_SPRITE_stWrite(8,8,pattern_acui8cgame);
+		GRAPHIC::VBLANK_stSetCallback(VBLANK_stCallback,NULL);
 #ifdef SHOWBACKBITMAP
-		GRAPHIC::stCopy(stccvsBack,VECTOR2::stv2ImmediateZero());
+		GRAPHIC::stCopy(IMAGE_stccvsBack,VECTOR2::stv2ImmediateZero());
 #else
 		GRAPHIC::stFill(stcui16cColorBack);
 #endif
-		STD::stFill(staaaui16cTile,SIZEOF(staaaui16cTile),0x00);
 		return;
 	}
 	static VOID				stDelete(VOID)noexcept{
 		GRAPHIC::stDelete();
 		return;
 	}
-	//	VOID					stWrite(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,CUINT8 cui8itile)
-	//		牌の配置状況「staaaui16cTile」に対し、
+	static _INLINE_ MOUSESTATE	MOUSE_ststatGetState(VOID)noexcept{
+		return MOUSE_ststatState;
+	}
+	static _INLINE_ VOID	MOUSE_stSetBusy(COFWBOOL cebusy)noexcept{
+		MOUSE_ststatState.eBusy=cebusy;
+		return;
+	}
+	static VOID				GAME_stArrange(CUINT32 cui32cseed=0)noexcept{
+		//	UINT8&					aacui8iposition[144][3]
+		//		複数配置対応しやすいよう、別名設定しておく。
+		CAUTO&					aacui8iposition=GAME_staacui8iPosition;
+		//	UINT8					aui8iarrange[144]
+		//		「0～143」の「配置番号」を混ぜた状態で保持します。
+		//		混ぜるのは解のバリエーションを持たせるためです。
+		UINT8					aui8iarrange[GAME_stcui8nTile];
+		UINT8					aui8itile[GAME_stcui8nTile];
+		//	UINT8					ui8itile
+		//		次に設置する「牌番号」を保持します。
+		//		配置進捗と見なせます。
+		UINT8					ui8itile;
+		CAUTO&					cfp_searchone=[&](UINT8& ui8ilocal,UINT8& ui8ix,UINT8& ui8iy,UINT8& ui8ilayer,UINT8& ui8ndistance)noexcept{
+			for(;ui8ilocal<GAME_stcui8nTile;++ui8ilocal){
+				CAUTO					cui8iarrange=aui8iarrange[ui8ilocal];
+
+				if(cui8iarrange!=GAME_stcui8iTileUndefined){
+					CAUTO&					acui8iposition=aacui8iposition[cui8iarrange];
+
+					//	配置番号は「済」ではなかった
+					ui8ix=acui8iposition[0];
+					ui8iy=acui8iposition[1];
+					ui8ilayer=acui8iposition[2];
+					if(GAME_steArrange_IsSettable(ui8ix,ui8iy,ui8ilayer,ui8ndistance))break;
+				}
+			}
+			return;
+		};
+		CAUTO&					cfp_searchpair=[&](UINT8& ui8ilocal0,UINT8& ui8ix0,UINT8& ui8iy0,UINT8& ui8ilayer0,UINT8& ui8ilocal1,UINT8& ui8ix1,UINT8& ui8iy1,UINT8& ui8ilayer1,UINT8& ui8ndistance)noexcept{
+			UINT8					ui8ndistance1;
+
+			cfp_searchone(ui8ilocal0,ui8ix0,ui8iy0,ui8ilayer0,ui8ndistance);
+			if(ui8ilocal0<GAME_stcui8nTile){
+				for(ui8ilocal1=ui8ilocal0+1;ui8ilocal1<GAME_stcui8nTile;++ui8ilocal1){
+					cfp_searchone(ui8ilocal1,ui8ix1,ui8iy1,ui8ilayer1,ui8ndistance1);
+					if(ui8ilocal1<GAME_stcui8nTile){
+						//	牌2つ目も「配置可能」であった。
+						//	ただし、「同じ高さで離れている」ような状況なら配置してはならないので、
+						//	牌1つ目を「仮配置」して再チェックする。
+						GAME_stWriteTile4(ui8ix0,ui8iy0,ui8ilayer0,UINT16(0x0001),TRUE);
+						{
+							CAUTO			cesettable=GAME_steArrange_IsSettable(ui8ix1,ui8iy1,ui8ilayer1,ui8ndistance1);
+
+							GAME_stWriteTile4(ui8ix0,ui8iy0,ui8ilayer0,UINT16(GAME_stcui8iTileUndefined),TRUE);
+							if(cesettable){
+								ui8ndistance=STD::stxGetMinimum(ui8ndistance,ui8ndistance1);
+								return;
+							}
+						}
+					}
+				}
+			}
+			ui8ilocal1=GAME_stcui8nTile;
+			return;
+		};
+
+		OS::LFSR_stSetSeed(cui32cseed);
+		STD::stFill(GAME_staaaui16cTile,SIZEOF(GAME_staaaui16cTile),0x00);
+		do{
+			//	実は「追加配置不可」の状況に陥る場合があるため、
+			//	やり直し想定でループにしておきます。
+			for(UINT8 ui8iarrange=0;ui8iarrange<GAME_stcui8nTile;++ui8iarrange){
+				CAUTO&					acui8iposition=aacui8iposition[ui8iarrange];
+
+				//	左右方向への走査を行えるよう、
+				//	「GAME_stcui16cTileTemporaryMask」付きで「田の字」属性を設定。
+				GAME_stWriteTile4(
+					acui8iposition[0],		//	cui8ix
+					acui8iposition[1],		//	cui8iy
+					acui8iposition[2],		//	cui8ilayer
+					UINT16(GAME_stcui8iTileUndefined),	//	cui16ctile
+					TRUE					//	cepart
+				);
+				//	ついでに配置番号を「整列状態」で設定
+				aui8iarrange[ui8iarrange]=ui8iarrange;
+				aui8itile[ui8iarrange]=ui8iarrange+1;
+			}
+			//	混ぜる事で「0～143」出現順をランダムに
+			for(UINT8 ui8ilocal=0;ui8ilocal<GAME_stcui8nTile;++ui8ilocal){
+				CAUTO					cui8ilocal_source=stui8Random<GAME_stcui8nTile>();
+				CAUTO					cui8iarrange_source=aui8iarrange[cui8ilocal_source];
+
+				aui8iarrange[cui8ilocal_source]=aui8iarrange[ui8ilocal];
+				aui8iarrange[ui8ilocal]=cui8iarrange_source;
+			}
+			//	牌4つセットでの混ぜ(難易度無関係)
+			{
+				constexpr AUTO			cui8npair4=UINT8(GAME_stcui8nTile>>2);
+
+				for(UINT8 ui8ilocal=0;ui8ilocal<cui8npair4;++ui8ilocal){
+					CAUTO					cui8ilocal4=ui8ilocal<<2;
+					CAUTO					cui8ilocal4_source=UINT8(stui8Random<cui8npair4>()<<2);
+					CAUTO					cui8itile_source0=aui8itile[cui8ilocal4_source+0];
+					CAUTO					cui8itile_source1=aui8itile[cui8ilocal4_source+1];
+					CAUTO					cui8itile_source2=aui8itile[cui8ilocal4_source+2];
+					CAUTO					cui8itile_source3=aui8itile[cui8ilocal4_source+3];
+
+					aui8itile[cui8ilocal4_source+0]=aui8itile[cui8ilocal4+0];
+					aui8itile[cui8ilocal4_source+1]=aui8itile[cui8ilocal4+1];
+					aui8itile[cui8ilocal4_source+2]=aui8itile[cui8ilocal4+2];
+					aui8itile[cui8ilocal4_source+3]=aui8itile[cui8ilocal4+3];
+					aui8itile[cui8ilocal4+0]=cui8itile_source0;
+					aui8itile[cui8ilocal4+1]=cui8itile_source1;
+					aui8itile[cui8ilocal4+2]=cui8itile_source2;
+					aui8itile[cui8ilocal4+3]=cui8itile_source3;
+				}
+			}
+			//	牌2つセットでの混ぜ(難易度左右する)
+			{
+				constexpr AUTO			cui8npair2=UINT8(GAME_stcui8nTile>>1);
+
+				for(UINT8 ui8ilocal=0;ui8ilocal<GAME_stcui8nDifficulty;++ui8ilocal){
+					CAUTO					cui8ilocal2_destination=UINT8(stui8Random<cui8npair2>()<<1);
+					CAUTO					cui8ilocal2_source=UINT8(stui8Random<cui8npair2>()<<1);
+					CAUTO					cui8itile_source0=aui8itile[cui8ilocal2_source+0];
+					CAUTO					cui8itile_source1=aui8itile[cui8ilocal2_source+1];
+
+					aui8itile[cui8ilocal2_source+0]=aui8itile[cui8ilocal2_destination+0];
+					aui8itile[cui8ilocal2_source+1]=aui8itile[cui8ilocal2_destination+1];
+					aui8itile[cui8ilocal2_destination+0]=cui8itile_source0;
+					aui8itile[cui8ilocal2_destination+1]=cui8itile_source1;
+				}
+			}
+			//	配置情報に従って置き場所を決め、
+			//	「設置して良いかどうか」を、左右の空き、下層の牌有無で判定。
+			//	2牌1組で置き場所を決めるのがミソ。
+			//	「処理が進まないと配置出来ない」位置もあるため、
+			//	配置ループは数度回る事が前提。
+			ui8itile=0;
+			while(ui8itile<GAME_stcui8nTile){
+				//	UINT8					cui8itile_start
+				//		配置ループ開始前の「牌番号」を保持します。
+				//		「進捗有無」判定に使います。
+				CAUTO					cui8itile_start=ui8itile;
+
+				for(UINT8 ui8ilocal=0;ui8ilocal<GAME_stcui8nTile;++ui8ilocal){
+					UINT8					ui8ilocal0,ui8ix0,ui8iy0,ui8ilayer0;
+					UINT8					ui8ilocal1,ui8ix1,ui8iy1,ui8ilayer1;
+					UINT8					ui8ndistance;
+
+					//	ここから実配置開始。
+					//	恐らく、ループは一度で完了しない。
+					//	とりあえず「配置可能」の候補2つをゲットする。
+					//	「左右空きが大きい」方から埋めていく事で「追加配置不可」の状況を起きにくくする。
+					ui8ilocal0=ui8ilocal;
+					cfp_searchpair(ui8ilocal0,ui8ix0,ui8iy0,ui8ilayer0,ui8ilocal1,ui8ix1,ui8iy1,ui8ilayer1,ui8ndistance);
+					if(ui8ilocal1<GAME_stcui8nTile){
+						{
+							UINT8					ui8ilocal0d,ui8ix0d,ui8iy0d,ui8ilayer0d;
+							UINT8					ui8ilocal1d,ui8ix1d,ui8iy1d,ui8ilayer1d;
+							UINT8					ui8ndistanced;
+
+							ui8ilocal0d=ui8ilocal1+1;
+							cfp_searchpair(ui8ilocal0d,ui8ix0d,ui8iy0d,ui8ilayer0d,ui8ilocal1d,ui8ix1d,ui8iy1d,ui8ilayer1d,ui8ndistanced);
+							if(ui8ilocal1d<GAME_stcui8nTile){
+								if(ui8ndistance<ui8ndistanced){
+									ui8ilocal0=		ui8ilocal0d;
+									ui8ix0=			ui8ix0d;
+									ui8iy0=			ui8iy0d;
+									ui8ilayer0=		ui8ilayer0d;
+									ui8ilocal1=		ui8ilocal1d;
+									ui8ix1=			ui8ix1d;
+									ui8iy1=			ui8iy1d;
+									ui8ilayer1=		ui8ilayer1d;
+									ui8ndistance=	ui8ndistanced;
+								}
+							}
+						}
+						//	無事牌2つ目も「配置可能」で確定できたので、処理済みにマーク
+						aui8iarrange[ui8ilocal0]=GAME_stcui8iTileUndefined;
+						aui8iarrange[ui8ilocal1]=GAME_stcui8iTileUndefined;
+#ifdef SHOWARRANGEPROGRESS
+						GAME_stWriteTile(ui8ix0,ui8iy0,ui8ilayer0,aui8itile[ui8itile],TRUE);++ui8itile;
+						GAME_stWriteTile(ui8ix1,ui8iy1,ui8ilayer1,aui8itile[ui8itile],TRUE);++ui8itile;
+#else
+						GAME_stWriteTile4(ui8ix0,ui8iy0,ui8ilayer0,UINT16(aui8itile[ui8itile]),TRUE);++ui8itile;
+						GAME_stWriteTile4(ui8ix1,ui8iy1,ui8ilayer1,UINT16(aui8itile[ui8itile]),TRUE);++ui8itile;
+#endif
+						ui8ilocal=ui8ilocal1;
+					}
+				}
+				if(ui8itile==cui8itile_start){
+					//	ここに至ったという事は進捗ゼロであったという事。
+					//	不幸にも「追加配置不可」の状況に陥った。
+					break;
+				}
+			}
+		}while(ui8itile<GAME_stcui8nTile);
+		return;
+	}
+	//	VOID					GAME_stWriteTile(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,CUINT8 cui8itile,COFWBOOL ceupdate)
+	//		牌の配置状況「GAME_staaaui16cTile」に対し、
 	//		横「cui8ix」、縦「cui8iy」、高さ「cui8ilayer」で通し番号「cui8itile」の牌を設定します。
 	//		「cui8itile」を「0」で呼び出すと、牌が除去されます。
-	//		牌設定、除去共に「2x2」単位で処理を行うので田の字4回呼び出しは不要ですが、
-	//		(まとめ更新に都合良きよう)表示更新はしないので、
-	//		必要な設定完了し次第、「stDraw」を呼び出してください。
-	static VOID				stWrite(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,CUINT8 cui8itile)noexcept{
+	//		牌設定、除去共に「2x2」単位で処理を行うので田の字4回呼び出しは不要です。
+	//		「ceupdate」に「TRUE」を指定すると表示更新も行います。
+	static VOID				GAME_stWriteTile(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,CUINT8 cui8itile,COFWBOOL ceupdate=TRUE)noexcept{
 		if(cui8itile){
-			CAUTO					cui16ctile=UINT16(cui8itile);
-
-			staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+0]=cui16ctile|0x0000;
-			staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+1]=cui16ctile|0x0100;
-			staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+0]=cui16ctile|0x0200;
-			staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+1]=cui16ctile|0x0300;
+			GAME_stWriteTile4(cui8ix,cui8iy,cui8ilayer,UINT16(cui8itile),TRUE);
+			if(ceupdate)SCREEN_stDraw(cui8ix,cui8iy,cui8ilayer);
 		}else{
 			if(
-				CAUTO					cui16ctile=staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
-				cui16ctile
-			)switch(cui16ctile&0x0300){
-			case 0x0000:
-				staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+0]=0x0000;
-				staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+1]=0x0000;
-				staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+0]=0x0000;
-				staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+1]=0x0000;
-				break;
-			case 0x0100:
-				staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix-1]=0x0000;
-				staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+0]=0x0000;
-				staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix-1]=0x0000;
-				staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+0]=0x0000;
-				break;
-			case 0x0200:
-				staaaui16cTile[cui8ilayer][cui8iy-1][cui8ix+0]=0x0000;
-				staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+1]=0x0000;
-				staaaui16cTile[cui8ilayer][cui8iy-1][cui8ix+0]=0x0000;
-				staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+1]=0x0000;
-				break;
-			case 0x0300:
-				staaaui16cTile[cui8ilayer][cui8iy-1][cui8ix-1]=0x0000;
-				staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+0]=0x0000;
-				staaaui16cTile[cui8ilayer][cui8iy-1][cui8ix-1]=0x0000;
-				staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+0]=0x0000;
-				break;
+				AUTO					ui16ctile=GAME_staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
+				ui16ctile
+			){
+				AUTO					ui8ix=cui8ix,ui8iy=cui8iy;
+
+				GAME_stAdjustPosition(ui8ix,ui8iy,ui16ctile);
+				GAME_stWriteTile4(ui8ix,ui8iy,cui8ilayer,0x0000,FALSE);
+				if(ceupdate)SCREEN_stDraw(ui8ix,ui8iy,cui8ilayer);
 			}
 		}
 		return;
 	}
-	//	VOID					stDraw(VOID)
-	//		全画面更新します。
-	//		残念な事に遅いので、初期表示時以外は位置指定するようにしてください。
-	static VOID				stDraw(VOID)noexcept{
-		for(UINT8 ui8ix=0;ui8ix<stcui8nWidth+2;++ui8ix)for(UINT8 ui8iy=0;ui8iy<stcui8nHeight+2;++ui8iy)stDraw_Layered(ui8ix,ui8iy,stcui8nLayer-1,stcui8nLayer-1);
+	static OFWBOOL			GAME_steIsSelectable(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
+		if(
+			AUTO					ui16ctile=GAME_staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
+			ui16ctile
+		){
+			AUTO					ui8ix=cui8ix,ui8iy=cui8iy;
+
+			GAME_stAdjustPosition(ui8ix,ui8iy,ui16ctile);
+			if(
+				(cui8ilayer+1<GAME_stcui8nLayer)?(
+					(GAME_staaaui16cTile[cui8ilayer+1][cui8iy+0][cui8ix+0]==0x0000)&&
+					(GAME_staaaui16cTile[cui8ilayer+1][cui8iy+0][cui8ix+1]==0x0000)&&
+					(GAME_staaaui16cTile[cui8ilayer+1][cui8iy+1][cui8ix+0]==0x0000)&&
+					(GAME_staaaui16cTile[cui8ilayer+1][cui8iy+1][cui8ix+1]==0x0000)
+				):TRUE
+			)return OFWBOOL((2<=ui8ix)?(
+				(GAME_staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix-1]==0x0000)&&
+				(GAME_staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix-1]==0x0000)
+			):TRUE)||OFWBOOL((ui8ix+2<GAME_stcui8nWidth)?(
+				(GAME_staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+2]==0x0000)&&
+				(GAME_staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+2]==0x0000)
+			):TRUE);
+		}
+		return FALSE;
+	}
+	static VOID				GAME_stSelectTile(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,COFWBOOL ceselected,COFWBOOL ceupdate=TRUE)noexcept{
+		if(
+			AUTO					ui16ctile=GAME_staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
+			ui16ctile
+		){
+			AUTO					ui8ix=cui8ix,ui8iy=cui8iy;
+
+			GAME_stAdjustPosition(ui8ix,ui8iy,ui16ctile);
+			GAME_stWriteTile4(
+				ui8ix,ui8iy,cui8ilayer,
+				ceselected?(ui16ctile|GAME_stcui16cTileSelectedMask):(ui16ctile&~GAME_stcui16cTileSelectedMask),
+				TRUE
+			);
+			if(ceupdate)SCREEN_stDrawFace(ui8ix,ui8iy,cui8ilayer);
+		}
 		return;
 	}
-	//	VOID					stDraw(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)
-	//		高さ「cui8ilayer」での、位置「(cui8ix,cui8iy)」右下方向「1x1」単位(1/2牌分)領域の表示更新を行います。
+	static _INLINE_ UINT16	GAME_stui16cGetTile(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
+#ifdef SHOWARRANGEPROGRESS
+		CAUTO					cui16ctile=GAME_staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
+
+		return ((cui16ctile&0xff)!=GAME_stcui8iTileUndefined)?cui16ctile:0x0000;
+#else
+		return GAME_staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
+#endif
+	}
+	static UINT16			GAME_stui16cGetTilebyScreenPosition(UINT8& ui8ix,UINT8& ui8iy,UINT8& ui8ilayer,CVECTOR2& cv2iposition)noexcept{
+		//	通常高さでのチェック
+		for(UINT8 ui8ilayer1=GAME_stcui8nLayer;0<ui8ilayer1;--ui8ilayer1){
+			CAUTO				cui8ilayer=UINT8(ui8ilayer1-1);
+
+			if(
+				CAUTO					cv2ipoint=cv2iposition+SCREEN_stv2dGetOffset(INT8(cui8ilayer));
+				(0<=cv2ipoint.i16iX())&&
+				(cv2ipoint.i16iX()<INT16(GAME_stcui8nWidth)*INT16(IMAGE_stcui8nUnitWidth))&&
+				(0<=cv2ipoint.i16iY())&&
+				(cv2ipoint.i16iY()<INT16(GAME_stcui8nHeight)*INT16(IMAGE_stcui8nUnitHeight))
+			){
+				ui8ix=UINT8(cv2ipoint.i16iX()/USER::IMAGE_stcui8nUnitWidth);
+				ui8iy=stui8Divide24(UINT16(cv2ipoint.i16iY()));
+				for(UINT8 ui8ilayer1_over=GAME_stcui8nLayer;cui8ilayer<ui8ilayer1_over;--ui8ilayer1_over){
+					ui8ilayer=UINT8(ui8ilayer1_over-1);
+					if(
+						AUTO					ui16ctile=GAME_staaaui16cTile[ui8ilayer][ui8iy][ui8ix];
+						ui16ctile
+					){
+						GAME_stAdjustPosition(ui8ix,ui8iy,ui16ctile);
+						return ui16ctile;
+					}
+				}
+			}
+		}
+		//	床面でのチェック(1段目の横っ面チェック)
+		ui8ilayer=0;
+		if(
+			CAUTO					cv2ipoint=cv2iposition+SCREEN_stv2dGetOffset(-1);
+			(0<=cv2ipoint.i16iX())&&
+			(cv2ipoint.i16iX()<INT16(GAME_stcui8nWidth)*INT16(IMAGE_stcui8nUnitWidth))&&
+			(0<=cv2ipoint.i16iY())&&
+			(cv2ipoint.i16iY()<INT16(GAME_stcui8nHeight)*INT16(IMAGE_stcui8nUnitHeight))
+		){
+			ui8ix=UINT8(cv2ipoint.i16iX()/USER::IMAGE_stcui8nUnitWidth);
+			ui8iy=stui8Divide24(UINT16(cv2ipoint.i16iY()));
+			if(
+				AUTO					ui16ctile=GAME_staaaui16cTile[0][ui8iy][ui8ix];
+				ui16ctile
+			){
+				GAME_stAdjustPosition(ui8ix,ui8iy,ui16ctile);
+				return ui16ctile;
+			}
+		}
+		return 0x0000;
+	}
+	static _INLINE_ VECTOR2	SCREEN_stv2dGetOffset(CINT8 ci8ilayer)noexcept{
+		return {
+			INT16(INT16(ci8ilayer)*INT16(IMAGE_stcui8nPerspectiveWidth)-(INT16(SCREEN_stcui8iXBasis)<<3)),
+			INT16(INT16(ci8ilayer)*INT16(IMAGE_stcui8nPerspectiveHeight)-(INT16(SCREEN_stcui8iYBasis)<<3))
+		};
+	}
+	static VECTOR2			SCREEN_stv2iGetPosition(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
+		return VECTOR2(
+			INT16(cui8ix)*INT16(USER::IMAGE_stcui8nUnitWidth),
+			INT16(cui8iy)*INT16(USER::IMAGE_stcui8nUnitHeight)
+		)-SCREEN_stv2dGetOffset(INT8(cui8ilayer));
+	}
+	//	VOID					SCREEN_stDraw(VOID)
+	//		全画面更新します。
+	//		残念な事に遅いので、初期表示時以外は位置指定するようにしてください。
+	static VOID				SCREEN_stDraw(VOID)noexcept{
+		for(UINT8 ui8iy=0;ui8iy<GAME_stcui8nHeight+2;++ui8iy){
+			for(UINT8 ui8ix=0;ui8ix<GAME_stcui8nWidth+2;++ui8ix){
+				SCREEN_stDraw_Layered(ui8ix,ui8iy,GAME_stcui8nLayer-1);
+			}
+		}
+		return;
+	}
+	//	VOID					SCREEN_stDraw(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)
+	//		位置「(cui8ix,cui8iy)」、高さ「cui8ilayer」にある牌に関連する領域の表示更新を行います。
 	//		更新を行う「領域」は画面座標であり、高さが下る度パース的には「右下」に伸びるため、
 	//		牌管理情報的には「左上」に遡ります。
 	//		また、横っ面、影の更新も行うため、「右下」への拡張も行います。
-	static _INLINE_ VOID	stDraw(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer=stcui8nLayer-1)noexcept{
+	static _INLINE_ VOID	SCREEN_stDraw(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
 		AUTO					ui8ix=cui8ix;
 		AUTO					ui8iy=cui8iy;
 
 		//	もし牌があるなら左上起点になるよう補正
-		if((cui8ix<stcui8nWidth)&&(cui8iy<stcui8nHeight))if(
-			CAUTO					cui16ctile=staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
-			cui16ctile
-		)switch(cui16ctile&0x0300){
-		case 0x0000:
-			break;
-		case 0x0100:
-			--ui8ix;
-			break;
-		case 0x0200:
-			--ui8iy;
-			break;
-		case 0x0300:
-			--ui8ix;
-			--ui8iy;
-			break;
-		}
+		if((cui8ix<GAME_stcui8nWidth)&&(cui8iy<GAME_stcui8nHeight))if(
+			AUTO					ui16ctile=GAME_stui16cGetTile(cui8ix,cui8iy,cui8ilayer);
+			ui16ctile
+		)GAME_stAdjustPosition(ui8ix,ui8iy,ui16ctile);
 		//	横っ面と影で右「(4+8)*(段番号+1)」ドット、下「(8+8)*(段番号+1)」ドット拡大があるので、
 		//	その表示範囲をカバーすべく、処理範囲を決定。
 		{
-			CAUTO					ci16nextensionwidth=INT16((4+8)*INT16(cui8ilayer+1)+32);
+			CAUTO					ci16nextensionwidth=INT16((INT16(IMAGE_stcui8nPerspectiveWidth+IMAGE_stcui8nShadowWidth))*INT16(cui8ilayer+1)+INT16(IMAGE_stcui8nUnitWidth*2));
 
 			for(
-				AUTO					i16nextensionheight=INT16((8+8)*INT16(cui8ilayer+1)+48);
+				AUTO					i16nextensionheight=INT16(INT16(IMAGE_stcui8nPerspectiveHeight+IMAGE_stcui8nShadowHeight)*INT16(cui8ilayer+1)+INT16(IMAGE_stcui8nUnitHeight*2));
 				0<i16nextensionheight;
-				i16nextensionheight-=24
+				i16nextensionheight-=INT16(IMAGE_stcui8nUnitHeight)
 			){
 				AUTO					ui8ix_current=ui8ix;
 
 				for(
 					AUTO					i8nextensionwidth=ci16nextensionwidth;
 					0<i8nextensionwidth;
-					i8nextensionwidth-=16
+					i8nextensionwidth-=INT8(IMAGE_stcui8nUnitWidth)
 				){
-					stDraw_Layered(ui8ix_current,ui8iy,cui8ilayer,cui8ilayer);
+					SCREEN_stDraw_Layered(ui8ix_current,ui8iy,cui8ilayer,TRUE);	//	「空白」への更新もあり得るので強制する必要がある
 					++ui8ix_current;
 				}
 				++ui8iy;
@@ -268,159 +609,399 @@ public:
 		}
 		return;
 	}
-private:
-	//	VOID					stDraw_Layered(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,CUINT8 cui8ilayershowing)
-	//		高さ「cui8ilayershowing」での、位置「(cui8ix,cui8iy)」右下方向「1x1」単位(1/2牌分)領域の表示更新を行います。
-	//		「cui8ilayer」は処理対象段番号で、「cui8ilayershowing」と異なるなら、
-	//		それは描画範囲が右下に寄っているという事です。
-	static VOID				stDraw_Layered(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,CUINT8 cui8ilayershowing)noexcept{
-		CAUTO					cv2idestination=VECTOR2(
-			INT16(((cui8ix*2+stcui8iXBasis)<<3)-(cui8ilayershowing<<2)),
-			INT16(((cui8iy*3+stcui8iYBasis)<<3)-(cui8ilayershowing<<3))
-		);
+	static _INLINE_ VOID	SCREEN_stDrawFace(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
+		AUTO					ui8ix=cui8ix;
+		AUTO					ui8iy=cui8iy;
 
-		//	背景
-		//	「cui8ix」、「cui8iy」は範囲外の可能性あり
-		if(cui8ilayer){
-			//	再帰呼び出しして1段下の様子描画を行います。
-			//	牌の表面描画がある場合は省略しても構わんのですが、
-			//	角とか透過させられるよう、毎回描画することにします。
-			stDraw_Layered(cui8ix,cui8iy,cui8ilayer-1,cui8ilayershowing);
-		}else{
-			//	最下段時、床面表示する
-#ifdef SHOWBACKBITMAP
-			stcvsWork.CopyRect(stccvsBack,{cv2idestination,stcvsWork.stcv2nSize},VECTOR2::stv2ImmediateZero());
-#else
-			stcvsWork.Fill(stcui16cColorBack);
-#endif
+		//	もし牌があるなら左上起点になるよう補正
+		if((cui8ix<GAME_stcui8nWidth)&&(cui8iy<GAME_stcui8nHeight))if(
+			AUTO					ui16ctile=GAME_stui16cGetTile(cui8ix,cui8iy,cui8ilayer);
+			ui16ctile
+		){
+			GAME_stAdjustPosition(ui8ix,ui8iy,ui16ctile);
+			SCREEN_stDraw_Layered(ui8ix,ui8iy,cui8ilayer);
+			SCREEN_stDraw_Layered(ui8ix+1,ui8iy,cui8ilayer);
+			SCREEN_stDraw_Layered(ui8ix,ui8iy+1,cui8ilayer);
+			SCREEN_stDraw_Layered(ui8ix+1,ui8iy+1,cui8ilayer);
 		}
-		{
-			CAUTO					cui8doffset=cui8ilayershowing-cui8ilayer;
-			//	VECTOR2					cv2idestination_minimum
-			//		最下段時、位置「(4,8)」ずらしで床面影描画を行うので、
-			//		表示対象に入るよう、下限値をマイナスにする。
-			CAUTO					cv2idestination_minimum=(cui8ilayer==0)?VECTOR2(-4,-8):VECTOR2::stv2ImmediateZero();
-			AUTO					v2idestination=VECTOR2(
-				INT16(cui8doffset<<2),
-				INT16(cui8doffset<<3)
-			);
-			AUTO					ui8ix=cui8ix;
-			AUTO					ui8iy=cui8iy;
+		return;
+	}
+private:
+	static UINT8			stui8Divide24(CUINT16 cui16source)noexcept{
+		//	「384/24=16」程度が得られれば良い。
+		//	n*11/256
+		CAUTO					cui8result=UINT8((cui16source*11)>>8);
 
-			//	下面描画のため「左上遡り」をするが、
-			//	横「-16」以下、「+16」以上は表示対象から外れるので、
-			//	最小限遡っておく。
-			while(cv2idestination_minimum.i16iX()<v2idestination.i16iX()){
-				v2idestination.i16iX()-=16;
-				--ui8ix;
+		if(cui16source<UINT16(cui8result)*24)return cui8result-1;
+		return cui8result;
+	}
+	template<CUINT8 cui8nRange>
+	static UINT8			stui8Random(VOID)noexcept{
+		return UINT8(((OS::LFSR_stui16Read()&0xff)*UINT16(cui8nRange))>>8);
+	}
+	static VOID				VBLANK_stCallback(const PVOID cpobject)noexcept{
+		CAUTO					cstatmouse=OS::DEVICE_MOUSE_ststatRead();
+
+		MOUSE_ststatState.v2iCursor+=cstatmouse.v2dRelative;
+		MOUSE_ststatState.v2iCursor.i16iX()=STD::stxClamp(MOUSE_ststatState.v2iCursor.i16iX(),INT16(0),INT16(639));
+		MOUSE_ststatState.v2iCursor.i16iY()=STD::stxClamp(MOUSE_ststatState.v2iCursor.i16iY(),INT16(0),INT16(479));
+		if(MOUSE_ststatState.eBusy)GRAPHIC::SPRITE_stWrite16(0,MOUSE_ststatState.v2iCursor-VECTOR2(8,8),0x04,0x0);
+		else GRAPHIC::SPRITE_stWrite16(0,MOUSE_ststatState.v2iCursor,0x00,0x0);
+		MOUSE_ststatState.ui16cButtonSingle=cstatmouse.ui16cButton&~MOUSE_ststatState.ui16cButtonCurrent;
+		MOUSE_ststatState.ui16cButtonCurrent=cstatmouse.ui16cButton;
+		return;
+	}
+	static VOID				GAME_stAdjustPosition(UINT8& ui8ix,UINT8& ui8iy,UINT16& ui16ctile)noexcept{
+		switch(ui16ctile&GAME_stcui16cTilePartMask){
+		case GAME_stcui16cTilePartLU:
+			break;
+		case GAME_stcui16cTilePartRU:
+			--ui8ix;
+			break;
+		case GAME_stcui16cTilePartLD:
+			--ui8iy;
+			break;
+		case GAME_stcui16cTilePartRD:
+			--ui8ix;
+			--ui8iy;
+			break;
+		}
+		ui16ctile&=~GAME_stcui16cTilePartMask;
+		return;
+	}
+	static _INLINE_ VOID	GAME_stWriteTile4(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,CUINT16 cui16ctile,COFWBOOL cepart)noexcept{
+		GAME_staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+0]=cui16ctile|(cepart?GAME_stcui16cTilePartLU:0x0000);
+		GAME_staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+1]=cui16ctile|(cepart?GAME_stcui16cTilePartRU:0x0000);
+		GAME_staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+0]=cui16ctile|(cepart?GAME_stcui16cTilePartLD:0x0000);
+		GAME_staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+1]=cui16ctile|(cepart?GAME_stcui16cTilePartRD:0x0000);
+		return;
+	}
+	//	OFWBOOL					GAME_steArrange_IsSettable(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,UINT8& ui8ndistance)
+	//		位置「(cui8ix,cui8iy,cui8ilayer)」に配置可能であるかどうかを返します。
+	//		下記条件に合致すると「配置可能」と判定します。
+	//		・牌が存在しない事
+	//		・下層が存在する事
+	//		・下記条件を満たす事
+	//		  ・左右延長線上に牌が存在しない
+	//		  ・左延長線上に牌が存在せず、右に牌が隣接している
+	//		  ・右延長線上に牌が存在せず、左に牌が隣接している
+	static OFWBOOL			GAME_steArrange_IsSettable(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,UINT8& ui8ndistance)noexcept{
+		CAUTO					cui16ctile=GAME_staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
+		OFWBOOL					eneighbour;
+
+		if(GAME_steArrange_IsThisExists(cui8ix,cui8iy,cui8ilayer))return FALSE;
+		if(!GAME_steArrange_IsFootExists(cui8ix,cui8iy,cui8ilayer))return FALSE;
+		ui8ndistance=0;
+		if(GAME_steArrange_IsSettable_Side(cui8ix,cui8iy,cui8ilayer,TRUE,eneighbour,ui8ndistance)){
+			if(eneighbour){
+				UINT8					ui8ndistancer=0;
+
+				if(GAME_steArrange_IsSettable_Side(cui8ix,cui8iy,cui8ilayer,FALSE,eneighbour,ui8ndistancer)){
+					ui8ndistance=STD::stxGetMaximum(ui8ndistance,ui8ndistancer);
+					return !eneighbour;
+				}else{
+					return FALSE;
+				}
+			}else{
+				return GAME_steArrange_IsSettable_Side(cui8ix,cui8iy,cui8ilayer,FALSE,eneighbour,ui8ndistance);
 			}
-			//	縦は24ドット基準。
-			while(cv2idestination_minimum.i16iY()<v2idestination.i16iY()){
-				v2idestination.i16iY()-=24;
-				--ui8iy;
-			}
-			{
-				CAUTO					ci16idestinationx_origin=v2idestination.i16iX();
+		}
+		return FALSE;
+	}
+	static OFWBOOL			GAME_steArrange_IsSettable_Side(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,COFWBOOL cel,OFWBOOL& eneighbour,UINT8& ui8ndistance)noexcept{
+		//	この時点で、位置「(cui8ix,cui8iy,cui8ilayer)」に牌が存在しない事は前提。
+		++ui8ndistance;
+		if(cel?(2<=cui8ix):(cui8ix<GAME_stcui8nWidth-2)){
+			AUTO					ui8ixh=cel?UINT8(cui8ix-2):UINT8(cui8ix+2);
+			AUTO					ui16ctile=GAME_staaaui16cTile[cui8ilayer][cui8iy][ui8ixh];
 
-				for(;v2idestination.i16iY()<24;v2idestination.i16iY()+=24){
-					AUTO					ui8ix_current=ui8ix;
+			if(ui16ctile){
+				AUTO					ui8iyh=cui8iy;
 
-					for(v2idestination.i16iX()=ci16idestinationx_origin;v2idestination.i16iX()<16;v2idestination.i16iX()+=16){
-						stDraw_Layered_Positioned(v2idestination,ui8ix_current,ui8iy,cui8ilayer);
-						++ui8ix_current;
+				//	「空き(端)」ではない。
+				GAME_stAdjustPosition(ui8ixh,ui8iyh,ui16ctile);
+				if(ui8iyh==cui8iy){
+					//	「半分ずらし」ではない
+					if(GAME_steArrange_IsExists(ui16ctile)){
+						//	実在なので「隣接あり設置可能」で確定
+						eneighbour=TRUE;
+						return TRUE;
+					}else{
+						//	ひとまず隣は空いているが、延長線上がどうかは分からない。
+						if(GAME_steArrange_IsFootExists(ui8ixh,ui8iyh,cui8ilayer)){
+							if(GAME_steArrange_IsSettable_Side(ui8ixh,ui8iyh,cui8ilayer,cel,eneighbour,ui8ndistance)){
+								//	ここで「eneighbour」が「TRUE」だと、
+								//	「1つ離れて存在」という事になるので設置してはならない。
+								//	返すべきは「eneighbour」の否定。
+								return !eneighbour;
+							}else{
+								//	延長線上にあるか何かした。
+								return FALSE;
+							}
+						}else{
+							//	下層が存在していないなら「延長線自体無い」という事なので、「隣接無し配置可能」で確定。
+							eneighbour=FALSE;
+							return TRUE;
+						}
 					}
-					++ui8iy;
+				}else{
+					//	「半分ずらし」になっている
+					if(GAME_steArrange_IsExists(ui16ctile)){
+						OFWBOOL					eneighbour_dummy;
+
+						//	実在なので「隣接設置可能」で仮
+						eneighbour=TRUE;
+						//	「設置可能」でありさえすれば、
+						//	「隣接設置可能」で確定
+						return GAME_steArrange_IsSettable_Side(ui8ixh,ui8iyh+2,cui8ilayer,cel,eneighbour_dummy,ui8ndistance);
+					}else{
+						//	ひとまず上隣は空いているが、延長線上がどうかは分からない。
+						if(GAME_steArrange_IsFootExists(ui8ixh,ui8iyh,cui8ilayer)){
+							AUTO					ui8ndistanced=ui8ndistance;
+
+							if(GAME_steArrange_IsSettable_Side(ui8ixh,ui8iyh,cui8ilayer,cel,eneighbour,ui8ndistance)){
+								//	ここで「eneighbour」が「TRUE」だと、
+								//	「1つおきで存在」という事になるので設置してはならない。
+								if(eneighbour){
+									return FALSE;
+								}else{
+									CAUTO					cesettable=GAME_steArrange_IsSettable_Side(ui8ixh,ui8iyh+2,cui8ilayer,cel,eneighbour,ui8ndistanced);
+
+									ui8ndistance=STD::stxGetMaximum(ui8ndistance,ui8ndistanced);
+									return cesettable;
+								}
+							}else{
+								return FALSE;
+							}
+						}else{
+							//	上隣に下層は存在していないので「延長線自体無い」。
+							return GAME_steArrange_IsSettable_Side(ui8ixh,ui8iyh+2,cui8ilayer,cel,eneighbour,ui8ndistance);
+						}
+					}
+				}
+			}else{
+				AUTO					ui8iyh=UINT8(cui8iy+1);
+
+				//	「空き(端)」であった。
+				ui16ctile=GAME_staaaui16cTile[cui8ilayer][ui8iyh][ui8ixh];
+				if(ui16ctile){
+					//	「半分ずらし」になっている
+					if(GAME_steArrange_IsExists(ui16ctile)){
+						//	実在なので「隣接あり設置可能」で確定
+						eneighbour=TRUE;
+						return TRUE;
+					}else{
+						if(GAME_steArrange_IsFootExists(ui8ixh,ui8iyh,cui8ilayer)){
+							return GAME_steArrange_IsSettable_Side(ui8ixh,ui8iyh,cui8ilayer,cel,eneighbour,ui8ndistance);
+						}
+					}
 				}
 			}
 		}
-		if(cui8ilayer==cui8ilayershowing)GRAPHIC::stCopy(stcvsWork,cv2idestination);
+		eneighbour=FALSE;
+		return TRUE;
+	}
+	static _INLINE_ OFWBOOL	GAME_steArrange_IsFootExists(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
+		CAUTO					celayern=OFWBOOL(0<cui8ilayer);
+		CAUTO					cefootlu=celayern?GAME_steArrange_IsThisExists(cui8ix+0,cui8iy+0,cui8ilayer-1):TRUE;
+		CAUTO					cefootru=celayern?GAME_steArrange_IsThisExists(cui8ix+1,cui8iy+0,cui8ilayer-1):TRUE;
+		CAUTO					cefootld=celayern?GAME_steArrange_IsThisExists(cui8ix+0,cui8iy+1,cui8ilayer-1):TRUE;
+		CAUTO					cefootrd=celayern?GAME_steArrange_IsThisExists(cui8ix+1,cui8iy+1,cui8ilayer-1):TRUE;
+
+		return (cefootlu&&cefootru&&cefootld&&cefootrd);
+	}
+	static _INLINE_ OFWBOOL	GAME_steArrange_IsThisExists(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
+		return GAME_steArrange_IsExists(GAME_staaaui16cTile[cui8ilayer][cui8iy][cui8ix]);
+	}
+	static constexpr OFWBOOL	GAME_steArrange_IsExists(CUINT16 cui16ctile)noexcept{
+		CAUTO					cui8itile=UINT8(cui16ctile&0xff);
+
+		return OFWBOOL((cui8itile!=0x00)&&(cui8itile!=GAME_stcui8iTileUndefined));
+	}
+	//	VOID					SCREEN_stDraw_Layered(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)
+	//		高さ「cui8ilayer」での、位置「(cui8ix,cui8iy)」右下方向「1x1」単位(1/2牌分)領域の表示更新を行います。
+	//		「cui8ilayer」は画面表示上の位置を決めるためのもので、
+	//		内部描画処理はトップ「GAME_stcui8nLayer-1」からの開始になります。
+	static VOID				SCREEN_stDraw_Layered(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,COFWBOOL ceupdateforced=FALSE)noexcept{
+		OFF_stDraw_Begin(cui8ix,cui8iy,cui8ilayer);
+		if(ceupdateforced)OFF_stDraw_MarkUpdate();
+		for(UINT8 ui8ilayer_drawing=0;ui8ilayer_drawing<GAME_stcui8nLayer;++ui8ilayer_drawing)OFF_stDraw_Layer(cui8ix,cui8iy,cui8ilayer,ui8ilayer_drawing);
+		if(OFF_steUpdated)GRAPHIC::stCopy(OFF_stcvsOne,SCREEN_stv2iOne);
 		return;
 	}
-	//	VOID					stDraw_Layered_Positioned(CVECTOR2& cv2idestination,CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)
+	static VOID				OFF_stDraw_Begin(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
+		OFF_steUpdated=FALSE;
+		SCREEN_stv2iOne={
+			INT16(((cui8ix*2+SCREEN_stcui8iXBasis)<<3)-(cui8ilayer<<2)),
+			INT16(((cui8iy*3+SCREEN_stcui8iYBasis)<<3)-(cui8ilayer<<3))
+		};
+		return;
+	}
+	static _INLINE_ VOID	OFF_stDraw_MarkUpdate(VOID)noexcept{
+		if(!OFF_steUpdated)OFF_stDraw_MarkUpdate_Body();
+		return;
+	}
+	static VOID				OFF_stDraw_MarkUpdate_Body(VOID)noexcept{
+		OFF_steUpdated=TRUE;
+#ifdef SHOWBACKBITMAP
+		OFF_stcvsOne.CopyRect(IMAGE_stccvsBack,{SCREEN_stv2iOne,OFF_stcvsOne.stcv2nSize},VECTOR2::stv2ImmediateZero());
+#else
+		OFF_stcvsOne.Fill(stcui16cColorBack);
+#endif
+		return;
+	}
+	static VOID				OFF_stDraw_Layer(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,CUINT8 cui8ilayer_drawing)noexcept{
+		CAUTO					cui8doffset=cui8ilayer-cui8ilayer_drawing;
+		//	VECTOR2					cv2idestination_minimum
+		//		最下段時、位置「(4,8)」ずらしで床面影描画を行うので、
+		//		表示対象に入るよう、下限値をマイナスにする。
+		CAUTO					cv2idestination_minimum=(cui8ilayer_drawing==0)?VECTOR2(-INT16(IMAGE_stcui8nPerspectiveWidth),-INT16(IMAGE_stcui8nPerspectiveHeight)):VECTOR2::stv2ImmediateZero();
+		AUTO					v2idestination=VECTOR2(
+			INT16(cui8doffset*IMAGE_stcui8nPerspectiveWidth),
+			INT16(cui8doffset*IMAGE_stcui8nPerspectiveHeight)
+		);
+		AUTO					ui8ix=cui8ix;
+		AUTO					ui8iy=cui8iy;
+
+		//	下面描画のため「左上遡り」をするが、
+		//	横「-16」以下、「+16」以上は表示対象から外れるので、
+		//	最小限遡っておく。
+		while((cv2idestination_minimum.i16iX()<v2idestination.i16iX())&&(0<ui8ix)){
+			v2idestination.i16iX()-=INT16(IMAGE_stcui8nUnitWidth);
+			--ui8ix;
+		}
+		//	縦は24ドット基準。
+		while((cv2idestination_minimum.i16iY()<v2idestination.i16iY())&&(0<ui8iy)){
+			v2idestination.i16iY()-=INT16(IMAGE_stcui8nUnitHeight);
+			--ui8iy;
+		}
+		{
+			CAUTO					ci16idestinationx_origin=v2idestination.i16iX();
+
+			for(;v2idestination.i16iY()<INT16(IMAGE_stcui8nUnitHeight);v2idestination.i16iY()+=INT16(IMAGE_stcui8nUnitHeight)){
+				AUTO					ui8ix_current=ui8ix;
+
+				for(v2idestination.i16iX()=ci16idestinationx_origin;v2idestination.i16iX()<INT16(IMAGE_stcui8nUnitWidth);v2idestination.i16iX()+=INT16(IMAGE_stcui8nUnitWidth)){
+					OFF_stDraw_Layer_Positioned(v2idestination,ui8ix_current,ui8iy,cui8ilayer_drawing);
+					++ui8ix_current;
+				}
+				++ui8iy;
+			}
+		}
+		return;
+	}
+	//	VOID					OFF_stDraw_Layer_Positioned(CVECTOR2& cv2idestination,CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)
 	//		表示位置「cv2idestination」への、高さ「cui8ilayer」、位置「(cui8ix,cui8iy)」右下方向「1x1」単位(1/2牌分)領域の表示更新を行います。
 	//		牌の表面以外、表示範囲に含まれる側面、床面、影の描画も行います。
 	//		床面への影描画はオフセット「(+4,+8)」があるため、横「-19」、縦「-31」までは描画がありえます。
-	static VOID				stDraw_Layered_Positioned(CVECTOR2& cv2idestination,CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
-		CAUTO					cerange=OFWBOOL((cui8ix<stcui8nWidth)&&(cui8iy<stcui8nHeight));
-		CAUTO					ceup1=(cerange&&(cui8ilayer<stcui8nLayer-1))?(staaaui16cTile[cui8ilayer+1][cui8iy][cui8ix]!=0):FALSE;
-		CAUTO					ceup2=(cerange&&(cui8ilayer<stcui8nLayer-2))?(staaaui16cTile[cui8ilayer+2][cui8iy][cui8ix]!=0):FALSE;
+	static VOID				OFF_stDraw_Layer_Positioned(CVECTOR2& cv2idestination,CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
+		CAUTO					cerange=OFWBOOL((cui8ix<GAME_stcui8nWidth)&&(cui8iy<GAME_stcui8nHeight));
+		CAUTO					ceup1=(cerange&&(cui8ilayer<GAME_stcui8nLayer-1))?(GAME_stui16cGetTile(cui8ix,cui8iy,cui8ilayer+1)!=0):FALSE;
+		CAUTO					ceup2=(cerange&&(cui8ilayer<GAME_stcui8nLayer-2))?(GAME_stui16cGetTile(cui8ix,cui8iy,cui8ilayer+2)!=0):FALSE;
 
 		if(!ceup2){
-			CAUTO					cex0=OFWBOOL(cui8ix<stcui8nWidth);
-			CAUTO					cex1=OFWBOOL((1<=cui8ix)&&(cui8ix<stcui8nWidth+1));
-			CAUTO					cey0=OFWBOOL(cui8iy<stcui8nHeight);
-			CAUTO					cey1=OFWBOOL((1<=cui8iy)&&(cui8iy<stcui8nHeight+1));
+			CAUTO					cex0=OFWBOOL(cui8ix<GAME_stcui8nWidth);
+			CAUTO					cex1=OFWBOOL((1<=cui8ix)&&(cui8ix<GAME_stcui8nWidth+1));
+			CAUTO					cey0=OFWBOOL(cui8iy<GAME_stcui8nHeight);
+			CAUTO					cey1=OFWBOOL((1<=cui8iy)&&(cui8iy<GAME_stcui8nHeight+1));
 			CAUTO					cex0y0=OFWBOOL(cex0&&cey0);
 			CAUTO					cex0y1=OFWBOOL(cex0&&cey1);
 			CAUTO					cex1y0=OFWBOOL(cex1&&cey0);
 			CAUTO					cex1y1=OFWBOOL(cex1&&cey1);
-			CAUTO					cui16cx0y1=cex0y1?staaaui16cTile[cui8ilayer][cui8iy-1][cui8ix+0]:UINT16(0x0000);
-			CAUTO					cui16cx1y1=cex1y1?staaaui16cTile[cui8ilayer][cui8iy-1][cui8ix-1]:UINT16(0x0000);
-			CAUTO					cui16cx1y0=cex1y0?staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix-1]:UINT16(0x0000);
+			CAUTO					cui16cx0y1=cex0y1?GAME_stui16cGetTile(cui8ix+0,cui8iy-1,cui8ilayer):UINT16(0x0000);
+			CAUTO					cui16cx1y1=cex1y1?GAME_stui16cGetTile(cui8ix-1,cui8iy-1,cui8ilayer):UINT16(0x0000);
+			CAUTO					cui16cx1y0=cex1y0?GAME_stui16cGetTile(cui8ix-1,cui8iy+0,cui8ilayer):UINT16(0x0000);
 
 			//	側壁
 			if(cui16cx1y1){
-				switch(cui16cx1y1&0x0300){
-				case 0x0000:
+				OFF_stDraw_MarkUpdate();
+				switch(cui16cx1y1&GAME_stcui16cTilePartMask){
+				case GAME_stcui16cTilePartLU:
 					//	状況的にあり得ない
 					break;
-				case 0x0100:
-					stcvsWork.CopyRect(stccvsTile,{{64,240+24},{4,24}},cv2idestination,IDBLEND::BackNega_SourceAlpha);
+				case GAME_stcui16cTilePartRU:
+					OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
+						{
+							IMAGE_stcv2iSideR.i16iX(),
+							IMAGE_stcv2iSideR.i16iY()+INT16(IMAGE_stcui8nUnitHeight)
+						},{
+							INT16(IMAGE_stcui8nPerspectiveWidth),
+							INT16(IMAGE_stcui8nUnitHeight)
+						}
+					},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 					if(cui16cx0y1){
 						//	+-----------+--   + //
 						//	|     |X1Y1 |X0Y1   //
 						//	|           |       //
 						//	|           |       //
 						//	|           |       //
-						//	|0000  0100 |0200 | //
+						//	|LU    RU   |LD   | //
 						//	|--   +   --|------ //
 						//	|           |\X0Y0  //	6	d
 						//	|           | +---- //
 						//	|           | |     //	a	0
 						//	|           | |     //
-						//	|0200 |0300 | |     //	b	0
+						//	|LD   |RD   | |     //	b	0
 						//	+-----------+ |     //
-						stcvsWork.CopyRect(stccvsTile,{{96,240+ 0},{16,8}},cv2idestination,IDBLEND::BackNega_SourceAlpha);
+						OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
+							IMAGE_stcv2iSideD,{
+								INT16(IMAGE_stcui8nUnitWidth),
+								INT16(IMAGE_stcui8nPerspectiveHeight)
+							}
+						},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 					}else{
 						//	+-----------+X0Y1   //
 						//	|     |X1Y1 |\      //
 						//	|           | +     //
 						//	|           | |     //
 						//	|           | |     //
-						//	|0000  0100 | |     //
+						//	|LU    RU   | |     //
 						//	|--   +   --| |     //
 						//	|           | |X0Y0 //	a	0
 						//	|           | |     //
 						//	|           | |     //	a	0
 						//	|           | |     //
-						//	|0200 |0300 | |     //	b	0
+						//	|LD   |RD   | |     //	b	0
 						//	+-----------+ |     //
 					}
 					break;
-				case 0x0200:
-					stcvsWork.CopyRect(stccvsTile,{{96+16,240+ 0},{16,8}},cv2idestination,IDBLEND::BackNega_SourceAlpha);
+				case GAME_stcui16cTilePartLD:
+					OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
+						{
+							IMAGE_stcv2iSideD.i16iX()+INT16(IMAGE_stcui8nUnitWidth),
+							IMAGE_stcv2iSideD.i16iY()
+						},{
+							INT16(IMAGE_stcui8nUnitWidth),
+							INT16(IMAGE_stcui8nPerspectiveHeight)
+						}
+					},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 					if(cui16cx1y0){
 						//	+   --|--   +   --| //
 						//	      |X1Y1       | //
 						//	      |           | //
 						//	      |           | //
 						//	      |           | //
-						//	|     |0200 |0300 | //
+						//	|     |LD   |RD   | //
 						//	------+-----------+ //
 						//	|     |X1Y0 |\X0Y0  //	4	d
 						//	|           | +---- //
 						//	|           | |     //	9	0
 						//	|           | |     //
-						//	|0000  0100 | |     //	a	0
+						//	|LU    RU   | |     //	a	0
 						//	|--   +   --| |     //
-						stcvsWork.CopyRect(stccvsTile,{{64,240+ 0},{4,24}},cv2idestination,IDBLEND::BackNega_SourceAlpha);
+						OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
+							IMAGE_stcv2iSideR,{
+								INT16(IMAGE_stcui8nPerspectiveWidth),
+								INT16(IMAGE_stcui8nUnitHeight)
+							}
+						},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 					}else{
 						//	+   --|--   +   --| //
 						//	      |X1Y1       | //
 						//	      |           | //
 						//	      |           | //
 						//	      |           | //
-						//	|     |0200 |0300 | //
+						//	|     |LD   |RD   | //
 						//	------+-----------+ //
 						//	       \X1Y0  X0Y0  //	d	e
 						//	--------+---------- //
@@ -430,32 +1011,47 @@ private:
 						//	                    //
 					}
 					break;
-				case 0x0300:
-					stcvsWork.CopyRect(stccvsTile,{{128,240+ 0},{4,8}},cv2idestination,IDBLEND::BackNega_SourceAlpha);
+				case GAME_stcui16cTilePartRD:
+					OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
+						IMAGE_stcv2iSideRD,{
+							INT16(IMAGE_stcui8nPerspectiveWidth),
+							INT16(IMAGE_stcui8nPerspectiveHeight)
+						}
+					},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 					if(cui16cx0y1){
-						stcvsWork.CopyRect(stccvsTile,{{96+ 0,240+ 0},{16,8}},cv2idestination,IDBLEND::BackNega_SourceAlpha);
+						OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
+							IMAGE_stcv2iSideD,{
+								INT16(IMAGE_stcui8nUnitWidth),
+								INT16(IMAGE_stcui8nPerspectiveHeight)
+							}
+						},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 						if(cui16cx1y0){
 							//	|--   +   --|--   + //
 							//	|           |X0Y1   //
 							//	|           |       //
 							//	|           |       //
 							//	|           |       //
-							//	|0200 |0300 |0200 | //
+							//	|LD   |RD   |LD   | //
 							//	+-----------+------ //
 							//	|     |X1Y0 |\X0Y0  //	2	d
 							//	|           | +---- //
 							//	|           | |     //	9	0
 							//	|           | |     //
-							//	|0000  0100 | |     //	a	0
+							//	|LU    RU   | |     //	a	0
 							//	|--   +   --| |     //
-							stcvsWork.CopyRect(stccvsTile,{{64,240+ 0},{4,24}},cv2idestination,IDBLEND::BackNega_SourceAlpha);
+							OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
+								IMAGE_stcv2iSideR,{
+									INT16(IMAGE_stcui8nPerspectiveWidth),
+									INT16(IMAGE_stcui8nUnitHeight)
+								}
+							},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 						}else{
 							//	|--   +   --|--   + //
 							//	|           |X0Y1   //
 							//	|           |       //
 							//	|           |       //
 							//	|           |       //
-							//	|0200 |0300 |0200 | //
+							//	|LD   |RD   |LD   | //
 							//	+-----------+------ //
 							//	 \     X1Y0  \X0Y0  //	5	d
 							//	  +-----------+---- //
@@ -471,22 +1067,27 @@ private:
 							//	|           | |     //
 							//	|           | |     //
 							//	|           | |     //
-							//	|0200 |0300 | |     //
+							//	|LD   |RD   | |     //
 							//	+-----------+ |     //
 							//	|     |X1Y0 |\|X0Y0 //	3	0
 							//	|           | +     //
 							//	|           | |     //	9	0
 							//	|           | |     //
-							//	|0000  0100 | |     //	a	0
+							//	|LU    RU   | |     //	a	0
 							//	|--   +   --| |     //
-							stcvsWork.CopyRect(stccvsTile,{{64,240+ 0},{4,24}},cv2idestination,IDBLEND::BackNega_SourceAlpha);
+							OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
+								IMAGE_stcv2iSideR,{
+									INT16(IMAGE_stcui8nPerspectiveWidth),
+									INT16(IMAGE_stcui8nUnitHeight)
+								}
+							},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 						}else{
 							//	|--   +   --| |X0Y1 //
 							//	|           | |     //
 							//	|           | |     //
 							//	|           | |     //
 							//	|           | |     //
-							//	|0200 |0300 | |     //
+							//	|LD   |RD   | |     //
 							//	+-----------+ |     //
 							//	 \           \|X0Y0 //	f	0
 							//	  +-----------+     //
@@ -500,29 +1101,40 @@ private:
 				}
 			}else{
 				if(cui16cx0y1){
-					stcvsWork.CopyRect(stccvsTile,{{96+ 0,240+ 0},{16,8}},cv2idestination,IDBLEND::BackNega_SourceAlpha);
+					OFF_stDraw_MarkUpdate();
+					OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
+						IMAGE_stcv2iSideD,{
+							INT16(IMAGE_stcui8nUnitWidth),
+							INT16(IMAGE_stcui8nPerspectiveHeight)
+						}
+					},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 					if(cui16cx1y0){
 						//	            +--   + //
 						//	            |X0Y1   //
 						//	            |       //
 						//	            |       //
 						//	            |       //
-						//	            |0200 | //
+						//	            |LD   | //
 						//	+-----------+------ //
 						//	|     |X1Y0 |\X0Y0  //	2	d
 						//	|           | +---- //
 						//	|           | |     //	9	0
 						//	|           | |     //
-						//	|0000  0100 | |     //	a	0
+						//	|LU    RU   | |     //	a	0
 						//	|--   +   --| |     //
-						stcvsWork.CopyRect(stccvsTile,{{64,240+ 0},{4,24}},cv2idestination,IDBLEND::BackNega_SourceAlpha);
+						OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
+							IMAGE_stcv2iSideR,{
+								INT16(IMAGE_stcui8nPerspectiveWidth),
+								INT16(IMAGE_stcui8nUnitHeight)
+							}
+						},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 					}else{
 						//	            +--   + //
 						//	            |X0Y1   //
 						//	            |       //
 						//	            |       //
 						//	            |       //
-						//	            |0200 | //
+						//	            |LD   | //
 						//	            +------ //
 						//	        X1Y0 \X0Y0  //	c	d
 						//	              +---- //
@@ -544,9 +1156,15 @@ private:
 						//	|           | +     //
 						//	|           | |     //	9	0
 						//	|           | |     //
-						//	|0000  0100 | |     //	a	0
+						//	|LU    RU   | |     //	a	0
 						//	|--   +   --| |     //	
-						stcvsWork.CopyRect(stccvsTile,{{64,240+ 0},{4,24}},cv2idestination,IDBLEND::BackNega_SourceAlpha);
+						OFF_stDraw_MarkUpdate();
+						OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
+							IMAGE_stcv2iSideR,{
+								INT16(IMAGE_stcui8nPerspectiveWidth),
+								INT16(IMAGE_stcui8nUnitHeight)
+							}
+						},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 					}else{
 						//	             X0Y1   //
 						//	                    //
@@ -567,193 +1185,993 @@ private:
 		}
 		if(!ceup1){
 			if(
-				CAUTO					cui16ctile=cerange?staaaui16cTile[cui8ilayer][cui8iy][cui8ix]:UINT16(0x0000);
+				CAUTO					cui16ctile=cerange?GAME_stui16cGetTile(cui8ix,cui8iy,cui8ilayer):UINT16(0x0000);
 				cui16ctile
 			){
-				CAUTO&					acui8ipattern=staacui8iPattern[(cui16ctile&0xff)-1];
+				constexpr AUTO			cv2iselectedrd=IMAGE_stcv2iSelected+IMAGE_stcv2nUnit;
+				CAUTO&					acui8ipattern=GAME_staacui8iPattern[(cui16ctile&0xff)-1];
 				CAUTO					cv2isource=VECTOR2(INT16(acui8ipattern[0]),INT16(acui8ipattern[1]));
+				CAUTO					cv2isourcerd=cv2isource+IMAGE_stcv2nUnit;
+				CAUTO					ceselected=OFWBOOL(cui16ctile&GAME_stcui16cTileSelectedMask);
 
 				//	表面
-				switch(cui16ctile&0x0300){
-				case 0x0000:
-					stDraw_Layered_Positioned_Face(
-						cv2idestination,
-						{INT16(cv2isource.i16iX()+ 0),INT16(cv2isource.i16iY()+ 0)}
-					);
-					stDraw_Layered_Positioned_Shadow(
-						cv2idestination,
-						cui8ix,cui8iy,cui8ilayer+1
-					);
+				switch(cui16ctile&GAME_stcui16cTilePartMask){
+				case GAME_stcui16cTilePartLU:
+					OFF_stDraw_Layer_Positioned_Face(cv2idestination,{
+						cv2isource.i16iX(),		cv2isource.i16iY()
+					});
+					OFF_stDraw_Layer_Positioned_Shadow(cv2idestination,cui8ix,cui8iy,cui8ilayer+1);
+					if(ceselected)OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{{
+						IMAGE_stcv2iSelected.i16iX(),	IMAGE_stcv2iSelected.i16iY()
+					},IMAGE_stcv2nUnit},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 					break;
-				case 0x0100:
-					stDraw_Layered_Positioned_Face(
-						cv2idestination,
-						{INT16(cv2isource.i16iX()+16),INT16(cv2isource.i16iY()+ 0)}
-					);
-					stDraw_Layered_Positioned_Shadow(
-						cv2idestination,
-						cui8ix,cui8iy,cui8ilayer+1
-					);
+				case GAME_stcui16cTilePartRU:
+					OFF_stDraw_Layer_Positioned_Face(cv2idestination,{
+						cv2isourcerd.i16iX(),	cv2isource.i16iY()
+					});
+					OFF_stDraw_Layer_Positioned_Shadow(cv2idestination,cui8ix,cui8iy,cui8ilayer+1);
+					if(ceselected)OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{{
+						cv2iselectedrd.i16iX(),	IMAGE_stcv2iSelected.i16iY()
+					},IMAGE_stcv2nUnit},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 					break;
-				case 0x0200:
-					stDraw_Layered_Positioned_Face(
-						cv2idestination,
-						{INT16(cv2isource.i16iX()+ 0),INT16(cv2isource.i16iY()+24)}
-					);
-					stDraw_Layered_Positioned_Shadow(
-						cv2idestination,
-						cui8ix,cui8iy,cui8ilayer+1
-					);
+				case GAME_stcui16cTilePartLD:
+					OFF_stDraw_Layer_Positioned_Face(cv2idestination,{
+						cv2isource.i16iX(),		cv2isourcerd.i16iY()
+					});
+					OFF_stDraw_Layer_Positioned_Shadow(cv2idestination,cui8ix,cui8iy,cui8ilayer+1);
+					if(ceselected)OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{{
+						IMAGE_stcv2iSelected.i16iX(),	cv2iselectedrd.i16iY()
+					},IMAGE_stcv2nUnit},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 					break;
-				case 0x0300:
-					stDraw_Layered_Positioned_Face(
-						cv2idestination,
-						{INT16(cv2isource.i16iX()+16),INT16(cv2isource.i16iY()+24)}
-					);
-					stDraw_Layered_Positioned_Shadow(
-						cv2idestination,
-						cui8ix,cui8iy,cui8ilayer+1
-					);
+				case GAME_stcui16cTilePartRD:
+					OFF_stDraw_Layer_Positioned_Face(cv2idestination,{
+						cv2isourcerd.i16iX(),	cv2isourcerd.i16iY()
+					});
+					OFF_stDraw_Layer_Positioned_Shadow(cv2idestination,cui8ix,cui8iy,cui8ilayer+1);
+					if(ceselected)OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{{
+						cv2iselectedrd.i16iX(),	cv2iselectedrd.i16iY()
+					},IMAGE_stcv2nUnit},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 					break;
 				}
 			}else{
 				//	最下段時、床面への影表示を行います。
-				if(cui8ilayer==0)stDraw_Layered_Positioned_Shadow(
-					{INT16(cv2idestination.i16iX()+4),INT16(cv2idestination.i16iY()+8)},
-					cui8ix,cui8iy,0
-				);
+				if(cui8ilayer==0)OFF_stDraw_Layer_Positioned_Shadow({
+					INT16(cv2idestination.i16iX()+INT16(IMAGE_stcui8nPerspectiveWidth)),
+					INT16(cv2idestination.i16iY()+INT16(IMAGE_stcui8nPerspectiveHeight))
+				},cui8ix,cui8iy,0);
 			}
 		}
 		return;
 	}
-	static VOID				stDraw_Layered_Positioned_Face(CVECTOR2& cv2idestination,CVECTOR2& cv2isource)noexcept{
-		stcvsWork.CopyRect(stccvsTile,{cv2isource,{16,24}},cv2idestination,IDBLEND::BackNega_SourceAlpha);
+	static VOID				OFF_stDraw_Layer_Positioned_Face(CVECTOR2& cv2idestination,CVECTOR2& cv2isource)noexcept{
+		OFF_stDraw_MarkUpdate();
+		if constexpr(FALSE){
+			OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
+				cv2isource,IMAGE_stcv2nUnit
+			},cv2idestination,IDBLEND::BackNega_SourceAlpha);
+		}else{
+			OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
+				{
+					cv2isource.i16iX(),
+					cv2isource.i16iY()
+				},{
+					INT16(IMAGE_stcui8nUnitWidth),
+					INT16(IMAGE_stcui8nFaceAlphaHeight)
+				}
+			},{
+				cv2idestination.i16iX(),
+				cv2idestination.i16iY()
+			},IDBLEND::BackNega_SourceAlpha);
+			OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
+				{
+					cv2isource.i16iX(),
+					INT16(cv2isource.i16iY()+INT16(IMAGE_stcui8nFaceAlphaHeight))
+				},{
+					INT16(IMAGE_stcui8nFaceAlphaWidth),
+					INT16(IMAGE_stcui8nUnitHeight-IMAGE_stcui8nFaceAlphaHeight)
+				}
+			},{
+				cv2idestination.i16iX(),
+				INT16(cv2idestination.i16iY()+INT16(IMAGE_stcui8nFaceAlphaHeight))
+			},IDBLEND::BackNega_SourceAlpha);
+			OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
+				{
+					INT16(cv2isource.i16iX()+INT16(IMAGE_stcui8nFaceAlphaWidth)),
+					INT16(cv2isource.i16iY()+INT16(IMAGE_stcui8nFaceAlphaHeight))
+				},{
+					INT16(IMAGE_stcui8nUnitWidth-IMAGE_stcui8nFaceAlphaWidth),
+					INT16(IMAGE_stcui8nUnitHeight-IMAGE_stcui8nFaceAlphaHeight)
+				}
+			},{
+				INT16(cv2idestination.i16iX()+INT16(IMAGE_stcui8nFaceAlphaWidth)),
+				INT16(cv2idestination.i16iY()+INT16(IMAGE_stcui8nFaceAlphaHeight))
+			});
+		}
 		return;
 	}
-	static VOID				stDraw_Layered_Positioned_Shadow(CVECTOR2& cv2idestination,CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer1)noexcept{
-		//	影
-		//	<X1Y0>    |  +              <X2Y0>    |  |  +                           <X0Y1>    |  |  +   <X1Y1>-+  |  |  +           <X2Y1>-+  |  |  +                       <X1Y2>-+  |  |  +           <X2Y2>-+  |  |  +                       //
-		//	|         |  |\             |         |  |  |\                          |         |  |  |           \ |  |  |＼                 \ |  |  |＼                             \ |  |  |＼                 \ |  |  |＼                     //
-		//	|         |  | \            |         |  |  | \                         |         |  |  |   L3       \|  |  |  ＼       L3       \|  |  |  ＼                   L3       \|  |  |  ＼       L3       \|  |  |  ＼                   //
-		//	|         |  |  +---------+ +---------+  |  |  +         +---------+    +---------+  |  |   +---------+  |  |    \      +---------+  |  |    \                  +---------+  |  |    \      +---------+  |  |    \                  //
-		//	|         |  |  |＼  |＼  |  \         \ |  |  |＼       |＼  |＼  |     \         \ |  |    \         \ |  |    |＼     \         \ |  |    |＼                 \         \ |  |    |＼     \         \ |  |    |＼                //
-		//	|         |  |  |L1＼|  ＼|   \L3       \|  |  |  ＼     |  ＼|  ＼|      \L2       \|  |     \L2       \|  |    |  ＼    \L2       \|  |    |  ＼                \L2       \|  |    |  ＼    \L2       \|  |    |  ＼              //
-		//	+---------+  |  |----+----|    +---------+  |  |    \    |----+----|       +---------+  |      +---------+  |    |    \    +---------+  |    |    \                +---------+  |    |    \    +---------+  |    |    \             //
-		//	 \         \ |  |＼L1|＼  |     \         \ |  |    |＼  |＼  |＼  |        \         \ |       \         \ |    |    |     \         \ |    |    |＼               \         \ |    |    |     \         \ |    |    |＼           //
-		//	  \L2       \|  |L1＼|L2＼|      \L2       \|  |    |  ＼|  ＼|  ＼|         \L1       \|        \L1       \|(L1)|(L2)|      \L1       \|(L1)|(L2)|  ＼              \L1       \|    |    |      \L1       \|    |    |  ＼         //
-		//	   +---------+  |----+----|       +---------+  |    |    |----+----|          +---------+         +---------+---------+       +---------+---------+---------+         +---------+(L1)|    |       +---------+(L1)|    |    \        //
-		//	    \         \ |＼L1|＼L2|        \         \ |    |    |＼  |＼  |          |＼L1|＼L1|          ＼       |＼L1|＼L2|        ＼        ＼  |    |＼L3|＼  |          ＼        ＼  |    |        ＼        ＼  |    |    |＼      //
-		//	     \L1       \|L1＼|L2＼|         \L1       \|    |    |L3＼|  ＼|          |  ＼|L1＼|            ＼(L1) |L1＼|L2＼|          ＼(L1)    ＼|    |L3＼|L4＼|            ＼(L1)    ＼|    |          ＼(L1)    ＼|    |    |  ＼    //
-		//	      +---------+---------+          +---------+(L1)|(L2)+---------+          |----+----|              \----|----+----|            \---------\----|----+----|              \---------\(L2)|            \---------\(L2)|    |    \   //
-		//	                                                                              |＼  |＼L2|               ＼  |＼L2|＼L2|             ＼        ＼  |＼L3|＼L4|               ＼        ＼  |             ＼        ＼  |    |    |   //
-		//	                                                                              |  ＼|  ＼|                 ＼|L2＼|L2＼|               ＼(L2)    ＼|L3＼|L4＼|                 ＼(L2)    ＼|               ＼(L2)    ＼|    |    |   //
-		//	                                                                              |----+----|                   |----+----|                 \---------|----+----|                   \---------\                 \---------\(L3)|    |   //
-		//	                                                                              |＼  |＼  |                   |＼L3|＼L3|                  ＼       |＼L3|＼L4|                    ＼                          ＼        ＼  |(L4)|   //
-		//	                                                                              |  ＼|  ＼|                   |  ＼|L3＼|                    ＼(L3) |L3＼|L4＼|                      ＼(L3)                      ＼(L3)    ＼|    |   //
-		//	                                                                              +---------+                   +---------+                      \--- +---------+                   +----+----+                      \----+----+----+   //
-		//	                                                                                                                                                                                |＼  |＼L4|                       ＼  |＼L4|＼L4|   //
-		//	                                                                                                                                                                                |  ＼|  ＼|                         ＼|L4＼|L4＼|   //
-		//	                                                                                                                                                                                |----+----|                           |----+----|   //
-		//	                                                                                                                                                                                |＼  |＼  |                           |＼  |＼  |   //
-		//	                                                                                                                                                                                |  ＼|  ＼|                           |  ＼|  ＼|   //
-		//	                                                                                                                                                                                |----+----|                           |----+----|   //
-		//	                                                                                                                                                                                |＼  |＼  |                           |＼  |＼  |   //
-		//	                                                                                                                                                                                |  ＼|  ＼|                           |  ＼|  ＼|   //
-		//	                                                                                                                                                                                +---------+                           +---------+   //
+	static VOID				OFF_stDraw_Layer_Positioned_Shadow(CVECTOR2& cv2idestination,CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer1)noexcept{
+		//	<影>
+		//	+--------0H-------1H
+		//	|＼    0A|＼    1A|
+		//	|  0C    |  1C    |
+		//	|    ＼ 0D    ＼ 1D
+		//	|0B    ＼|1B    ＼|
+		//	0G---0E--0F---1E--1F
+		//	|＼    2A|＼    3A|
+		//	|  2C    |  3C    |
+		//	|    ＼ 2D    ＼ 3D
+		//	|2B    ＼|3B    ＼|
+		//	2G---2E--2F---3E--3F
+		//	|＼    4A|＼    5A|
+		//	|  4C    |  5C    |
+		//	|    ＼ 4D    ＼ 5D
+		//	|4B    ＼|5B    ＼|
+		//	4G---4E--4F---5E--5F
+		//	処理単位は16x24ドット6分割の8ドット四方で、さらに直角三角形2分割して「斜め線の影」を表現する。
+		//	「A～G」は「TRUE/FALSE」2値を取り、この組み合わせで表示すべき影形状を決定する。
+		//	・A
+		//		影を落とす「上方向」の牌有無で決定。
+		//		ただし「上方向」の牌が単独の場合「FALSE」とし、BとCだけ「TRUE」とする。
+		//		この扱いにより、「右上角が少し欠けている影」の判別が出来る。
+		//	・B
+		//		影を落とす「左方向」の牌有無で決定。
+		//		ただし「左方向」の牌が単独の場合「FALSE」とし、AとCだけ「TRUE」とする。
+		//		この扱いにより、「左下角が少し欠けている影」の判別が出来る。
+		//	・C
+		//		影を落とす「左上方向」の牌有無で決定。
+		//	・D/E
+		//		影を落とす「2段以上上」の牌有無で決定。
+		//		「1段上」だけであれば縦/横輪郭は「ぼかし」になり、「2段以上上」にあれば塗りつぶしになる。
+		//	・F/G/H
+		//		牌のつなぎ目に発生する「微妙な影のへこみ」表現で使用。
+		//		影を落とす牌の対応する頂点が「田の字」で言う隅以外、つまり「直線状の影」になるようであれば「TRUE」とする。
+		//		「直線状の影」が「TRUE」なのは、OR結合で「直線状の影」が優先されるようにするため。
 		CAUTO					cui8ix0=UINT8(cui8ix);
 		CAUTO					cui8ix1=UINT8(cui8ix-1);
 		CAUTO					cui8ix2=UINT8(cui8ix-2);
+		CAUTO					cui8ix3=UINT8(cui8ix-3);
 		CAUTO					cui8iy0=UINT8(cui8iy);
 		CAUTO					cui8iy1=UINT8(cui8iy-1);
 		CAUTO					cui8iy2=UINT8(cui8iy-2);
 		CAUTO					cui8ilayer2=cui8ilayer1+1;
 		CAUTO					cui8ilayer3=cui8ilayer1+2;
 		CAUTO					cui8ilayer4=cui8ilayer1+3;
-		CAUTO					cex0=OFWBOOL(cui8ix0<stcui8nWidth);
-		CAUTO					cex1=OFWBOOL(cui8ix1<stcui8nWidth);
-		CAUTO					cex2=OFWBOOL(cui8ix2<stcui8nWidth);
-		CAUTO					cey0=OFWBOOL(cui8iy0<stcui8nHeight);
-		CAUTO					cey1=OFWBOOL(cui8iy1<stcui8nHeight);
-		CAUTO					cey2=OFWBOOL(cui8iy2<stcui8nHeight);
+		CAUTO					cui8ilayer5=cui8ilayer1+4;
+		CAUTO					cex0=OFWBOOL(cui8ix0<GAME_stcui8nWidth);
+		CAUTO					cex1=OFWBOOL(cui8ix1<GAME_stcui8nWidth);
+		CAUTO					cex2=OFWBOOL(cui8ix2<GAME_stcui8nWidth);
+		CAUTO					cex3=OFWBOOL(cui8ix3<GAME_stcui8nWidth);
+		CAUTO					cey0=OFWBOOL(cui8iy0<GAME_stcui8nHeight);
+		CAUTO					cey1=OFWBOOL(cui8iy1<GAME_stcui8nHeight);
+		CAUTO					cey2=OFWBOOL(cui8iy2<GAME_stcui8nHeight);
 		CAUTO					cex1y0=OFWBOOL(cex1&&cey0);
 		CAUTO					cex2y0=OFWBOOL(cex2&&cey0);
 		CAUTO					cex0y1=OFWBOOL(cex0&&cey1);
 		CAUTO					cex1y1=OFWBOOL(cex1&&cey1);
 		CAUTO					cex2y1=OFWBOOL(cex2&&cey1);
+		CAUTO					cex3y1=OFWBOOL(cex3&&cey1);
 		CAUTO					cex1y2=OFWBOOL(cex1&&cey2);
 		CAUTO					cex2y2=OFWBOOL(cex2&&cey2);
-		CAUTO					cel1=OFWBOOL(cui8ilayer1<stcui8nLayer);
-		CAUTO					cel2=OFWBOOL(cui8ilayer2<stcui8nLayer);
-		CAUTO					cel3=OFWBOOL(cui8ilayer3<stcui8nLayer);
-		CAUTO					cel4=OFWBOOL(cui8ilayer4<stcui8nLayer);
-		//	<X1Y0>
-		CAUTO					cex1y0l1=(cex1y0&&cel1)?OFWBOOL(staaaui16cTile[cui8ilayer1][cui8iy0][cui8ix1]):FALSE;
-		CAUTO					cex1y0l2=(cex1y0&&cel2)?OFWBOOL(staaaui16cTile[cui8ilayer2][cui8iy0][cui8ix1]):FALSE;
-		//	<X2Y0>
-		CAUTO					cex2y0l3=(cex2y0&&cel3)?OFWBOOL(staaaui16cTile[cui8ilayer3][cui8iy0][cui8ix2]):FALSE;
-		//	<X0Y1>
-		CAUTO					cex0y1l1=(cex0y1&&cel1)?OFWBOOL(staaaui16cTile[cui8ilayer1][cui8iy1][cui8ix0]):FALSE;
-		CAUTO					cex0y1l2=(cex0y1&&cel2)?OFWBOOL(staaaui16cTile[cui8ilayer2][cui8iy1][cui8ix0]):FALSE;
-		//	<X1Y1>
-		CAUTO					cex1y1l1=(cex1y1&&cel1)?OFWBOOL(staaaui16cTile[cui8ilayer1][cui8iy1][cui8ix1]):FALSE;
-		CAUTO					cex1y1l2=(cex1y1&&cel2)?OFWBOOL(staaaui16cTile[cui8ilayer2][cui8iy1][cui8ix1]):FALSE;
-		CAUTO					cex1y1l3=(cex1y1&&cel3)?OFWBOOL(staaaui16cTile[cui8ilayer3][cui8iy1][cui8ix1]):FALSE;
-		//	<X2Y1>
-		CAUTO					cex2y1l3=(cex2y1&&cel3)?OFWBOOL(staaaui16cTile[cui8ilayer3][cui8iy1][cui8ix2]):FALSE;
-		CAUTO					cex2y1l4=(cex2y1&&cel4)?OFWBOOL(staaaui16cTile[cui8ilayer4][cui8iy1][cui8ix2]):FALSE;
-		//	<X1Y2>
-		CAUTO					cex1y2l4=(cex1y2&&cel4)?OFWBOOL(staaaui16cTile[cui8ilayer4][cui8iy2][cui8ix1]):FALSE;
-		//	<X2Y2>
-		CAUTO					cex2y2l4=(cex2y2&&cel4)?OFWBOOL(staaaui16cTile[cui8ilayer4][cui8iy2][cui8ix2]):FALSE;
-		//	+---------+
-		//	|＼0A|＼1A|
-		//	|0B＼|1B＼|
-		//	|----+----|
-		//	|＼2A|＼3A|
-		//	|2B＼|3B＼|
-		//	|----+----|
-		//	|＼4A|＼5A|
-		//	|4B＼|5B＼|
-		//	+---------+
-		CAUTO					ce0a=OFWBOOL(cex0y1l1||cex1y1l1||cex2y1l3||cex2y2l4);
-		CAUTO					ce0b=OFWBOOL(cex1y0l1||cex1y1l1||cex2y1l3||cex2y2l4);
-		CAUTO					ce1a=OFWBOOL(cex0y1l1||cex1y1l2||cex1y2l4||cex2y2l4);
-		CAUTO					ce1b=OFWBOOL(cex0y1l1||cex1y1l2||cex2y1l4||cex2y2l4);
-		CAUTO					ce2a=OFWBOOL(cex1y0l1||cex1y1l2||cex2y1l3);
-		CAUTO					ce2b=OFWBOOL(cex1y0l1||cex1y1l2||cex2y1l3);
-		CAUTO					ce3a=OFWBOOL(cex0y1l2||cex1y1l2||cex2y1l4);
-		CAUTO					ce3b=OFWBOOL(cex1y0l2||cex1y1l2||cex2y1l4);
-		CAUTO					ce4a=OFWBOOL(cex1y0l1||cex1y1l3||cex2y1l3);
-		CAUTO					ce4b=OFWBOOL(cex1y0l1||cex2y0l3||cex2y1l3);
-		CAUTO					ce5a=OFWBOOL(cex1y0l2||cex1y1l3||cex2y1l4);
-		CAUTO					ce5b=OFWBOOL(cex1y0l2||cex1y1l3||cex2y1l4);
-		CAUTO					cui8i0=stui8iDraw_Layered_Positioned_Shadow_GetOffset(ce0a,ce0b);
-		CAUTO					cui8i1=stui8iDraw_Layered_Positioned_Shadow_GetOffset(ce1a,ce1b);
-		CAUTO					cui8i2=stui8iDraw_Layered_Positioned_Shadow_GetOffset(ce2a,ce2b);
-		CAUTO					cui8i3=stui8iDraw_Layered_Positioned_Shadow_GetOffset(ce3a,ce3b);
-		CAUTO					cui8i4=stui8iDraw_Layered_Positioned_Shadow_GetOffset(ce4a,ce4b);
-		CAUTO					cui8i5=stui8iDraw_Layered_Positioned_Shadow_GetOffset(ce5a,ce5b);
+		CAUTO					cex3y2=OFWBOOL(cex3&&cey2);
+		CAUTO					cel1=OFWBOOL(cui8ilayer1<GAME_stcui8nLayer);
+		CAUTO					cel2=OFWBOOL(cui8ilayer2<GAME_stcui8nLayer);
+		CAUTO					cel3=OFWBOOL(cui8ilayer3<GAME_stcui8nLayer);
+		CAUTO					cel4=OFWBOOL(cui8ilayer4<GAME_stcui8nLayer);
+		CAUTO					cel5=OFWBOOL(cui8ilayer5<GAME_stcui8nLayer);
+		//	<X1Y0>    |  |  +               //
+		//	|         |  |  |\              //
+		//	|         |  |  | \             //
+		//	+---------+  |  |  +----*----*  //
+		//	 \         \ |  |  | * ** * **  //
+		//	  \3        \|  |  |1 ＼|* ＼|  //
+		//	   +---------+  |  1--1-1--*-*  //
+		//	    \         \ |  | 1 #2 * **  //
+		//	     \2        \|  |1 ＼|2 ＼|  //
+		//	      +---------+  1--1-1--2-2  //
+		//	       \         \ | 1 12 2 #3  //
+		//	        \1        \|1 ＼|2 ＼|  //
+		//	         +---------1--1-1--2-2  //
+		CAUTO					cui16cx1y0l1=(cex1y0&&cel1)?GAME_stui16cGetTile(cui8ix1,cui8iy0,cui8ilayer1):UINT16(0x0000);
+		CAUTO					cui16cx1y0l2=(cex1y0&&cel2)?GAME_stui16cGetTile(cui8ix1,cui8iy0,cui8ilayer2):UINT16(0x0000);
+		CAUTO					cui16cx1y0l3=(cex1y0&&cel3)?GAME_stui16cGetTile(cui8ix1,cui8iy0,cui8ilayer3):UINT16(0x0000);
+		constexpr AUTO			cex1y0_0a=OFWBOOL(FALSE);
+		CAUTO					cex1y0_0b=OFWBOOL(cui16cx1y0l1);
+		constexpr AUTO			cex1y0_0c=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y0_0d=OFWBOOL(FALSE);
+		CAUTO					cex1y0_0e=OFWBOOL(cui16cx1y0l1);
+		CAUTO					cex1y0_0f=OFWBOOL((cui16cx1y0l1&&((cui16cx1y0l1&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU))||cui16cx1y0l2);
+		CAUTO					cex1y0_0g=OFWBOOL(cui16cx1y0l1);
+		constexpr AUTO			cex1y0_0h=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y0_1a=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y0_1b=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y0_1c=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y0_1d=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y0_1e=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y0_1f=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y0_1h=OFWBOOL(FALSE);
+		CAUTO					cex1y0_2a=OFWBOOL(cui16cx1y0l1&&((cui16cx1y0l1&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU));
+		CAUTO					cex1y0_2b=OFWBOOL(cui16cx1y0l1);
+		CAUTO					cex1y0_2c=OFWBOOL(cui16cx1y0l1);
+		CAUTO					cex1y0_2d=OFWBOOL(cui16cx1y0l2);
+		CAUTO					cex1y0_2e=OFWBOOL(cui16cx1y0l1);
+		CAUTO					cex1y0_2f=OFWBOOL(cui16cx1y0l1);
+		CAUTO					cex1y0_2g=OFWBOOL(cui16cx1y0l1);
+		constexpr AUTO			cex1y0_3a=OFWBOOL(FALSE);
+		CAUTO					cex1y0_3b=OFWBOOL(cui16cx1y0l2);
+		constexpr AUTO			cex1y0_3c=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y0_3d=OFWBOOL(FALSE);
+		CAUTO					cex1y0_3e=OFWBOOL(cui16cx1y0l2);
+		CAUTO					cex1y0_3f=OFWBOOL((cui16cx1y0l2&&((cui16cx1y0l2&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU))||cui16cx1y0l3);
+		CAUTO					cex1y0_4a=OFWBOOL(cui16cx1y0l1);
+		CAUTO					cex1y0_4b=OFWBOOL(cui16cx1y0l1);
+		CAUTO					cex1y0_4c=OFWBOOL(cui16cx1y0l1);
+		CAUTO					cex1y0_4d=OFWBOOL(cui16cx1y0l2);
+		CAUTO					cex1y0_4e=OFWBOOL(cui16cx1y0l1);
+		CAUTO					cex1y0_4f=OFWBOOL(cui16cx1y0l1);
+		CAUTO					cex1y0_4g=OFWBOOL(cui16cx1y0l1);
+		CAUTO					cex1y0_5a=OFWBOOL(cui16cx1y0l2&&((cui16cx1y0l2&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU));
+		CAUTO					cex1y0_5b=OFWBOOL(cui16cx1y0l2);
+		CAUTO					cex1y0_5c=OFWBOOL(cui16cx1y0l2);
+		CAUTO					cex1y0_5d=OFWBOOL(cui16cx1y0l3);
+		CAUTO					cex1y0_5e=OFWBOOL(cui16cx1y0l2);
+		CAUTO					cex1y0_5f=OFWBOOL(cui16cx1y0l2);
+		//	<X2Y0>    |  |  +                           //
+		//	|         |  |  |\                          //
+		//	|         |  |  | \                         //
+		//	+---------+  |  |  +         +----*----*    //
+		//	 \         \ |  |  |＼       | * ** * **    //
+		//	  \3        \|  |  |  ＼     |* ＼|* ＼|    //
+		//	   +---------+  |  |    \    *--*-*--*-*    //
+		//	    \         \ |  |    |＼  | * ** * **    //
+		//	     \2        \|  |    |  ＼|* ＼|* ＼|    //
+		//	      +---------+  |    |    3--*-*--*-*    //
+		//	       \         \ |    |    | * ** * **    //
+		//	        \1        \|    |    |3 ＼|* ＼|    //
+		//	         +---------+(1)-|(2)-3--3-3--*-*    //
+		CAUTO					cui16cx2y0l2=(cex2y0&&cel2)?GAME_stui16cGetTile(cui8ix2,cui8iy0,cui8ilayer2):UINT16(0x0000);
+		CAUTO					cui16cx2y0l3=(cex2y0&&cel3)?GAME_stui16cGetTile(cui8ix2,cui8iy0,cui8ilayer3):UINT16(0x0000);
+		CAUTO					cui16cx2y0l4=(cex2y0&&cel4)?GAME_stui16cGetTile(cui8ix2,cui8iy0,cui8ilayer4):UINT16(0x0000);
+		constexpr AUTO			cex2y0_0a=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_0b=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_0c=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_0d=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_0e=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_0f=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_0g=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_0h=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_1a=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_1b=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_1c=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_1d=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_1e=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_1f=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_1h=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_2a=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_2b=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_2c=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_2d=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_2e=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_2f=OFWBOOL(FALSE);
+		CAUTO					cex2y0_2g=OFWBOOL(cui16cx2y0l3);
+		constexpr AUTO			cex2y0_3a=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_3b=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_3c=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_3d=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_3e=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_3f=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_4a=OFWBOOL(FALSE);
+		CAUTO					cex2y0_4b=OFWBOOL(cui16cx2y0l3);
+		constexpr AUTO			cex2y0_4c=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_4d=OFWBOOL(FALSE);
+		CAUTO					cex2y0_4e=OFWBOOL(cui16cx2y0l3);
+		CAUTO					cex2y0_4f=OFWBOOL((cui16cx2y0l3&&((cui16cx2y0l3&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU))||cui16cx2y0l4);
+		CAUTO					cex2y0_4g=OFWBOOL(cui16cx2y0l3);
+		constexpr AUTO			cex2y0_5a=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_5b=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_5c=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_5d=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_5e=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y0_5f=OFWBOOL(FALSE);
+		//	<X0Y1>    |  |  +   //
+		//	|         |  |  |   //
+		//	|         |  |  |   //
+		//	+---------+  |  |   //
+		//	 \         \ |  |   //
+		//	  \2        \|  |   //
+		//	   +---------+  |   //
+		//	    \         \ |   //
+		//	     \1        \|   //
+		//	      +----1----1   //
+		//	      | * 11 1 11   //
+		//	      |* ＼|# ＼|   //
+		//	      *--*-1--2-1   //
+		//	      | * ** * 22   //
+		//	      |* ＼|* ＼|   //
+		//	      *--*-*--*-2   //
+		//	      | * ** * **   //
+		//	      |* ＼|* ＼|   //
+		//	      *--*-*--*-*   //
+		CAUTO					cui16cx0y1l1=(cex0y1&&cel1)?GAME_stui16cGetTile(cui8ix0,cui8iy1,cui8ilayer1):UINT16(0x0000);
+		CAUTO					cui16cx0y1l2=(cex0y1&&cel2)?GAME_stui16cGetTile(cui8ix0,cui8iy1,cui8ilayer2):UINT16(0x0000);
+		CAUTO					cui16cx0y1l3=(cex0y1&&cel3)?GAME_stui16cGetTile(cui8ix0,cui8iy1,cui8ilayer3):UINT16(0x0000);
+		CAUTO					cex0y1_0a=OFWBOOL(cui16cx0y1l1);
+		constexpr AUTO			cex0y1_0b=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_0c=OFWBOOL(FALSE);
+		CAUTO					cex0y1_0d=OFWBOOL(cui16cx0y1l1);
+		constexpr AUTO			cex0y1_0e=OFWBOOL(FALSE);
+		CAUTO					cex0y1_0f=OFWBOOL((cui16cx0y1l1&&((cui16cx0y1l1&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD))||cui16cx0y1l2);
+		constexpr AUTO			cex0y1_0g=OFWBOOL(FALSE);
+		CAUTO					cex0y1_0h=OFWBOOL(cui16cx0y1l1);
+		CAUTO					cex0y1_1a=OFWBOOL(cui16cx0y1l1);
+		CAUTO					cex0y1_1b=OFWBOOL(cui16cx0y1l1&&((cui16cx0y1l1&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD));
+		CAUTO					cex0y1_1c=OFWBOOL(cui16cx0y1l1);
+		CAUTO					cex0y1_1d=OFWBOOL(cui16cx0y1l1);
+		CAUTO					cex0y1_1e=OFWBOOL(cui16cx0y1l2);
+		CAUTO					cex0y1_1f=OFWBOOL(cui16cx0y1l1);
+		CAUTO					cex0y1_1h=OFWBOOL(cui16cx0y1l1);
+		constexpr AUTO			cex0y1_2a=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_2b=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_2c=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_2d=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_2e=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_2f=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_2g=OFWBOOL(FALSE);
+		CAUTO					cex0y1_3a=OFWBOOL(cui16cx0y1l2);
+		constexpr AUTO			cex0y1_3b=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_3c=OFWBOOL(FALSE);
+		CAUTO					cex0y1_3d=OFWBOOL(cui16cx0y1l2);
+		constexpr AUTO			cex0y1_3e=OFWBOOL(FALSE);
+		CAUTO					cex0y1_3f=OFWBOOL((cui16cx0y1l2&&((cui16cx0y1l2&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD))||cui16cx0y1l3);
+		constexpr AUTO			cex0y1_4a=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_4b=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_4c=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_4d=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_4e=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_4f=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_4g=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_5a=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_5b=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_5c=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_5d=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_5e=OFWBOOL(FALSE);
+		constexpr AUTO			cex0y1_5f=OFWBOOL(FALSE);
+		//	<X1Y1>-+  |  |  +           //
+		//	        \ |  |  |＼         //
+		//	3        \|  |  |  ＼       //
+		//	+---------+  |  |    \      //
+		//	 \         \ |  |    |＼    //
+		//	  \2        \|  |    |  ＼  //
+		//	   +---------+  |    |    \ //
+		//	    \         \ |    |    | //
+		//	     \1        \|(1) |(2) | //
+		//	      +---------+----1----2 //
+		//	       ＼       | 1 12 2 23 //
+		//	         ＼(1)  |1 ＼|2 ＼| //
+		//	           \----1--2-1--2-2 //
+		//	            ＼  | 2 22 2 23 //
+		//	              ＼|# ＼|2 ＼| //
+		//	                2--3-2--3-2 //
+		//	                | * 33 3 33 //
+		//	                |* ＼|# ＼| //
+		//	                *--*-3--4-3 //
+		CAUTO					cui16cx1y1l1=(cex1y1&&cel1)?GAME_stui16cGetTile(cui8ix1,cui8iy1,cui8ilayer1):UINT16(0x0000);
+		CAUTO					cui16cx1y1l2=(cex1y1&&cel2)?GAME_stui16cGetTile(cui8ix1,cui8iy1,cui8ilayer2):UINT16(0x0000);
+		CAUTO					cui16cx1y1l3=(cex1y1&&cel3)?GAME_stui16cGetTile(cui8ix1,cui8iy1,cui8ilayer3):UINT16(0x0000);
+		CAUTO					cui16cx1y1l4=(cex1y1&&cel4)?GAME_stui16cGetTile(cui8ix1,cui8iy1,cui8ilayer4):UINT16(0x0000);
+		CAUTO					cex1y1_0a=OFWBOOL(cui16cx1y1l1);
+		CAUTO					cex1y1_0b=OFWBOOL(cui16cx1y1l1);
+		CAUTO					cex1y1_0c=OFWBOOL(cui16cx1y1l1);
+		CAUTO					cex1y1_0d=OFWBOOL(cui16cx1y1l2);
+		CAUTO					cex1y1_0e=OFWBOOL(cui16cx1y1l2);
+		CAUTO					cex1y1_0f=OFWBOOL((cui16cx1y1l1&&((cui16cx1y1l1&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRD))||cui16cx1y1l2);
+		CAUTO					cex1y1_0g=OFWBOOL(cui16cx1y1l1);
+		CAUTO					cex1y1_0h=OFWBOOL(cui16cx1y1l1);
+		CAUTO					cex1y1_1a=OFWBOOL(cui16cx1y1l2);
+		CAUTO					cex1y1_1b=OFWBOOL(cui16cx1y1l2);
+		CAUTO					cex1y1_1c=OFWBOOL(cui16cx1y1l2);
+		CAUTO					cex1y1_1d=OFWBOOL(cui16cx1y1l3);
+		CAUTO					cex1y1_1e=OFWBOOL(cui16cx1y1l2);
+		CAUTO					cex1y1_1f=OFWBOOL(cui16cx1y1l2);
+		CAUTO					cex1y1_1h=OFWBOOL(cui16cx1y1l2);
+		CAUTO					cex1y1_2a=OFWBOOL(cui16cx1y1l2);
+		CAUTO					cex1y1_2b=OFWBOOL(cui16cx1y1l2&&((cui16cx1y1l2&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD));
+		CAUTO					cex1y1_2c=OFWBOOL(cui16cx1y1l2);
+		CAUTO					cex1y1_2d=OFWBOOL(cui16cx1y1l2);
+		CAUTO					cex1y1_2e=OFWBOOL(cui16cx1y1l3);
+		CAUTO					cex1y1_2f=OFWBOOL(cui16cx1y1l2);
+		CAUTO					cex1y1_2g=OFWBOOL((cui16cx1y1l2&&((cui16cx1y1l2&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD))||cui16cx1y1l3);
+		CAUTO					cex1y1_3a=OFWBOOL(cui16cx1y1l2);
+		CAUTO					cex1y1_3b=OFWBOOL(cui16cx1y1l2);
+		CAUTO					cex1y1_3c=OFWBOOL(cui16cx1y1l2);
+		CAUTO					cex1y1_3d=OFWBOOL(cui16cx1y1l3);
+		CAUTO					cex1y1_3e=OFWBOOL(cui16cx1y1l3);
+		CAUTO					cex1y1_3f=OFWBOOL((cui16cx1y1l2&&((cui16cx1y1l2&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRD))||cui16cx1y1l3);
+		CAUTO					cex1y1_4a=OFWBOOL(cui16cx1y1l3);
+		constexpr AUTO			cex1y1_4b=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y1_4c=OFWBOOL(FALSE);
+		CAUTO					cex1y1_4d=OFWBOOL(cui16cx1y1l3);
+		constexpr AUTO			cex1y1_4e=OFWBOOL(FALSE);
+		CAUTO					cex1y1_4f=OFWBOOL((cui16cx1y1l3&&((cui16cx1y1l3&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD))||cui16cx1y1l4);
+		constexpr AUTO			cex1y1_4g=OFWBOOL(FALSE);
+		CAUTO					cex1y1_5a=OFWBOOL(cui16cx1y1l3);
+		CAUTO					cex1y1_5b=OFWBOOL(cui16cx1y1l3&&((cui16cx1y1l3&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD));
+		CAUTO					cex1y1_5c=OFWBOOL(cui16cx1y1l3);
+		CAUTO					cex1y1_5d=OFWBOOL(cui16cx1y1l3);
+		CAUTO					cex1y1_5e=OFWBOOL(cui16cx1y1l4);
+		CAUTO					cex1y1_5f=OFWBOOL(cui16cx1y1l3);
+		//	<X2Y1>-+  |  |  +                       //
+		//	        \ |  |  |＼                     //
+		//	3        \|  |  |  ＼                   //
+		//	+---------+  |  |    \                  //
+		//	 \         \ |  |    |＼                //
+		//	  \2        \|  |    |  ＼              //
+		//	   +---------+  |    |    \             //
+		//	    \         \ |    |    |＼           //
+		//	     \1        \|(1) |(2) |  ＼         //
+		//	      +---------+---------+----3----*   //
+		//	       ＼        ＼  |    | 3 #4 * **   //
+		//	         ＼(1)     ＼|    |3 ＼|4 ＼|   //
+		//	           \---------\----3--3-3--4-4   //
+		//	            ＼        ＼  | 3 34 4 #5   //
+		//	              ＼(2)     ＼|3 ＼|4 ＼|   //
+		//	                \---------3--3-3--4-4   //
+		//	                 ＼       | 3 34 4 45   //
+		//	                   ＼(3)  |3 ＼|4 ＼|   //
+		//	                     \--- 3--4-3--4-4   //
+		CAUTO					cui16cx2y1l2=(cex2y1&&cel2)?GAME_stui16cGetTile(cui8ix2,cui8iy1,cui8ilayer2):UINT16(0x0000);
+		CAUTO					cui16cx2y1l3=(cex2y1&&cel3)?GAME_stui16cGetTile(cui8ix2,cui8iy1,cui8ilayer3):UINT16(0x0000);
+		CAUTO					cui16cx2y1l4=(cex2y1&&cel4)?GAME_stui16cGetTile(cui8ix2,cui8iy1,cui8ilayer4):UINT16(0x0000);
+		CAUTO					cui16cx2y1l5=(cex2y1&&cel5)?GAME_stui16cGetTile(cui8ix2,cui8iy1,cui8ilayer5):UINT16(0x0000);
+		CAUTO					cex2y1_0a=OFWBOOL(cui16cx2y1l3&&((cui16cx2y1l3&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU));
+		CAUTO					cex2y1_0b=OFWBOOL(cui16cx2y1l3);
+		CAUTO					cex2y1_0c=OFWBOOL(cui16cx2y1l3);
+		CAUTO					cex2y1_0d=OFWBOOL(cui16cx2y1l4);
+		CAUTO					cex2y1_0e=OFWBOOL(cui16cx2y1l3);
+		CAUTO					cex2y1_0f=OFWBOOL(cui16cx2y1l3);
+		CAUTO					cex2y1_0g=OFWBOOL(cui16cx2y1l3);
+		CAUTO					cex2y1_0h=OFWBOOL((cui16cx2y1l3&&((cui16cx2y1l3&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU))||cui16cx2y1l4);
+		constexpr AUTO			cex2y1_1a=OFWBOOL(FALSE);
+		CAUTO					cex2y1_1b=OFWBOOL(cui16cx2y1l4);
+		constexpr AUTO			cex2y1_1c=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y1_1d=OFWBOOL(FALSE);
+		CAUTO					cex2y1_1e=OFWBOOL(cui16cx2y1l4);
+		CAUTO					cex2y1_1f=OFWBOOL((cui16cx2y1l4&&((cui16cx2y1l4&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU))||cui16cx2y1l5);
+		constexpr AUTO			cex2y1_1h=OFWBOOL(FALSE);
+		CAUTO					cex2y1_2a=OFWBOOL(cui16cx2y1l3);
+		CAUTO					cex2y1_2b=OFWBOOL(cui16cx2y1l3);
+		CAUTO					cex2y1_2c=OFWBOOL(cui16cx2y1l3);
+		CAUTO					cex2y1_2d=OFWBOOL(cui16cx2y1l4);
+		CAUTO					cex2y1_2e=OFWBOOL(cui16cx2y1l3);
+		CAUTO					cex2y1_2f=OFWBOOL(cui16cx2y1l3);
+		CAUTO					cex2y1_2g=OFWBOOL(cui16cx2y1l3);
+		CAUTO					cex2y1_3a=OFWBOOL(cui16cx2y1l4&&((cui16cx2y1l4&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU));
+		CAUTO					cex2y1_3b=OFWBOOL(cui16cx2y1l4);
+		CAUTO					cex2y1_3c=OFWBOOL(cui16cx2y1l4);
+		CAUTO					cex2y1_3d=OFWBOOL(cui16cx2y1l5);
+		CAUTO					cex2y1_3e=OFWBOOL(cui16cx2y1l4);
+		CAUTO					cex2y1_3f=OFWBOOL(cui16cx2y1l4);
+		CAUTO					cex2y1_4a=OFWBOOL(cui16cx2y1l3);
+		CAUTO					cex2y1_4b=OFWBOOL(cui16cx2y1l3);
+		CAUTO					cex2y1_4c=OFWBOOL(cui16cx2y1l3);
+		CAUTO					cex2y1_4d=OFWBOOL(cui16cx2y1l4);
+		CAUTO					cex2y1_4e=OFWBOOL(cui16cx2y1l4);
+		CAUTO					cex2y1_4f=OFWBOOL((cui16cx2y1l3&&((cui16cx2y1l3&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRD))||cui16cx2y1l4);
+		CAUTO					cex2y1_4g=OFWBOOL(cui16cx2y1l3);
+		CAUTO					cex2y1_5a=OFWBOOL(cui16cx2y1l4);
+		CAUTO					cex2y1_5b=OFWBOOL(cui16cx2y1l4);
+		CAUTO					cex2y1_5c=OFWBOOL(cui16cx2y1l4);
+		CAUTO					cex2y1_5d=OFWBOOL(cui16cx2y1l5);
+		CAUTO					cex2y1_5e=OFWBOOL(cui16cx2y1l4);
+		CAUTO					cex2y1_5f=OFWBOOL(cui16cx2y1l4);
+		//	<X3Y1>-+  |  |  +                               //
+		//	        \ |  |  |＼                             //
+		//	3        \|  |  |  ＼                           //
+		//	+---------+  |  |    \                          //
+		//	 \         \ |  |    |＼                        //
+		//	  \2        \|  |    |  ＼                      //
+		//	   +---------+  |    |    \                     //
+		//	    \         \ |    |    |＼                   //
+		//	     \1        \|    |    |  ＼                 //
+		//	      +---------+(1) |    |    \    +----*----* //
+		//	       ＼        ＼  |    |    |＼  | * ** * ** //
+		//	         ＼(1)     ＼|    |    |  ＼|* ＼|* ＼| //
+		//	           \---------\(2) |    |    5--*-*--*-* //
+		//	            ＼        ＼  |    |    | * ** * ** //
+		//	              ＼(2)     ＼|    |    |5 ＼|* ＼| //
+		//	                \---------\(3) |    5--5-5--*-* //
+		//	                 ＼        ＼  |    | 5 #* * ** //
+		//	                   ＼(3)     ＼|    |5 ＼|* ＼| //
+		//	                     \---------\(4) 5--5-5--*-* //
+		CAUTO					cui16cx3y1l5=(cex3y1&&cel5)?GAME_stui16cGetTile(cui8ix3,cui8iy1,cui8ilayer5):UINT16(0x0000);
+		constexpr AUTO			cex3y1_0a=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_0b=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_0c=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_0d=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_0e=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_0f=OFWBOOL(FALSE);
+		CAUTO					cex3y1_0g=OFWBOOL(cui16cx3y1l5);
+		constexpr AUTO			cex3y1_0h=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_1a=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_1b=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_1c=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_1d=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_1e=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_1f=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_1h=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_2a=OFWBOOL(FALSE);
+		CAUTO					cex3y1_2b=OFWBOOL(cui16cx3y1l5);
+		constexpr AUTO			cex3y1_2c=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_2d=OFWBOOL(FALSE);
+		CAUTO					cex3y1_2e=OFWBOOL(cui16cx3y1l5);
+		CAUTO					cex3y1_2f=OFWBOOL(cui16cx3y1l5&&((cui16cx3y1l5&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU));
+		CAUTO					cex3y1_2g=OFWBOOL(cui16cx3y1l5);
+		constexpr AUTO			cex3y1_3a=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_3b=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_3c=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_3d=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_3e=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_3f=OFWBOOL(FALSE);
+		CAUTO					cex3y1_4a=OFWBOOL(cui16cx3y1l5&&((cui16cx3y1l5&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU));
+		CAUTO					cex3y1_4b=OFWBOOL(cui16cx3y1l5);
+		CAUTO					cex3y1_4c=OFWBOOL(cui16cx3y1l5);
+		CAUTO					cex3y1_4d=OFWBOOL(cui16cx3y1l5);
+		CAUTO					cex3y1_4e=OFWBOOL(cui16cx3y1l5);
+		CAUTO					cex3y1_4f=OFWBOOL(cui16cx3y1l5);
+		CAUTO					cex3y1_4g=OFWBOOL(cui16cx3y1l5);
+		constexpr AUTO			cex3y1_5a=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_5b=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_5c=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_5d=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_5e=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y1_5f=OFWBOOL(FALSE);
+		//	<X1Y2>-+  |  |  +           //
+		//	        \ |  |  |＼         //
+		//	3        \|  |  |  ＼       //
+		//	+---------+  |  |    \      //
+		//	 \         \ |  |    |＼    //
+		//	  \2        \|  |    |  ＼  //
+		//	   +---------+  |    |    \ //
+		//	    \         \ |    |    | //
+		//	     \1        \|    |    | //
+		//	      +---------+(1) |    | //
+		//	       ＼        ＼  |    | //
+		//	         ＼(1)     ＼|    | //
+		//	           \---------\(2) | //
+		//	            ＼        ＼  | //
+		//	              ＼(2)     ＼| //
+		//	                \---------\ //
+		//	                 ＼         //
+		//	                   ＼(3)    //
+		//	                +----4----4 //
+		//	                | * ** * 44 //
+		//	                |* ＼|* ＼| //
+		//	                |--*-*--*-4 //
+		//	                | * ** * ** //
+		//	                |* ＼|* ＼| //
+		//	                |--*-*--*-* //
+		//	                | * ** * ** //
+		//	                |* ＼|* ＼| //
+		//	                +--*-*--*-* //
+		CAUTO					cui16cx1y2l4=(cex1y2&&cel4)?GAME_stui16cGetTile(cui8ix1,cui8iy2,cui8ilayer4):UINT16(0x0000);
+		CAUTO					cui16cx1y2l5=(cex1y2&&cel5)?GAME_stui16cGetTile(cui8ix1,cui8iy2,cui8ilayer5):UINT16(0x0000);
+		constexpr AUTO			cex1y2_0a=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_0b=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_0c=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_0d=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_0e=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_0f=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_0g=OFWBOOL(FALSE);
+		CAUTO					cex1y2_0h=OFWBOOL(cui16cx1y2l4);
+		CAUTO					cex1y2_1a=OFWBOOL(cui16cx1y2l4);
+		constexpr AUTO			cex1y2_1b=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_1c=OFWBOOL(FALSE);
+		CAUTO					cex1y2_1d=OFWBOOL(cui16cx1y2l4);
+		constexpr AUTO			cex1y2_1e=OFWBOOL(FALSE);
+		CAUTO					cex1y2_1f=OFWBOOL((cui16cx1y2l4&&((cui16cx1y2l4&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD))||cui16cx1y2l5);
+		CAUTO					cex1y2_1h=OFWBOOL(cui16cx1y2l4);
+		constexpr AUTO			cex1y2_2a=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_2b=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_2c=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_2d=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_2e=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_2f=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_2g=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_3a=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_3b=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_3c=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_3d=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_3e=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_3f=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_4a=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_4b=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_4c=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_4d=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_4e=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_4f=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_4g=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_5a=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_5b=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_5c=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_5d=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_5e=OFWBOOL(FALSE);
+		constexpr AUTO			cex1y2_5f=OFWBOOL(FALSE);
+		//	<X2Y2>-+  |  |  +                       //
+		//	        \ |  |  |＼                     //
+		//	3        \|  |  |  ＼                   //
+		//	+---------+  |  |    \                  //
+		//	 \         \ |  |    |＼                //
+		//	  \2        \|  |    |  ＼              //
+		//	   +---------+  |    |    \             //
+		//	    \         \ |    |    |＼           //
+		//	     \1        \|    |    |  ＼         //
+		//	      +---------+(1) |    |    \        //
+		//	       ＼        ＼  |    |    |＼      //
+		//	         ＼(1)     ＼|    |    |  ＼    //
+		//	           \---------\(2) |    |    \   //
+		//	            ＼        ＼  |    |    |   //
+		//	              ＼(2)     ＼|    |    |   //
+		//	                \---------\(3) |    |   //
+		//	                 ＼        ＼  |(4) |   //
+		//	                   ＼(3)     ＼|    |   //
+		//	                     \----+----4----4   //
+		//	                      ＼  | 4 44 4 45   //
+		//	                        ＼|# ＼|4 ＼|   //
+		//	                          4--5-4--5-4   //
+		//	                          | * 55 5 55   //
+		//	                          |* ＼|# ＼|   //
+		//	                          *--*-5--*-5   //
+		//	                          | * ** * **   //
+		//	                          |* ＼|* ＼|   //
+		//	                          *--*-*--*-*   //
+		CAUTO					cui16cx2y2l4=(cex2y2&&cel4)?GAME_stui16cGetTile(cui8ix2,cui8iy2,cui8ilayer4):UINT16(0x0000);
+		CAUTO					cui16cx2y2l5=(cex2y2&&cel5)?GAME_stui16cGetTile(cui8ix2,cui8iy2,cui8ilayer5):UINT16(0x0000);
+		CAUTO					cex2y2_0a=OFWBOOL(cui16cx2y2l4);
+		CAUTO					cex2y2_0b=OFWBOOL(cui16cx2y2l4&&((cui16cx2y2l4&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD));
+		CAUTO					cex2y2_0c=OFWBOOL(cui16cx2y2l4);
+		CAUTO					cex2y2_0d=OFWBOOL(cui16cx2y2l4);
+		CAUTO					cex2y2_0e=OFWBOOL(cui16cx2y2l5);
+		CAUTO					cex2y2_0f=OFWBOOL(cui16cx2y2l4);
+		CAUTO					cex2y2_0g=OFWBOOL((cui16cx2y2l4&&((cui16cx2y2l4&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD))||cui16cx2y2l5);
+		CAUTO					cex2y2_0h=OFWBOOL(cui16cx2y2l4);
+		CAUTO					cex2y2_1a=OFWBOOL(cui16cx2y2l4);
+		CAUTO					cex2y2_1b=OFWBOOL(cui16cx2y2l4);
+		CAUTO					cex2y2_1c=OFWBOOL(cui16cx2y2l4);
+		CAUTO					cex2y2_1d=OFWBOOL(cui16cx2y2l5);
+		CAUTO					cex2y2_1e=OFWBOOL(cui16cx2y2l5);
+		CAUTO					cex2y2_1f=OFWBOOL((cui16cx2y2l4&&((cui16cx2y2l4&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRD))||cui16cx2y2l5);
+		CAUTO					cex2y2_1h=OFWBOOL(cui16cx2y2l4);
+		CAUTO					cex2y2_2a=OFWBOOL(cui16cx2y2l5);
+		constexpr AUTO			cex2y2_2b=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y2_2c=OFWBOOL(FALSE);
+		CAUTO					cex2y2_2d=OFWBOOL(cui16cx2y2l5);
+		constexpr AUTO			cex2y2_2e=OFWBOOL(FALSE);
+		CAUTO					cex2y2_2f=OFWBOOL(cui16cx2y2l5&&((cui16cx2y2l5&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD));
+		constexpr AUTO			cex2y2_2g=OFWBOOL(FALSE);
+		CAUTO					cex2y2_3a=OFWBOOL(cui16cx2y2l5);
+		CAUTO					cex2y2_3b=OFWBOOL(cui16cx2y2l5&&((cui16cx2y2l5&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD));
+		CAUTO					cex2y2_3c=OFWBOOL(cui16cx2y2l5);
+		CAUTO					cex2y2_3d=OFWBOOL(cui16cx2y2l5);
+		constexpr AUTO			cex2y2_3e=OFWBOOL(FALSE);
+		CAUTO					cex2y2_3f=OFWBOOL(cui16cx2y2l5);
+		constexpr AUTO			cex2y2_4a=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y2_4b=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y2_4c=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y2_4d=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y2_4e=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y2_4f=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y2_4g=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y2_5a=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y2_5b=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y2_5c=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y2_5d=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y2_5e=OFWBOOL(FALSE);
+		constexpr AUTO			cex2y2_5f=OFWBOOL(FALSE);
+		//	<X3Y2>-+  |  |  +                               //
+		//	        \ |  |  |＼                             //
+		//	3        \|  |  |  ＼                           //
+		//	+---------+  |  |    \                          //
+		//	 \         \ |  |    |＼                        //
+		//	  \2        \|  |    |  ＼                      //
+		//	   +---------+  |    |    \                     //
+		//	    \         \ |    |    |＼                   //
+		//	     \1        \|    |    |  ＼                 //
+		//	      +---------+(1) |    |    \                //
+		//	       ＼        ＼  |    |    |＼              //
+		//	         ＼(1)     ＼|    |    |  ＼            //
+		//	           \---------\(2) |    |    \           //
+		//	            ＼        ＼  |    |    |＼         //
+		//	              ＼(2)     ＼|    |    |  ＼       //
+		//	                \---------\(3) |    |    \      //
+		//	                 ＼        ＼  |    |    |      //
+		//	                   ＼(3)     ＼|    |(5) |      //
+		//	                     \---------\(4) +----5----* //
+		//	                      ＼(4)     ＼  | 5 5* * ** //
+		//	                        ＼        ＼|5 ＼|* ＼| //
+		//	                          \---------5--5-5--*-* //
+		//	                           ＼(5)    | 5 5* * ** //
+		//	                             ＼     |5 ＼|* ＼| //
+		//	                               \----5--*-5--*-* //
+		//	                                    | * ** * ** //
+		//	                                    |* ＼|* ＼| //
+		//	                                    *--*-*--*-* //
+		CAUTO					cui16cx3y2l5=(cex3y2&&cel5)?GAME_stui16cGetTile(cui8ix3,cui8iy2,cui8ilayer5):UINT16(0x0000);
+		CAUTO					cex3y2_0a=OFWBOOL(cui16cx3y2l5);
+		CAUTO					cex3y2_0b=OFWBOOL(cui16cx3y2l5);
+		CAUTO					cex3y2_0c=OFWBOOL(cui16cx3y2l5);
+		constexpr AUTO			cex3y2_0d=OFWBOOL(FALSE);
+		CAUTO					cex3y2_0e=OFWBOOL(cui16cx3y2l5);
+		CAUTO					cex3y2_0f=OFWBOOL(cui16cx3y2l5);
+		CAUTO					cex3y2_0g=OFWBOOL(cui16cx3y2l5);
+		CAUTO					cex3y2_0h=OFWBOOL(cui16cx3y2l5);
+		constexpr AUTO			cex3y2_1a=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_1b=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_1c=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_1d=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_1e=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_1f=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_1h=OFWBOOL(FALSE);
+		CAUTO					cex3y2_2a=OFWBOOL(cui16cx3y2l5);
+		CAUTO					cex3y2_2b=OFWBOOL(cui16cx3y2l5);
+		CAUTO					cex3y2_2c=OFWBOOL(cui16cx3y2l5);
+		constexpr AUTO			cex3y2_2d=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_2e=OFWBOOL(FALSE);
+		CAUTO					cex3y2_2f=OFWBOOL(cui16cx3y2l5&&((cui16cx3y2l5&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRD));
+		CAUTO					cex3y2_2g=OFWBOOL(cui16cx3y2l5);
+		constexpr AUTO			cex3y2_3a=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_3b=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_3c=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_3d=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_3e=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_3f=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_4a=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_4b=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_4c=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_4d=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_4e=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_4f=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_4g=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_5a=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_5b=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_5c=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_5d=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_5e=OFWBOOL(FALSE);
+		constexpr AUTO			cex3y2_5f=OFWBOOL(FALSE);
+		//	+--------0H-------1H
+		//	|＼    0A|＼    1A|
+		//	|  0C    |  1C    |
+		//	|    ＼ 0D    ＼ 1D
+		//	|0B    ＼|1B    ＼|
+		//	0G---0E--0F---1E--1F
+		//	|＼    2A|＼    3A|
+		//	|  2C    |  3C    |
+		//	|    ＼ 2D    ＼ 3D
+		//	|2B    ＼|3B    ＼|
+		//	2G---2E--2F---3E--3F
+		//	|＼    4A|＼    5A|
+		//	|  4C    |  5C    |
+		//	|    ＼ 4D    ＼ 5D
+		//	|4B    ＼|5B    ＼|
+		//	4G---4E--4F---5E--5F
+		CAUTO					ce0a=OFWBOOL(cex1y0_0a||cex2y0_0a||cex0y1_0a||cex1y1_0a||cex2y1_0a||cex3y1_0a||cex1y2_0a||cex2y2_0a||cex3y2_0a);
+		CAUTO					ce0b=OFWBOOL(cex1y0_0b||cex2y0_0b||cex0y1_0b||cex1y1_0b||cex2y1_0b||cex3y1_0b||cex1y2_0b||cex2y2_0b||cex3y2_0b);
+		CAUTO					ce0c=OFWBOOL(cex1y0_0c||cex2y0_0c||cex0y1_0c||cex1y1_0c||cex2y1_0c||cex3y1_0c||cex1y2_0c||cex2y2_0c||cex3y2_0c);
+		CAUTO					ce0d=OFWBOOL(cex1y0_0d||cex2y0_0d||cex0y1_0d||cex1y1_0d||cex2y1_0d||cex3y1_0d||cex1y2_0d||cex2y2_0d||cex3y2_0d);
+		CAUTO					ce0e=OFWBOOL(cex1y0_0e||cex2y0_0e||cex0y1_0e||cex1y1_0e||cex2y1_0e||cex3y1_0e||cex1y2_0e||cex2y2_0e||cex3y2_0e);
+		CAUTO					ce0f=OFWBOOL(cex1y0_0f||cex2y0_0f||cex0y1_0f||cex1y1_0f||cex2y1_0f||cex3y1_0f||cex1y2_0f||cex2y2_0f||cex3y2_0f);
+		CAUTO					ce0g=OFWBOOL(cex1y0_0g||cex2y0_0g||cex0y1_0g||cex1y1_0g||cex2y1_0g||cex3y1_0g||cex1y2_0g||cex2y2_0g||cex3y2_0g);
+		CAUTO					ce0h=OFWBOOL(cex1y0_0h||cex2y0_0h||cex0y1_0h||cex1y1_0h||cex2y1_0h||cex3y1_0h||cex1y2_0h||cex2y2_0h||cex3y2_0h);
+		CAUTO					ce1a=OFWBOOL(cex1y0_1a||cex2y0_1a||cex0y1_1a||cex1y1_1a||cex2y1_1a||cex3y1_1a||cex1y2_1a||cex2y2_1a||cex3y2_1a);
+		CAUTO					ce1b=OFWBOOL(cex1y0_1b||cex2y0_1b||cex0y1_1b||cex1y1_1b||cex2y1_1b||cex3y1_1b||cex1y2_1b||cex2y2_1b||cex3y2_1b);
+		CAUTO					ce1c=OFWBOOL(cex1y0_1c||cex2y0_1c||cex0y1_1c||cex1y1_1c||cex2y1_1c||cex3y1_1c||cex1y2_1c||cex2y2_1c||cex3y2_1c);
+		CAUTO					ce1d=OFWBOOL(cex1y0_1d||cex2y0_1d||cex0y1_1d||cex1y1_1d||cex2y1_1d||cex3y1_1d||cex1y2_1d||cex2y2_1d||cex3y2_1d);
+		CAUTO					ce1e=OFWBOOL(cex1y0_1e||cex2y0_1e||cex0y1_1e||cex1y1_1e||cex2y1_1e||cex3y1_1e||cex1y2_1e||cex2y2_1e||cex3y2_1e);
+		CAUTO					ce1f=OFWBOOL(cex1y0_1f||cex2y0_1f||cex0y1_1f||cex1y1_1f||cex2y1_1f||cex3y1_1f||cex1y2_1f||cex2y2_1f||cex3y2_1f);
+		CAUTO					ce1h=OFWBOOL(cex1y0_1h||cex2y0_1h||cex0y1_1h||cex1y1_1h||cex2y1_1h||cex3y1_1h||cex1y2_1h||cex2y2_1h||cex3y2_1h);
+		CAUTO					ce2a=OFWBOOL(cex1y0_2a||cex2y0_2a||cex0y1_2a||cex1y1_2a||cex2y1_2a||cex3y1_2a||cex1y2_2a||cex2y2_2a||cex3y2_2a);
+		CAUTO					ce2b=OFWBOOL(cex1y0_2b||cex2y0_2b||cex0y1_2b||cex1y1_2b||cex2y1_2b||cex3y1_2b||cex1y2_2b||cex2y2_2b||cex3y2_2b);
+		CAUTO					ce2c=OFWBOOL(cex1y0_2c||cex2y0_2c||cex0y1_2c||cex1y1_2c||cex2y1_2c||cex3y1_2c||cex1y2_2c||cex2y2_2c||cex3y2_2c);
+		CAUTO					ce2d=OFWBOOL(cex1y0_2d||cex2y0_2d||cex0y1_2d||cex1y1_2d||cex2y1_2d||cex3y1_2d||cex1y2_2d||cex2y2_2d||cex3y2_2d);
+		CAUTO					ce2e=OFWBOOL(cex1y0_2e||cex2y0_2e||cex0y1_2e||cex1y1_2e||cex2y1_2e||cex3y1_2e||cex1y2_2e||cex2y2_2e||cex3y2_2e);
+		CAUTO					ce2f=OFWBOOL(cex1y0_2f||cex2y0_2f||cex0y1_2f||cex1y1_2f||cex2y1_2f||cex3y1_2f||cex1y2_2f||cex2y2_2f||cex3y2_2f);
+		CAUTO					ce2g=OFWBOOL(cex1y0_2g||cex2y0_2g||cex0y1_2g||cex1y1_2g||cex2y1_2g||cex3y1_2g||cex1y2_2g||cex2y2_2g||cex3y2_2g);
+		CAUTO					ce3a=OFWBOOL(cex1y0_3a||cex2y0_3a||cex0y1_3a||cex1y1_3a||cex2y1_3a||cex3y1_3a||cex1y2_3a||cex2y2_3a||cex3y2_3a);
+		CAUTO					ce3b=OFWBOOL(cex1y0_3b||cex2y0_3b||cex0y1_3b||cex1y1_3b||cex2y1_3b||cex3y1_3b||cex1y2_3b||cex2y2_3b||cex3y2_3b);
+		CAUTO					ce3c=OFWBOOL(cex1y0_3c||cex2y0_3c||cex0y1_3c||cex1y1_3c||cex2y1_3c||cex3y1_3c||cex1y2_3c||cex2y2_3c||cex3y2_3c);
+		CAUTO					ce3d=OFWBOOL(cex1y0_3d||cex2y0_3d||cex0y1_3d||cex1y1_3d||cex2y1_3d||cex3y1_3d||cex1y2_3d||cex2y2_3d||cex3y2_3d);
+		CAUTO					ce3e=OFWBOOL(cex1y0_3e||cex2y0_3e||cex0y1_3e||cex1y1_3e||cex2y1_3e||cex3y1_3e||cex1y2_3e||cex2y2_3e||cex3y2_3e);
+		CAUTO					ce3f=OFWBOOL(cex1y0_3f||cex2y0_3f||cex0y1_3f||cex1y1_3f||cex2y1_3f||cex3y1_3f||cex1y2_3f||cex2y2_3f||cex3y2_3f);
+		CAUTO					ce4a=OFWBOOL(cex1y0_4a||cex2y0_4a||cex0y1_4a||cex1y1_4a||cex2y1_4a||cex3y1_4a||cex1y2_4a||cex2y2_4a||cex3y2_4a);
+		CAUTO					ce4b=OFWBOOL(cex1y0_4b||cex2y0_4b||cex0y1_4b||cex1y1_4b||cex2y1_4b||cex3y1_4b||cex1y2_4b||cex2y2_4b||cex3y2_4b);
+		CAUTO					ce4c=OFWBOOL(cex1y0_4c||cex2y0_4c||cex0y1_4c||cex1y1_4c||cex2y1_4c||cex3y1_4c||cex1y2_4c||cex2y2_4c||cex3y2_4c);
+		CAUTO					ce4d=OFWBOOL(cex1y0_4d||cex2y0_4d||cex0y1_4d||cex1y1_4d||cex2y1_4d||cex3y1_4d||cex1y2_4d||cex2y2_4d||cex3y2_4d);
+		CAUTO					ce4e=OFWBOOL(cex1y0_4e||cex2y0_4e||cex0y1_4e||cex1y1_4e||cex2y1_4e||cex3y1_4e||cex1y2_4e||cex2y2_4e||cex3y2_4e);
+		CAUTO					ce4f=OFWBOOL(cex1y0_4f||cex2y0_4f||cex0y1_4f||cex1y1_4f||cex2y1_4f||cex3y1_4f||cex1y2_4f||cex2y2_4f||cex3y2_4f);
+		CAUTO					ce4g=OFWBOOL(cex1y0_4g||cex2y0_4g||cex0y1_4g||cex1y1_4g||cex2y1_4g||cex3y1_4g||cex1y2_4g||cex2y2_4g||cex3y2_4g);
+		CAUTO					ce5a=OFWBOOL(cex1y0_5a||cex2y0_5a||cex0y1_5a||cex1y1_5a||cex2y1_5a||cex3y1_5a||cex1y2_5a||cex2y2_5a||cex3y2_5a);
+		CAUTO					ce5b=OFWBOOL(cex1y0_5b||cex2y0_5b||cex0y1_5b||cex1y1_5b||cex2y1_5b||cex3y1_5b||cex1y2_5b||cex2y2_5b||cex3y2_5b);
+		CAUTO					ce5c=OFWBOOL(cex1y0_5c||cex2y0_5c||cex0y1_5c||cex1y1_5c||cex2y1_5c||cex3y1_5c||cex1y2_5c||cex2y2_5c||cex3y2_5c);
+		CAUTO					ce5d=OFWBOOL(cex1y0_5d||cex2y0_5d||cex0y1_5d||cex1y1_5d||cex2y1_5d||cex3y1_5d||cex1y2_5d||cex2y2_5d||cex3y2_5d);
+		CAUTO					ce5e=OFWBOOL(cex1y0_5e||cex2y0_5e||cex0y1_5e||cex1y1_5e||cex2y1_5e||cex3y1_5e||cex1y2_5e||cex2y2_5e||cex3y2_5e);
+		CAUTO					ce5f=OFWBOOL(cex1y0_5f||cex2y0_5f||cex0y1_5f||cex1y1_5f||cex2y1_5f||cex3y1_5f||cex1y2_5f||cex2y2_5f||cex3y2_5f);
+		CAUTO					cui8d0=OFF_stui8dDraw_Layer_Positioned_Shadow_GetOffset(ce0a,ce0b,ce0c,ce0d,ce0e,ce0f,ce0g,ce0h);
+		CAUTO					cui8d1=OFF_stui8dDraw_Layer_Positioned_Shadow_GetOffset(ce1a,ce1b,ce1c,ce1d,ce1e,ce1f,ce0f,ce1h);
+		CAUTO					cui8d2=OFF_stui8dDraw_Layer_Positioned_Shadow_GetOffset(ce2a,ce2b,ce2c,ce2d,ce2e,ce2f,ce2g,ce0f);
+		CAUTO					cui8d3=OFF_stui8dDraw_Layer_Positioned_Shadow_GetOffset(ce3a,ce3b,ce3c,ce3d,ce3e,ce3f,ce2f,ce1f);
+		CAUTO					cui8d4=OFF_stui8dDraw_Layer_Positioned_Shadow_GetOffset(ce4a,ce4b,ce4c,ce4d,ce4e,ce4f,ce4g,ce2f);
+		CAUTO					cui8d5=OFF_stui8dDraw_Layer_Positioned_Shadow_GetOffset(ce5a,ce5b,ce5c,ce5d,ce5e,ce5f,ce4f,ce3f);
 
-		if(cui8i0)stcvsWork.CopyRect(stccvsTile,{{INT16(cui8i0),248},{8,8}},{INT16(cv2idestination.i16iX()+ 0),INT16(cv2idestination.i16iY()+ 0)},IDBLEND::BackNega_SourceAlpha);
-		if(cui8i1)stcvsWork.CopyRect(stccvsTile,{{INT16(cui8i1),248},{8,8}},{INT16(cv2idestination.i16iX()+ 8),INT16(cv2idestination.i16iY()+ 0)},IDBLEND::BackNega_SourceAlpha);
-		if(cui8i2)stcvsWork.CopyRect(stccvsTile,{{INT16(cui8i2),248},{8,8}},{INT16(cv2idestination.i16iX()+ 0),INT16(cv2idestination.i16iY()+ 8)},IDBLEND::BackNega_SourceAlpha);
-		if(cui8i3)stcvsWork.CopyRect(stccvsTile,{{INT16(cui8i3),248},{8,8}},{INT16(cv2idestination.i16iX()+ 8),INT16(cv2idestination.i16iY()+ 8)},IDBLEND::BackNega_SourceAlpha);
-		if(cui8i4)stcvsWork.CopyRect(stccvsTile,{{INT16(cui8i4),248},{8,8}},{INT16(cv2idestination.i16iX()+ 0),INT16(cv2idestination.i16iY()+16)},IDBLEND::BackNega_SourceAlpha);
-		if(cui8i5)stcvsWork.CopyRect(stccvsTile,{{INT16(cui8i5),248},{8,8}},{INT16(cv2idestination.i16iX()+ 8),INT16(cv2idestination.i16iY()+16)},IDBLEND::BackNega_SourceAlpha);
+		if(cui8d0||cui8d1||cui8d2||cui8d3||cui8d4||cui8d5){
+			constexpr AUTO			cv2nsource=VECTOR2(INT16(IMAGE_stcui8nShadowWidth),INT16(IMAGE_stcui8nShadowHeight));
+
+			OFF_stDraw_MarkUpdate();
+			if(cui8d0)OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{{INT16(IMAGE_stcv2iShadow.i16iX()+INT16(cui8d0)),IMAGE_stcv2iShadow.i16iY()},cv2nsource},{
+				INT16(cv2idestination.i16iX()),
+				INT16(cv2idestination.i16iY())
+			},IDBLEND::BackNega_SourceAlpha);
+			if(cui8d1)OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{{INT16(IMAGE_stcv2iShadow.i16iX()+INT16(cui8d1)),IMAGE_stcv2iShadow.i16iY()},cv2nsource},{
+				INT16(cv2idestination.i16iX()+INT16(IMAGE_stcui8nShadowWidth)),
+				INT16(cv2idestination.i16iY())
+			},IDBLEND::BackNega_SourceAlpha);
+			if(cui8d2)OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{{INT16(IMAGE_stcv2iShadow.i16iX()+INT16(cui8d2)),IMAGE_stcv2iShadow.i16iY()},cv2nsource},{
+				INT16(cv2idestination.i16iX()),
+				INT16(cv2idestination.i16iY()+INT16(IMAGE_stcui8nShadowHeight*1))
+			},IDBLEND::BackNega_SourceAlpha);
+			if(cui8d3)OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{{INT16(IMAGE_stcv2iShadow.i16iX()+INT16(cui8d3)),IMAGE_stcv2iShadow.i16iY()},cv2nsource},{
+				INT16(cv2idestination.i16iX()+INT16(IMAGE_stcui8nShadowWidth)),
+				INT16(cv2idestination.i16iY()+INT16(IMAGE_stcui8nShadowHeight*1))
+			},IDBLEND::BackNega_SourceAlpha);
+			if(cui8d4)OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{{INT16(IMAGE_stcv2iShadow.i16iX()+INT16(cui8d4)),IMAGE_stcv2iShadow.i16iY()},cv2nsource},{
+				INT16(cv2idestination.i16iX()),
+				INT16(cv2idestination.i16iY()+INT16(IMAGE_stcui8nShadowHeight*2))
+			},IDBLEND::BackNega_SourceAlpha);
+			if(cui8d5)OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{{INT16(IMAGE_stcv2iShadow.i16iX()+INT16(cui8d5)),IMAGE_stcv2iShadow.i16iY()},cv2nsource},{
+				INT16(cv2idestination.i16iX()+INT16(IMAGE_stcui8nShadowWidth)),
+				INT16(cv2idestination.i16iY()+INT16(IMAGE_stcui8nShadowHeight*2))
+			},IDBLEND::BackNega_SourceAlpha);
+#ifdef SHOWSHADOWOFFSET
+			DEBUG::stWrite(cui8ix);
+			DEBUG::stWrite(",");
+			DEBUG::stWrite(cui8iy);
+			DEBUG::stWrite("/0:");
+			DEBUG::stWrite(ce0a?"A":"_");
+			DEBUG::stWrite(ce0b?"B":"_");
+			DEBUG::stWrite(ce0c?"C":"_");
+			DEBUG::stWrite(ce0d?"D":"_");
+			DEBUG::stWrite(ce0e?"E":"_");
+			DEBUG::stWrite(ce0f?"F":"_");
+			DEBUG::stWrite(ce0g?"G":"_");
+			DEBUG::stWrite(ce0h?"H":"_");
+			DEBUG::stWrite("=");DEBUG::stWriteHex(UINT8(cui8d0>>3));
+			DEBUG::stWrite(" 1:");
+			DEBUG::stWrite(ce1a?"A":"_");
+			DEBUG::stWrite(ce1b?"B":"_");
+			DEBUG::stWrite(ce1c?"C":"_");
+			DEBUG::stWrite(ce1d?"D":"_");
+			DEBUG::stWrite(ce1e?"E":"_");
+			DEBUG::stWrite(ce1f?"F":"_");
+			DEBUG::stWrite(ce0f?"G":"_");
+			DEBUG::stWrite(ce1h?"H":"_");
+			DEBUG::stWrite("=");DEBUG::stWriteHex(UINT8(cui8d1>>3));
+			DEBUG::stWrite(" 2:");
+			DEBUG::stWrite(ce2a?"A":"_");
+			DEBUG::stWrite(ce2b?"B":"_");
+			DEBUG::stWrite(ce2c?"C":"_");
+			DEBUG::stWrite(ce2d?"D":"_");
+			DEBUG::stWrite(ce2e?"E":"_");
+			DEBUG::stWrite(ce2f?"F":"_");
+			DEBUG::stWrite(ce2g?"G":"_");
+			DEBUG::stWrite(ce0f?"H":"_");
+			DEBUG::stWrite("=");DEBUG::stWriteHex(UINT8(cui8d2>>3));
+			DEBUG::stWrite(" 3:");
+			DEBUG::stWrite(ce3a?"A":"_");
+			DEBUG::stWrite(ce3b?"B":"_");
+			DEBUG::stWrite(ce3c?"C":"_");
+			DEBUG::stWrite(ce3d?"D":"_");
+			DEBUG::stWrite(ce3e?"E":"_");
+			DEBUG::stWrite(ce3f?"F":"_");
+			DEBUG::stWrite(ce2f?"G":"_");
+			DEBUG::stWrite(ce1f?"H":"_");
+			DEBUG::stWrite("=");DEBUG::stWriteHex(UINT8(cui8d3>>3));
+			DEBUG::stWrite(" 4:");
+			DEBUG::stWrite(ce4a?"A":"_");
+			DEBUG::stWrite(ce4b?"B":"_");
+			DEBUG::stWrite(ce4c?"C":"_");
+			DEBUG::stWrite(ce4d?"D":"_");
+			DEBUG::stWrite(ce4e?"E":"_");
+			DEBUG::stWrite(ce4f?"F":"_");
+			DEBUG::stWrite(ce4g?"G":"_");
+			DEBUG::stWrite(ce2f?"H":"_");
+			DEBUG::stWrite("=");DEBUG::stWriteHex(UINT8(cui8d4>>3));
+			DEBUG::stWrite(" 5:");
+			DEBUG::stWrite(ce5a?"A":"_");
+			DEBUG::stWrite(ce5b?"B":"_");
+			DEBUG::stWrite(ce5c?"C":"_");
+			DEBUG::stWrite(ce5d?"D":"_");
+			DEBUG::stWrite(ce5e?"E":"_");
+			DEBUG::stWrite(ce5f?"F":"_");
+			DEBUG::stWrite(ce4f?"G":"_");
+			DEBUG::stWrite(ce3f?"H":"_");
+			DEBUG::stWrite("=");DEBUG::stWriteHexLine(UINT8(cui8d5>>3));
+#endif
+		}
 		return;
 	}
-	static constexpr UINT8	stui8iDraw_Layered_Positioned_Shadow_GetOffset(COFWBOOL cea,COFWBOOL ceb)noexcept{
-		//	+----+----+
-		//	|＼0A|＼1A|
-		//	|0B＼|1B＼|
-		//	|----+----+
-		//	|＼2A|＼3A|
-		//	|2B＼|3B＼|
-		//	|----+----+
-		//	|＼4A|＼5A|
-		//	|4B＼|5B＼|
-		//	+---------+
-		return 96+(cea?8:0)+(ceb?16:0);
+	static constexpr UINT8	OFF_stui8dDraw_Layer_Positioned_Shadow_GetOffset(COFWBOOL cea,COFWBOOL ceb,COFWBOOL cec,COFWBOOL ced,COFWBOOL cee,COFWBOOL cef,COFWBOOL ceg,COFWBOOL ceh)noexcept{
+		//	A～H場所
+		//	+--------H
+		//	|＼     A|
+		//	|  C     | 
+		//	|    ＼  D 
+		//	|B     ＼|
+		//	G----E---F
+		//	パーツ割
+		//	     x0   x1   x2   x3
+		//	    +----+----+----+----+
+		//	  0x|    |■■|■■|■■|
+		//	    |    |＼■|＼__|____|
+		//	    +----+----+----+----+
+		//	  1x|■＼|  ＼|  ＼|■ ||
+		//	    |■■|＼  |    |■ /|
+		//	    +----+----+----+----+
+		//	  2x|■＼|    |■■|■ \|
+		//	    |■ ||＼  |■■|■ ||
+		//	    +----+----+----+----+
+		//	  3x|■ ||■■|■■|■ ||
+		//	    |■ ||___/|\___|__／|
+		//	    +----+----+----+----+
+		//	  4x|■■|    |    |    |
+		//	    |■／|    |    |    |
+		//	    +----+----+----+----+
+		constexpr UINT8			acui8idoffset[]={
+		//	ABCDEFGH ABCDEFGH ABCDEFGH ABCDEFGH ABCDEFGH ABCDEFGH ABCDEFGH ABCDEFGH ABCDEFGH ABCDEFGH ABCDEFGH ABCDEFGH ABCDEFGH ABCDEFGH ABCDEFGH ABCDEFGH
+		//	<表示対象無し>
+		//	________ _______H ______G_ ______GH _____F__ _____F_H _____FG_ _____FGH ____E___ ____E__H ____E_G_ ____E_GH ____EF__ ____EF_H ____EFG_ ____EFGH
+			0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3,
+		//	<表示対象無し>
+		//	___D____ ___D___H ___D__G_ ___D__GH ___D_F__ ___D_F_H ___D_FG_ ___D_FGH ___DE___ ___DE__H ___DE_G_ ___DE_GH ___DEF__ ___DEF_H ___DEFG_ ___DEFGH
+			0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3,
+		//	<表示対象無し>
+		//	__C_____ __C____H __C___G_ __C___GH __C__F__ __C__F_H __C__FG_ __C__FGH __C_E___ __C_E__H __C_E_G_ __C_E_GH __C_EF__ __C_EF_H __C_EFG_ __C_EFGH
+			0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3,
+		//	<表示対象無し>
+		//	__CD____ __CD___H __CD__G_ __CD__GH __CD_F__ __CD_F_H __CD_FG_ __CD_FGH __CDE___ __CDE__H __CDE_G_ __CDE_GH __CDEF__ __CDEF_H __CDEFG_ __CDEFGH
+			0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3, 0x00<<3,
+		//	_B______ _B_____H _B____G_ _B____GH _B___F__ _B___F_H _B___FG_ _B___FGH _B__E___ _B__E__H _B__E_G_ _B__E_GH _B__EF__ _B__EF_H _B__EFG_ _B__EFGH
+			0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3,
+		//	_B_D____ _B_D___H _B_D__G_ _B_D__GH _B_D_F__ _B_D_F_H _B_D_FG_ _B_D_FGH _B_DE___ _B_DE__H _B_DE_G_ _B_DE_GH _B_DEF__ _B_DEF_H _B_DEFG_ _B_DEFGH
+			0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3, 0x09<<3,
+		//	_BC_____ _BC____H _BC___G_ _BC___GH _BC__F__ _BC__F_H _BC__FG_ _BC__FGH _BC_E___ _BC_E__H _BC_E_G_ _BC_E_GH _BC_EF__ _BC_EF_H _BC_EFG_ _BC_EFGH
+			0x08<<3, 0x08<<3, 0x08<<3, 0x08<<3, 0x08<<3, 0x08<<3, 0x08<<3, 0x08<<3, 0x08<<3, 0x08<<3, 0x08<<3, 0x08<<3, 0x08<<3, 0x08<<3, 0x08<<3, 0x08<<3,
+		//	_BCD____ _BCD___H _BCD__G_ _BCD__GH _BCD_F__ _BCD_F_H _BCD_FG_ _BCD_FGH _BCDE___ _BCDE__H _BCDE_G_ _BCDE_GH _BCDEF__ _BCDEF_H _BCDEFG_ _BCDEFGH
+			0x04<<3, 0x04<<3, 0x04<<3, 0x04<<3, 0x04<<3, 0x04<<3, 0x04<<3, 0x04<<3, 0x04<<3, 0x04<<3, 0x04<<3, 0x04<<3, 0x04<<3, 0x04<<3, 0x04<<3, 0x04<<3,
+		//	A_______ A______H A_____G_ A_____GH A____F__ A____F_H A____FG_ A____FGH A___E___ A___E__H A___E_G_ A___E_GH A___EF__ A___EF_H A___EFG_ A___EFGH
+			0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3,
+		//	A__D____ A__D___H A__D__G_ A__D__GH A__D_F__ A__D_F_H A__D_FG_ A__D_FGH A__DE___ A__DE__H A__DE_G_ A__DE_GH A__DEF__ A__DEF_H A__DEFG_ A__DEFGH
+			0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3, 0x06<<3,
+		//	A_C_____ A_C____H A_C___G_ A_C___GH A_C__F__ A_C__F_H A_C__FG_ A_C__FGH A_C_E___ A_C_E__H A_C_E_G_ A_C_E_GH A_C_EF__ A_C_EF_H A_C_EFG_ A_C_EFGH
+			0x02<<3, 0x02<<3, 0x03<<3, 0x03<<3, 0x02<<3, 0x02<<3, 0x03<<3, 0x03<<3, 0x0c<<3, 0x07<<3, 0x0c<<3, 0x07<<3, 0x0b<<3, 0x0b<<3, 0x0b<<3, 0x0c<<3,
+		//	A_CD____ A_CD___H A_CD__G_ A_CD__GH A_CD_F__ A_CD_F_H A_CD_FG_ A_CD_FGH A_CDE___ A_CDE__H A_CDE_G_ A_CDE_GH A_CDEF__ A_CDEF_H A_CDEFG_ A_CDEFGH
+			0x02<<3, 0x02<<3, 0x0d<<3, 0x0d<<3, 0x0e<<3, 0x0e<<3, 0x03<<3, 0x03<<3, 0x01<<3, 0x01<<3, 0x0a<<3, 0x0a<<3, 0x01<<3, 0x01<<3, 0x01<<3, 0x01<<3,
+		//	AB______ AB_____H AB____G_ AB____GH AB___F__ AB___F_H AB___FG_ AB___FGH AB__E___ AB__E__H AB__E_G_ AB__E_GH AB__EF__ AB__EF_H AB__EFG_ AB__EFGH
+			0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3,
+		//	AB_D____ AB_D___H AB_D__G_ AB_D__GH AB_D_F__ AB_D_F_H AB_D_FG_ AB_D_FGH AB_DE___ AB_DE__H AB_DE_G_ AB_DE_GH AB_DEF__ AB_DEF_H AB_DEFG_ AB_DEFGH
+			0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3, 0x05<<3,
+		//	ABC_____ ABC____H ABC___G_ ABC___GH ABC__F__ ABC__F_H ABC__FG_ ABC__FGH ABC_E___ ABC_E__H ABC_E_G_ ABC_E_GH ABC_EF__ ABC_EF_H ABC_EFG_ ABC_EFGH
+			0x0f<<3, 0x07<<3, 0x0d<<3, 0x0f<<3, 0x0f<<3, 0x0c<<3, 0x03<<3, 0x0c<<3, 0x0c<<3, 0x07<<3, 0x0c<<3, 0x07<<3, 0x0b<<3, 0x0c<<3, 0x0b<<3, 0x0c<<3,
+		//	ABCD____ ABCD___H ABCD__G_ ABCD__GH ABCD_F__ ABCD_F_H ABCD_FG_ ABCD_FGH ABCDE___ ABCDE__H ABCDE_G_ ABCDE_GH ABCDEF__ ABCDEF_H ABCDEFG_ ABCDEFGH
+			0x03<<3, 0x03<<3, 0x0d<<3, 0x0d<<3, 0x0e<<3, 0x0e<<3, 0x03<<3, 0x03<<3, 0x10<<3, 0x10<<3, 0x10<<3, 0x10<<3, 0x0a<<3, 0x0a<<3, 0x0a<<3, 0x0a<<3
+		};
+
+		return acui8idoffset[
+			+(cea?0x80:0x00)
+			+(ceb?0x40:0x00)
+			+(cec?0x20:0x00)
+			+(ced?0x10:0x00)
+			+(cee?0x08:0x00)
+			+(cef?0x04:0x00)
+			+(ceg?0x02:0x00)
+			+(ceh?0x01:0x00)
+		];
 	}
 };
 
@@ -761,14 +2179,26 @@ private:
 //		user
 //
 
+OFWBOOL					SELECT_eSelected;
+UINT8					SELECT_ui8iTile,SELECT_ui8iX,SELECT_ui8iY,SELECT_ui8iLayer;
+
+VOID					MARK_Erase(VOID)noexcept{
+	GRAPHIC::SPRITE_stErase(1);
+	GRAPHIC::SPRITE_stErase(2);
+	GRAPHIC::SPRITE_stErase(3);
+	GRAPHIC::SPRITE_stErase(4);
+	return;
+}
+
 VOID					USER_New(VOID)noexcept{
 	USER::stNew();
-	for(UINT8 ui8itile=0;ui8itile<USER::stcui8nTile;++ui8itile){
-		CAUTO&					acui8iarrangement=USER::staacui8iArrangement[ui8itile];
-
-		USER::stWrite(acui8iarrangement[0],acui8iarrangement[1],acui8iarrangement[2],ui8itile+1);
-	}
-	USER::stDraw();
+	USER::GAME_stArrange();
+#ifdef SHOWARRANGEPROGRESS
+#else
+	USER::SCREEN_stDraw();
+#endif
+	USER::MOUSE_stSetBusy(FALSE);
+	SELECT_eSelected=FALSE;
 	return;
 }
 
@@ -778,5 +2208,119 @@ VOID					USER_Delete(VOID)noexcept{
 }
 
 VOID					USER_Main(VOID)noexcept{
+	CAUTO					cstatmouse=USER::MOUSE_ststatGetState();
+	UINT8					ui8ix,ui8iy,ui8ilayer;
+
+	if(
+		CAUTO					cui16ctile=USER::GAME_stui16cGetTilebyScreenPosition(ui8ix,ui8iy,ui8ilayer,cstatmouse.v2iCursor);
+		cui16ctile
+	){
+		CAUTO					cui8ix=ui8ix,cui8iy=ui8iy,cui8ilayer=ui8ilayer;
+		CAUTO					ceselectable=USER::GAME_steIsSelectable(cui8ix,cui8iy,cui8ilayer);
+
+		if(cstatmouse.ui16cButtonSingle&OS::MOUSE_stcui8cMaskButtonLeft){
+			//	マウスボタン押下
+			if(ceselectable){
+				CAUTO					cui8itile=UINT8(USER::GAME_stui16cGetTile(cui8ix,cui8iy,cui8ilayer)&0xff);
+
+				//	ゲット可能な牌を指している
+				if(SELECT_eSelected){
+					//	既に1つ選択している
+					if(
+						(SELECT_ui8iTile!=cui8itile)&&
+						(((SELECT_ui8iTile-1)&~3)==((cui8itile-1)&~3))
+					){
+						//	同じ牌であったので既存もろとも消し去る
+						USER::MOUSE_stSetBusy(TRUE);
+						MARK_Erase();
+						USER::GAME_stSelectTile(cui8ix,cui8iy,cui8ilayer,TRUE);
+						USER::GAME_stWriteTile(SELECT_ui8iX,SELECT_ui8iY,SELECT_ui8iLayer,0x00,TRUE);
+						USER::GAME_stWriteTile(cui8ix,cui8iy,cui8ilayer,0x00,TRUE);
+						SELECT_eSelected=FALSE;
+						USER::MOUSE_stSetBusy(FALSE);
+						return;
+					}else{
+						//	違う牌であったので選択し直す
+						USER::MOUSE_stSetBusy(TRUE);
+						MARK_Erase();
+						USER::GAME_stSelectTile(SELECT_ui8iX,SELECT_ui8iY,SELECT_ui8iLayer,FALSE);
+						SELECT_ui8iTile=cui8itile;
+						SELECT_ui8iX=cui8ix;
+						SELECT_ui8iY=cui8iy;
+						SELECT_ui8iLayer=cui8ilayer;
+						USER::GAME_stSelectTile(SELECT_ui8iX,SELECT_ui8iY,SELECT_ui8iLayer,TRUE);
+						USER::MOUSE_stSetBusy(FALSE);
+						return;
+					}
+				}else{
+					//	1つ目の選択
+					USER::MOUSE_stSetBusy(TRUE);
+					MARK_Erase();
+					SELECT_eSelected=TRUE;
+					SELECT_ui8iTile=cui8itile;
+					SELECT_ui8iX=cui8ix;
+					SELECT_ui8iY=cui8iy;
+					SELECT_ui8iLayer=cui8ilayer;
+					USER::GAME_stSelectTile(SELECT_ui8iX,SELECT_ui8iY,SELECT_ui8iLayer,TRUE);
+					USER::MOUSE_stSetBusy(FALSE);
+					return;
+				}
+			}else{
+				//	ゲット可能な牌ではない
+				if(SELECT_eSelected){
+					//	既に1つ目が選択されていたならキャンセル扱い
+					USER::MOUSE_stSetBusy(TRUE);
+					MARK_Erase();
+					SELECT_eSelected=FALSE;
+					USER::GAME_stSelectTile(SELECT_ui8iX,SELECT_ui8iY,SELECT_ui8iLayer,FALSE);
+					USER::MOUSE_stSetBusy(FALSE);
+					return;
+				}
+			}
+		}
+		//	マーク表示
+		{
+			CAUTO					cv2iposition=USER::SCREEN_stv2iGetPosition(ui8ix,ui8iy,ui8ilayer);
+			CAUTO					cv2ipositionRD=cv2iposition+VECTOR2(
+				USER::IMAGE_stcui8nUnitWidth*2-1,
+				USER::IMAGE_stcui8nUnitHeight*2-1
+			);
+			CAUTO					cv2isprite=cv2iposition;
+			CAUTO					cv2ispriteRD=VECTOR2(
+				cv2ipositionRD.i16iX()-7,
+				cv2ipositionRD.i16iY()-7
+			);
+			//	UINT8					cui8ipattern
+			//		選択可能な牌を指しているかどうかで、マーク形状を変えてやります。
+			CAUTO					cui8ipattern=ceselectable?UINT8(0x08):UINT8(0x09);
+
+			if(USER::GAME_stui16cGetTilebyScreenPosition(ui8ix,ui8iy,ui8ilayer,{
+				cv2iposition.i16iX(),	cv2iposition.i16iY()
+			})==cui16ctile)GRAPHIC::SPRITE_stWrite8(1,{
+				cv2iposition.i16iX(),	cv2iposition.i16iY()
+			},cui8ipattern,0x1,FALSE,FALSE);
+			else GRAPHIC::SPRITE_stErase(1);
+			if(USER::GAME_stui16cGetTilebyScreenPosition(ui8ix,ui8iy,ui8ilayer,{
+				cv2ipositionRD.i16iX(),	cv2iposition.i16iY()
+			})==cui16ctile)GRAPHIC::SPRITE_stWrite8(2,{
+				cv2ispriteRD.i16iX(),	cv2isprite.i16iY()
+			},cui8ipattern,0x1,TRUE,FALSE);
+			else GRAPHIC::SPRITE_stErase(2);
+			if(USER::GAME_stui16cGetTilebyScreenPosition(ui8ix,ui8iy,ui8ilayer,{
+				cv2iposition.i16iX(),	cv2ipositionRD.i16iY()
+			})==cui16ctile)GRAPHIC::SPRITE_stWrite8(3,{
+				cv2isprite.i16iX(),		cv2ispriteRD.i16iY()
+			},cui8ipattern,0x1,FALSE,TRUE);
+			else GRAPHIC::SPRITE_stErase(3);
+			if(USER::GAME_stui16cGetTilebyScreenPosition(ui8ix,ui8iy,ui8ilayer,{
+				cv2ipositionRD.i16iX(),	cv2ipositionRD.i16iY()
+			})==cui16ctile)GRAPHIC::SPRITE_stWrite8(4,{
+				cv2ispriteRD.i16iX(),	cv2ispriteRD.i16iY()
+			},cui8ipattern,0x1,TRUE,TRUE);
+			else GRAPHIC::SPRITE_stErase(4);
+			return;
+		}
+	}
+	MARK_Erase();
 	return;
 }

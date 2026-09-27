@@ -12,7 +12,7 @@
 //		include
 //
 
-#include				"base.hpp"
+#include				"vector2.hpp"
 #include				"collider.hpp"
 
 //
@@ -53,6 +53,10 @@ namespace m68k::i71::sub{
 			VBlank,
 			HBlank
 		};
+		using					MOUSE_IDBUTTON=hid::MOUSE::IDBUTTON;
+		static constexpr AUTO	MOUSE_stcui8nBank=hid::MOUSE::stcui8nBank;
+		static constexpr AUTO	MOUSE_stcui8cMaskButtonLeft=hid::MOUSE::stcui8cMaskButtonLeft;
+		static constexpr AUTO	MOUSE_stcui8cMaskButtonRight=hid::MOUSE::stcui8cMaskButtonRight;
 
 		//
 		//		primitive
@@ -71,11 +75,26 @@ namespace m68k::i71::sub{
 		//		class
 		//
 
+		//	MOUSESTATE
+		class MOUSESTATE;
+		using					CMOUSESTATE=const MOUSESTATE;
+		using					PMOUSESTATE=MOUSESTATE*;
+		using					PCMOUSESTATE=CMOUSESTATE*;
 		//	ST
 		class ST;
 		using					CST=const ST;
 		using					PST=ST*;
 		using					PCST=CST*;
+
+		//
+		//		class:MOUSESTATE
+		//
+
+		class MOUSESTATE{
+		public:
+			VECTOR2					v2dRelative;
+			UINT16					ui16cButton;
+		};
 
 		//
 		//		class:ST
@@ -224,6 +243,16 @@ namespace m68k::i71::sub{
 			DEVICE_KEYBOARD_stui16Delegate(MAP::DEVICE::KEYBOARD_stcui16dSelectOffset)=UINT16(cui8ibank);
 			return DEVICE_KEYBOARD_stui16Delegate(MAP::DEVICE::KEYBOARD_stcui16dDataOffset);
 		}
+		static _INLINE_ MOUSESTATE	DEVICE_MOUSE_ststatRead(VOID)noexcept{
+			MOUSESTATE				statthis;
+
+			statthis.v2dRelative={
+				INT16(DEVICE_MOUSE_stui16Read(0)),
+				INT16(DEVICE_MOUSE_stui16Read(1))
+			};
+			statthis.ui16cButton=OS::DEVICE_MOUSE_stui16Read(2);
+			return statthis;
+		}
 		static _INLINE_ UINT8	DEVICE_JOYSTICK_stui8Read(CUINT8 cui8ibank)noexcept{
 			DEVICE_JOYSTICK_stui8Delegate(MAP::DEVICE::JOYSTICK_stcui16dSelectOffset)=cui8ibank;
 			return DEVICE_JOYSTICK_stui8Delegate(MAP::DEVICE::JOYSTICK_stcui16dDataOffset);
@@ -244,6 +273,13 @@ namespace m68k::i71::sub{
 		}
 		static _INLINE_ _UNDISCARDABLE_ UINT16&	DEVICE_KEYBOARD_stui16Delegate(CUINT16 cui16iaddress)noexcept{
 			return MEMORY::DEVICE_stui16DelegateThis(MAP::DEVICE::KEYBOARD_stcui16dOffsetS+cui16iaddress);
+		}
+		static _INLINE_ UINT16	DEVICE_MOUSE_stui16Read(CUINT8 cui8ibank)noexcept{
+			DEVICE_MOUSE_stui16Delegate(MAP::DEVICE::MOUSE_stcui16dSelectOffset)=UINT16(cui8ibank);
+			return DEVICE_MOUSE_stui16Delegate(MAP::DEVICE::MOUSE_stcui16dDataOffset);
+		}
+		static _INLINE_ _UNDISCARDABLE_ UINT16&	DEVICE_MOUSE_stui16Delegate(CUINT16 cui16iaddress)noexcept{
+			return MEMORY::DEVICE_stui16DelegateThis(MAP::DEVICE::MOUSE_stcui16dOffsetS+cui16iaddress);
 		}
 		static _INLINE_ _UNDISCARDABLE_ UINT8&	DEVICE_JOYSTICK_stui8Delegate(CUINT16 cui16iaddress)noexcept{
 			return MEMORY::DEVICE_stui8DelegateThis(MAP::DEVICE::JOYSTICK_stcui16dOffsetS+cui16iaddress);

@@ -12,7 +12,7 @@
 //		include
 //
 
-#include				"vector2.hpp"
+#include				"pattern.hpp"
 #include				"canvas_sized.hpp"
 
 //
@@ -32,13 +32,62 @@ namespace m68k::i71::sub{
 	//		class:GRAPHIC
 	//
 
+	//	GRAPHIC
+	//		ビデオ機能「VI71B」のフルカラーモードを使用した描画クラスです。
+	//		描画域は1,024×512ドットですが、
+	//		これはビットマップ割り当て領域の切り替えで実現されており、
+	//		(非表示領域が無いため)ダブルバッファ的な使い方はできません。
+	//		加えて、BG0と1、BG2と3はパターン共用となります。
+	//		<VRAM割り当て>
+	//		0x000000    +-----------------------------------+
+	//		            |領域(0,0)-(1023,255)Rプレーン      |
+	//		0x020000    +-----------------------------------+
+	//		            |領域(0,0)-(1023,255)Gプレーン      |
+	//		0x040000    +-----------------------------------+
+	//		            |領域(0,0)-(1023,255)Bプレーン      |
+	//		0x060000    +-----------------------------------+
+	//		            |スプライトパターン                 |
+	//		0x068000    +-----------------------------------+
+	//		            |スプライトアトリビュート           |
+	//		0x068800    +-----------------------------------+
+	//		            |(未使用)                           |
+	//		0x070000    +-----------------------------------+
+	//		            |BG0/1パターン                      |
+	//		0x078000    +-----------------------------------+
+	//		            |BG2/3パターン                      |
+	//		0x080000    +-----------------------------------+
+	//		            |領域(0,256)-(1023,511)Rプレーン    |
+	//		0x0a0000    +-----------------------------------+
+	//		            |領域(0,256)-(1023,511)Gプレーン    |
+	//		0x0c0000    +-----------------------------------+
+	//		            |領域(0,256)-(1023,511)Bプレーン    |
+	//		0x0e0000    +-----------------------------------+
+	//		            |BG0アトリビュート                  |
+	//		0x0e8000    +-----------------------------------+
+	//		            |BG1アトリビュート                  |
+	//		0x0f0000    +-----------------------------------+
+	//		            |BG2アトリビュート                  |
+	//		0x0f8000    +-----------------------------------+
+	//		            |BG3アトリビュート                  |
+	//		0x100000    +-----------------------------------+
 	class GRAPHIC{
 	public:
+
+		//
+		//		primitive
+		//
+
+		//	FP_CALLBACK
+		using					FP_CALLBACK=VOID(*)(const PVOID cpobject)noexcept;
 
 		//
 		//		const
 		//
 
+		//	IDREGISTERW
+		using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
+		//	IDLAYER
+		using					IDLAYER=VIDEO_DRIVER::IDLAYER;
 		//	IDBLEND
 		using					IDBLEND=CANVAS_::IDBLEND;
 		//	IDPART
@@ -46,11 +95,24 @@ namespace m68k::i71::sub{
 			Upper,
 			Lower
 		};
+		static constexpr UINT32	VRAM_PATTERN_SPRITE_stcui32dOffset=				0x060000;
+		static constexpr AUTO	VRAM_PATTERNCHR_SPRITE_stcui16dOffset=			UINT16(VRAM_PATTERN_SPRITE_stcui32dOffset>>5);
+		static constexpr UINT32	VRAM_PATTERN_BG01_stcui32dOffset=				0x070000;
+		static constexpr AUTO	VRAM_PATTERNCHR_BG01_stcui16dOffset=			UINT16(VRAM_PATTERN_BG01_stcui32dOffset>>5);
+		static constexpr UINT32	VRAM_PATTERN_BG23_stcui32dOffset=				0x078000;
+		static constexpr AUTO	VRAM_PATTERNCHR_BG23_stcui16dOffset=			UINT16(VRAM_PATTERN_BG23_stcui32dOffset>>5);
+		static constexpr UINT32	VRAM_ATTRIBUTE_SPRITE_stcui32dOffset=			0x068000;
+		static constexpr UINT32	VRAM_ATTRIBUTE_BG0_stcui32dOffset=				0x0e0000;
+		static constexpr UINT32	VRAM_ATTRIBUTE_BG1_stcui32dOffset=				0x0e8000;
+		static constexpr UINT32	VRAM_ATTRIBUTE_BG2_stcui32dOffset=				0x0f0000;
+		static constexpr UINT32	VRAM_ATTRIBUTE_BG3_stcui32dOffset=				0x0f8000;
 
 		//
 		//		class
 		//
 
+		//	DRIVER
+		using					DRIVER=											VIDEO_DRIVER;
 		//	SHAPE
 		using					SHAPE=CANVAS_::SHAPE;
 		using					CSHAPE=CANVAS_::CSHAPE;
@@ -202,6 +264,8 @@ namespace m68k::i71::sub{
 		class ST{
 		public:
 			OFWBOOL					eShow;
+			FP_CALLBACK				VBLANK_fp_callbackThis;
+			PVOID					VBLANK_pObject;
 		public:
 			VOID					Delete(VOID)noexcept;
 		};
@@ -216,6 +280,11 @@ namespace m68k::i71::sub{
 		static VOID				stNew(COFWBOOL ceshow=TRUE)noexcept;
 		static VOID				stDelete(VOID)noexcept;
 		static VOID				stShow(COFWBOOL ceshow)noexcept;
+		static _INLINE_ VOID	VBLANK_stSetCallback(const FP_CALLBACK cfp_callbackthis,const PVOID cpobject)noexcept{
+			st.VBLANK_fp_callbackThis=cfp_callbackthis;
+			st.VBLANK_pObject=cpobject;
+			return;
+		}
 		static VOID				stFill(CUINT16 cui16ccolor,const IDBLEND cidblend=IDBLEND::Source)noexcept{
 			CANVAS_PART_UPPER::stFill(cui16ccolor,cidblend);
 			CANVAS_PART_LOWER::stFill(cui16ccolor,cidblend);
@@ -284,6 +353,77 @@ namespace m68k::i71::sub{
 		static VOID				stCopyAlphaRect(const CANVAS_RGBA_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
 			CANVAS_PART_UPPER::stCopyAlphaRect(ccvssource,ccvssourcea,cshpsource,cv2iposition,cidblend);
 			CANVAS_PART_LOWER::stCopyAlphaRect(ccvssource,ccvssourcea,cshpsource,cv2iposition,cidblend);
+			return;
+		}
+		static _INLINE_ VOID	PALETTE_stSetWrite(CUINT8 cui8iaddress)noexcept{
+			DRIVER::PALETTE_stSetWrite(cui8iaddress);
+			return;
+		}
+		static _INLINE_ VOID	PALETTE_stWrite(CUINT16 cui16ccolor)noexcept{
+			DRIVER::PALETTE_stWrite(cui16ccolor);
+			return;
+		}
+		static _INLINE_ VOID	PALETTE_stWrite(CUINT8 cui8iaddress,const PCUINT16 cpcui16ccolor,CUINT8 cui8nsize)noexcept{
+			DRIVER::PALETTE_stWrite(cui8iaddress,cpcui16ccolor,cui8nsize);
+			return;
+		}
+		static _INLINE_ VOID	PATTERN_SPRITE_stWrite(CUINT16 patternchr_cui16daddressoffset,CUINT16 cui16ndestination,const PCVOID cpcsource)noexcept{
+			PATTERN::stWrite(
+				VRAM_PATTERNCHR_SPRITE_stcui16dOffset+patternchr_cui16daddressoffset,
+				OFWSIZE(cui16ndestination)<<5,
+				cpcsource
+			);
+			return;
+		}
+		static _INLINE_ VOID	PATTERN_BG01_stWrite(CUINT16 patternchr_cui16daddressoffset,CUINT16 cui16ndestination,const PCVOID cpcsource)noexcept{
+			PATTERN::stWrite(
+				VRAM_PATTERNCHR_BG01_stcui16dOffset+patternchr_cui16daddressoffset,
+				OFWSIZE(cui16ndestination)<<5,
+				cpcsource
+			);
+			return;
+		}
+		static _INLINE_ VOID	PATTERN_BG23_stWrite(CUINT16 patternchr_cui16daddressoffset,CUINT16 cui16ndestination,const PCVOID cpcsource)noexcept{
+			PATTERN::stWrite(
+				VRAM_PATTERNCHR_BG23_stcui16dOffset+patternchr_cui16daddressoffset,
+				OFWSIZE(cui16ndestination)<<5,
+				cpcsource
+			);
+			return;
+		}
+		static _INLINE_ VOID	SPRITE_stWriteAttribute(CUINT8 cui8isprite,CUINT16 cui16cattribute0,CUINT16 cui16cattribute1,CUINT16 cui16cattribute2,CUINT16 cui16cattribute3)noexcept{
+			CAUTO					cui32doffset=VRAM_ATTRIBUTE_SPRITE_stcui32dOffset+(UINT32(cui8isprite)<<3);
+
+			MEMORY::VRAM_stui16DelegateThis(cui32doffset+0x00)=cui16cattribute0;
+			MEMORY::VRAM_stui16DelegateThis(cui32doffset+0x02)=cui16cattribute1;
+			MEMORY::VRAM_stui16DelegateThis(cui32doffset+0x04)=cui16cattribute2;
+			MEMORY::VRAM_stui16DelegateThis(cui32doffset+0x06)=cui16cattribute3;
+			return;
+		}
+		static _INLINE_ VOID	SPRITE_stWrite8(CUINT8 cui8isprite,CVECTOR2& cv2iposition,CUINT8 cui8ipattern,CUINT8 cui8ispritepalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE,CUINT8 cui8ipriority=1)noexcept{
+			SPRITE_stWriteAttribute(
+				cui8isprite,
+				UINT16(cv2iposition.i16iX()),
+				UINT16(cv2iposition.i16iY()),
+				UINT16(cui8ipattern)|(UINT16(ceinverth)<<10)|(UINT16(ceinvertv)<<11)|(UINT16(cui8ispritepalette)<<12),
+				0x0000|(UINT16(cui8ipriority)<<8)
+			);
+			return;
+		}
+		static _INLINE_ VOID	SPRITE_stWrite16(CUINT8 cui8isprite,CVECTOR2& cv2iposition,CUINT8 cui8ipattern,CUINT8 cui8ispritepalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE,CUINT8 cui8ipriority=1)noexcept{
+			SPRITE_stWriteAttribute(
+				cui8isprite,
+				UINT16(cv2iposition.i16iX()),
+				UINT16(cv2iposition.i16iY()),
+				UINT16(cui8ipattern)|(UINT16(ceinverth)<<10)|(UINT16(ceinvertv)<<11)|(UINT16(cui8ispritepalette)<<12),
+				0x5000|(UINT16(cui8ipriority)<<8)
+			);
+			return;
+		}
+		static _INLINE_ VOID	SPRITE_stErase(CUINT8 cui8isprite)noexcept{
+			CAUTO					cui32doffset=VRAM_ATTRIBUTE_SPRITE_stcui32dOffset+(UINT32(cui8isprite)<<3);
+
+			MEMORY::VRAM_stui16DelegateThis(cui32doffset+0x06)=0x0000;
 			return;
 		}
 	};

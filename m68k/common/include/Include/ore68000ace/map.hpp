@@ -172,6 +172,11 @@ namespace m68k::ore68000ace{
 	static constexpr UINT16	DEVICE_KEYBOARD_stcui16nPort=					0x0004;
 	static constexpr UINT16	DEVICE_KEYBOARD_stcui16dSelectOffset=			0x0000;
 	static constexpr UINT16	DEVICE_KEYBOARD_stcui16dDataOffset=				0x0002;
+	static constexpr UPERIOD	MOUSE_stcuprdnFrequencyHz=					1'000;
+	static constexpr UINT16	DEVICE_MOUSE_stcui16dOffsetS=					0x0034;
+	static constexpr UINT16	DEVICE_MOUSE_stcui16nPort=						0x0004;
+	static constexpr UINT16	DEVICE_MOUSE_stcui16dSelectOffset=				0x0000;
+	static constexpr UINT16	DEVICE_MOUSE_stcui16dDataOffset=				0x0002;
 	static constexpr UPERIOD	JOYSTICK_stcuprdnFrequencyHz=				1'000;
 	static constexpr UINT16	DEVICE_JOYSTICK_stcui16dOffsetS=				0x0038;
 	static constexpr UINT16	DEVICE_JOYSTICK_stcui16nPort=					0x0002;

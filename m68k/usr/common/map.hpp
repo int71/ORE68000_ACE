@@ -13,6 +13,7 @@
 //
 
 #include				<hid/keyboard.hpp>
+#include				<hid/mouse.hpp>
 #include				<hid/joystick.hpp>
 #include				<misc/collider.hpp>
 #include				<ore68000ace/driver/video.hpp>
@@ -58,6 +59,8 @@ namespace m68k::i71::common{
 		class SOUND;
 		//	KEYBOARD
 		class KEYBOARD;
+		//	MOUSE
+		class MOUSE;
 		//	JOYSTICK
 		class JOYSTICK;
 
@@ -175,6 +178,10 @@ namespace m68k::i71::common{
 			static constexpr AUTO	KEYBOARD_stcui16nPort=							ore68000ace::DEVICE_KEYBOARD_stcui16nPort;
 			static constexpr AUTO	KEYBOARD_stcui16dSelectOffset=					ore68000ace::DEVICE_KEYBOARD_stcui16dSelectOffset;
 			static constexpr AUTO	KEYBOARD_stcui16dDataOffset=					ore68000ace::DEVICE_KEYBOARD_stcui16dDataOffset;
+			static constexpr AUTO	MOUSE_stcui16dOffsetS=							ore68000ace::DEVICE_MOUSE_stcui16dOffsetS;
+			static constexpr AUTO	MOUSE_stcui16nPort=								ore68000ace::DEVICE_MOUSE_stcui16nPort;
+			static constexpr AUTO	MOUSE_stcui16dSelectOffset=						ore68000ace::DEVICE_MOUSE_stcui16dSelectOffset;
+			static constexpr AUTO	MOUSE_stcui16dDataOffset=						ore68000ace::DEVICE_MOUSE_stcui16dDataOffset;
 			static constexpr AUTO	JOYSTICK_stcui16dOffsetS=						ore68000ace::DEVICE_JOYSTICK_stcui16dOffsetS;
 			static constexpr AUTO	JOYSTICK_stcui16nPort=							ore68000ace::DEVICE_JOYSTICK_stcui16nPort;
 			static constexpr AUTO	JOYSTICK_stcui16dSelectOffset=					ore68000ace::DEVICE_JOYSTICK_stcui16dSelectOffset;
@@ -258,6 +265,27 @@ namespace m68k::i71::common{
 
 			using					IDKEY=											DEVICE::IDKEY;
 			static constexpr AUTO	stcui8nKey=										DEVICE::stcui8nKey;
+			static constexpr AUTO	stcui8nBank=									DEVICE::stcui8nBank;
+		};
+
+		//
+		//		class:MOUSE
+		//
+
+		class MOUSE{
+		public:
+
+			//
+			//		class
+			//
+
+			using					DEVICE=											hid::MOUSE;
+
+			//
+			//		const
+			//
+
+			using					IDBUTTON=										DEVICE::IDBUTTON;
 			static constexpr AUTO	stcui8nBank=									DEVICE::stcui8nBank;
 		};
 

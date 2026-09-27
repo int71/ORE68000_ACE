@@ -1,0 +1,55 @@
+/****************************************************************************
+**																			**
+**																			**
+**									m68k									**
+**																			**
+**	'test_mouse.o68k'								2026 written by int71	**
+ ****************************************************************************/
+
+//
+//		include
+//
+
+#include				<sub/os.hpp>
+#include				<sub/graphic.hpp>
+
+//
+//		using
+//
+
+using namespace m68k::i71::sub;
+
+//
+//		user
+//
+
+VECTOR2					v2iPosition;
+
+VOID					USER_New(VOID)noexcept{
+	constexpr UINT8			pattern_acui8ccursor[]=__O68K_PATTERN("(Resource)/00_SPRITE_CURSOR.png");
+	constexpr UINT16		palette_acui16ccursor[]=__O68K_PALETTE("(Resource)/00_SPRITE_CURSOR.png");
+
+	v2iPosition={320,240};
+	GRAPHIC::stNew(TRUE);
+	GRAPHIC::PALETTE_stWrite(1,palette_acui16ccursor+1,15);
+	GRAPHIC::PATTERN_SPRITE_stWrite(0,8,pattern_acui8ccursor);
+	GRAPHIC::VBLANK_stSetCallback([](const PVOID cpobject)noexcept{
+		CAUTO					cstatmouse=OS::DEVICE_MOUSE_ststatRead();
+
+		v2iPosition+=cstatmouse.v2dRelative;
+		v2iPosition.i16iX()=STD::stxClamp(v2iPosition.i16iX(),INT16(0),INT16(639));
+		v2iPosition.i16iY()=STD::stxClamp(v2iPosition.i16iY(),INT16(0),INT16(479));
+		GRAPHIC::SPRITE_stWrite16(0,v2iPosition,0x00,0x0);
+	},NULL);
+	GRAPHIC::stFill(0x222);
+	return;
+}
+
+VOID					USER_Delete(VOID)noexcept{
+	GRAPHIC::stDelete();
+	return;
+}
+
+VOID					USER_Main(VOID)noexcept{
+	return;
+}

@@ -44,6 +44,8 @@ namespace m68k::i71::common{
 	using					SOUND_DRIVER=									MAP::SOUND::DRIVER;
 	//	KEYBOARD_DEVICE
 	using					KEYBOARD_DEVICE=								MAP::KEYBOARD::DEVICE;
+	//	MOUSE_DEVICE
+	using					MOUSE_DEVICE=									MAP::MOUSE::DEVICE;
 	//	JOYSTICK_DEVICE
 	using					JOYSTICK_DEVICE=								MAP::JOYSTICK::DEVICE;
 	//	BASE_
