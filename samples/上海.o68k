@@ -3,7 +3,7 @@
 **																			**
 **									m68k									**
 **																			**
-**	'lesson12.o68k'									2026 written by int71	**
+**	'上海.o68k'										2026 written by int71	**
  ****************************************************************************/
 
 //
@@ -371,9 +371,9 @@ public:
 	}
 	static _INLINE_ UINT16	stui16cGetTile(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
 #ifdef SHOWARRANGEPROGRESS
-		CAUTO					cui16ctile=GAME_staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
+		CAUTO					cui16ctile=staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
 
-		return ((cui16ctile&0xff)!=GAME_stcui8iTileUndefined)?cui16ctile:0x0000;
+		return ((cui16ctile&0xff)!=stcui8iTileUndefined)?cui16ctile:0x0000;
 #else
 		return staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
 #endif
@@ -902,8 +902,8 @@ private:
 						aui8iarrange[ui8ilocal0]=stcui8iTileUndefined;
 						aui8iarrange[ui8ilocal1]=stcui8iTileUndefined;
 #ifdef SHOWARRANGEPROGRESS
-						GAME_stWriteTile(ui8ix0,ui8iy0,ui8ilayer0,aui8itile[ui8itile],TRUE);++ui8itile;
-						GAME_stWriteTile(ui8ix1,ui8iy1,ui8ilayer1,aui8itile[ui8itile],TRUE);++ui8itile;
+						stWriteTile(ui8ix0,ui8iy0,ui8ilayer0,aui8itile[ui8itile],TRUE);++ui8itile;
+						stWriteTile(ui8ix1,ui8iy1,ui8ilayer1,aui8itile[ui8itile],TRUE);++ui8itile;
 #else
 						stWriteTile4(ui8ix0,ui8iy0,ui8ilayer0,UINT16(aui8itile[ui8itile]),TRUE);++ui8itile;
 						stWriteTile4(ui8ix1,ui8iy1,ui8ilayer1,UINT16(aui8itile[ui8itile]),TRUE);++ui8itile;
@@ -915,7 +915,7 @@ private:
 					//	ここに至ったという事は進捗ゼロであったという事。
 					//	不幸にも「追加配置不可」の状況に陥った。
 #ifdef SHOWARRANGEPROGRESS
-					SCREEN_stClear(FALSE);
+					SCREEN_stClear({{0,64},{640,416}});
 #endif
 					break;
 				}
