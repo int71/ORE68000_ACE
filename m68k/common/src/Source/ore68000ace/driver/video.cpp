@@ -128,6 +128,7 @@ VOID					VIDEO::stNew(VOID)noexcept{
 		(/*HI*/0<<14)|
 		(/*割り込み走査線番号*/0<<0)
 	));
+	FONTROM_stWriteBank(0x0400);
 	return;
 }
 
@@ -356,7 +357,7 @@ VOID				 	VIDEO::VRAM_TEXT_stWrite(
 	AUTO					ui16iy=cui16iy;
 	AUTO					pui8destinaion_pattern=&MEMORYS::VRAM_stui8DelegateThis(0)+OFWSIZE(cui16ix)+(OFWSIZE(ui16iy)<<11);
 	AUTO					pcustrsource=cpcustrsource;
-	UINT16					ui16source;
+	UINT16					ui16csource;
 
 	stWrite(IDREGISTERW::TextAddress,UINT16(
 		((/*TXT ADR*/VRAM_TEXT_stcui32dDefaultOffset>>19)<<0xf)|
@@ -364,27 +365,18 @@ VOID				 	VIDEO::VRAM_TEXT_stWrite(
 		(/*プレーン値*/UINT16(cui8ccolor)<<0x4)|
 		(/*プレーンマスク*/0xf<<0x0)
 	));
-	while((ui16source=STD::stui16cRead(pcustrsource)))if(
-		(ui16source==UINT16('\r'))||
-		(ui16source==UINT16('\n'))
+	while((ui16csource=STD::stui16cRead(pcustrsource)))if(
+		(ui16csource==UINT16('\r'))||
+		(ui16csource==UINT16('\n'))
 	){
 		++ui16iy;
 		pui8destinaion_pattern=&MEMORYS::VRAM_stui8DelegateThis(0)+OFWSIZE(cui16ix)+(OFWSIZE(ui16iy)<<11);
 	}else{
-		CAUTO					cpcui8source=&MEMORYS::ROM_FONT_stcui8GetThis(0)+(OFWSIZE(
-			(ui16source<0x007f)?((ui16source&0x003f)|(UINT16(UINT16(0x000e)+(ui16source>>6))<<6)):(
-				(ui16source<0x00e0)?((ui16source-0x00a0)|UINT16(0x000b)<<6):(
-					(ui16source<0x8500)?((ui16source&0x003f)|UINT16((ui16source>>8)*3+((ui16source>>6)&0x03)-0x0184)<<6):(
-						((ui16source&0x003f)|UINT16((ui16source>>8)*3+((ui16source>>6)&0x03)-0x018a)<<6)
-					)
-				)
-			)
-		)<<5);
-
-		if(ui16source<0x0100){
+		FONTROM_stWriteData(ui16csource);
+		if(ui16csource<0x0100){
 			for(UINT16 i=0;i<16;++i){
 				CAUTO					cpui8dst=pui8destinaion_pattern+(i<<7);
-				CAUTO					cui8src=cpcui8source[i<<1];
+				CAUTO					cui8src=UINT8(FONTROM_stui16ReadData()>>8);
 
 				cpui8dst[0]=cui8src;
 			}
@@ -392,7 +384,7 @@ VOID				 	VIDEO::VRAM_TEXT_stWrite(
 		}else{
 			for(UINT16 i=0;i<16;++i){
 				CAUTO					cpui8dst=pui8destinaion_pattern+(i<<7);
-				CAUTO					cui16src=PCUINT16(cpcui8source)[i];
+				CAUTO					cui16src=FONTROM_stui16ReadData();
 
 				cpui8dst[0]=UINT8(cui16src>>8);
 				cpui8dst[1]=UINT8(cui16src&0xff);

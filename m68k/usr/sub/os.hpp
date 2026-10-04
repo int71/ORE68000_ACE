@@ -189,7 +189,7 @@ namespace m68k::i71::sub{
 			DEVICE_LFSR_stui16Delegate()=0x0300|((cui32cseed>> 0)&0xff);
 			return;
 		}
-		static _INLINE_ UINT16	LFSR_stui16Read(VOID)noexcept{
+		static _INLINE_ _UNDISCARDABLE_ CUINT16&	LFSR_stui16Read(VOID)noexcept{
 			return DEVICE_LFSR_stui16Delegate();
 		}
 		static _INLINE_ COLLIDER&	COLLIDERRAM_stcldrDelegate(VOID)noexcept{

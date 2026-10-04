@@ -103,12 +103,6 @@ namespace m68k::ore68000ace{
 	//		クラス初期化操作は不要で、各種機能は直接呼び出せます。
 	class MEMORYS{
 	public:
-		static _INLINE_ CUINT16&	ROM_FONT_stcui16GetThis(CUINT32 cui32iaddress)noexcept{
-			return *PCUINT16(ROM_FONT_stcui32iAddressS+cui32iaddress);
-		}
-		static _INLINE_ CUINT8&	ROM_FONT_stcui8GetThis(CUINT32 cui32iaddress)noexcept{
-			return *PCUINT8(ROM_FONT_stcui32iAddressS+cui32iaddress);
-		}
 		static _INLINE_ CUINT8&	ROM_ATAN_stcui8GetThis(CUINT8 cui8ix,CUINT8 cui8iy)noexcept{
 			return *PCUINT8(ROM_ATAN_stcui32iAddressS+(UINT16(cui8iy)<<ATAN_stcui8nTableBit)+UINT16(cui8ix));
 		}

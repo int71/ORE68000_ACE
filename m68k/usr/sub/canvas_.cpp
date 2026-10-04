@@ -10,7 +10,7 @@
 //		include
 //
 
-#include				"canvas_.hpp"
+#include				"graphic.hpp"
 
 //
 //		using
@@ -21,6 +21,10 @@ using namespace m68k::i71::sub;
 //
 //		class:CANVAS
 //
+
+//	private
+
+CANVAS_CHAR				CANVAS_::stcvsChar(staui16cCharImage);
 
 //	protected
 
@@ -38,6 +42,12 @@ VOID					CANVAS_::RGBX_stFill(
 	switch(cidblend){
 	case IDBLEND::Source:
 		RGBX_stFill_Blend<ceDestinationAlpha,IDBLEND::Source>(cpui8cdestinationbase,cui32idestinationdotposition,cui32ddestinationdotoffsetend,cui16ndestinationhdotline,cui16ndestinationlinepitch,cui32ndestinationplanepitch,cui16ccolor);
+		break;
+	case IDBLEND::Back_Source:
+		RGBX_stFill_Blend<ceDestinationAlpha,IDBLEND::Back_Source>(cpui8cdestinationbase,cui32idestinationdotposition,cui32ddestinationdotoffsetend,cui16ndestinationhdotline,cui16ndestinationlinepitch,cui32ndestinationplanepitch,cui16ccolor);
+		break;
+	case IDBLEND::Back_SourceAlpha:
+		RGBX_stFill_Blend<ceDestinationAlpha,IDBLEND::Back_SourceAlpha>(cpui8cdestinationbase,cui32idestinationdotposition,cui32ddestinationdotoffsetend,cui16ndestinationhdotline,cui16ndestinationlinepitch,cui32ndestinationplanepitch,cui16ccolor);
 		break;
 	case IDBLEND::BackNega_Source:
 		RGBX_stFill_Blend<ceDestinationAlpha,IDBLEND::BackNega_Source>(cpui8cdestinationbase,cui32idestinationdotposition,cui32ddestinationdotoffsetend,cui16ndestinationhdotline,cui16ndestinationlinepitch,cui32ndestinationplanepitch,cui16ccolor);
@@ -67,6 +77,12 @@ VOID					CANVAS_::RGBX_stFillAlpha(
 	case IDBLEND::Source:
 		RGBX_stFillAlpha_Blend<ceDestinationAlpha,IDBLEND::Source>(cpui8cdestinationbase,cui32idestinationdotposition,cui32ddestinationdotoffsetend,cui16ndestinationhdotline,cui16ndestinationlinepitch,cui32ndestinationplanepitch,cui16ccolor,cpcui8csourcea,cui32isourcedotposition,cui16nsourcelinepitch);
 		break;
+	case IDBLEND::Back_Source:
+		RGBX_stFillAlpha_Blend<ceDestinationAlpha,IDBLEND::Back_Source>(cpui8cdestinationbase,cui32idestinationdotposition,cui32ddestinationdotoffsetend,cui16ndestinationhdotline,cui16ndestinationlinepitch,cui32ndestinationplanepitch,cui16ccolor,cpcui8csourcea,cui32isourcedotposition,cui16nsourcelinepitch);
+		break;
+	case IDBLEND::Back_SourceAlpha:
+		RGBX_stFillAlpha_Blend<ceDestinationAlpha,IDBLEND::Back_SourceAlpha>(cpui8cdestinationbase,cui32idestinationdotposition,cui32ddestinationdotoffsetend,cui16ndestinationhdotline,cui16ndestinationlinepitch,cui32ndestinationplanepitch,cui16ccolor,cpcui8csourcea,cui32isourcedotposition,cui16nsourcelinepitch);
+		break;
 	case IDBLEND::BackNega_Source:
 		RGBX_stFillAlpha_Blend<ceDestinationAlpha,IDBLEND::BackNega_Source>(cpui8cdestinationbase,cui32idestinationdotposition,cui32ddestinationdotoffsetend,cui16ndestinationhdotline,cui16ndestinationlinepitch,cui32ndestinationplanepitch,cui16ccolor,cpcui8csourcea,cui32isourcedotposition,cui16nsourcelinepitch);
 		break;
@@ -94,6 +110,12 @@ VOID					CANVAS_::RGBX_stCopy(
 	switch(cidblend){
 	case IDBLEND::Source:
 		RGBX_stCopy_Blend<ceDestinationAlpha,ceSourceAlpha,IDBLEND::Source>(cpui8cdestinationbase,cui32idestinationdotposition,cui32ddestinationdotoffsetend,cui16ndestinationhdotline,cui16ndestinationlinepitch,cui32ndestinationplanepitch,cpcui8csourcebase,cui32isourcedotposition,cui16nsourcelinepitch,cui32nsourceplanepitch);
+		break;
+	case IDBLEND::Back_Source:
+		RGBX_stCopy_Blend<ceDestinationAlpha,ceSourceAlpha,IDBLEND::Back_Source>(cpui8cdestinationbase,cui32idestinationdotposition,cui32ddestinationdotoffsetend,cui16ndestinationhdotline,cui16ndestinationlinepitch,cui32ndestinationplanepitch,cpcui8csourcebase,cui32isourcedotposition,cui16nsourcelinepitch,cui32nsourceplanepitch);
+		break;
+	case IDBLEND::Back_SourceAlpha:
+		RGBX_stCopy_Blend<ceDestinationAlpha,ceSourceAlpha,IDBLEND::Back_SourceAlpha>(cpui8cdestinationbase,cui32idestinationdotposition,cui32ddestinationdotoffsetend,cui16ndestinationhdotline,cui16ndestinationlinepitch,cui32ndestinationplanepitch,cpcui8csourcebase,cui32isourcedotposition,cui16nsourcelinepitch,cui32nsourceplanepitch);
 		break;
 	case IDBLEND::BackNega_Source:
 		RGBX_stCopy_Blend<ceDestinationAlpha,ceSourceAlpha,IDBLEND::BackNega_Source>(cpui8cdestinationbase,cui32idestinationdotposition,cui32ddestinationdotoffsetend,cui16ndestinationhdotline,cui16ndestinationlinepitch,cui32ndestinationplanepitch,cpcui8csourcebase,cui32isourcedotposition,cui16nsourcelinepitch,cui32nsourceplanepitch);
@@ -123,6 +145,12 @@ VOID					CANVAS_::RGBX_stCopyAlpha(
 	switch(cidblend){
 	case IDBLEND::Source:
 		RGBX_stCopyAlpha_Blend<ceDestinationAlpha,IDBLEND::Source>(cpui8cdestinationbase,cui32idestinationdotposition,cui32ddestinationdotoffsetend,cui16ndestinationhdotline,cui16ndestinationlinepitch,cui32ndestinationplanepitch,cpcui8csourcebase,cpcui8csourcea,cui32isourcedotposition,cui16nsourcelinepitch,cui32nsourceplanepitch);
+		break;
+	case IDBLEND::Back_Source:
+		RGBX_stCopyAlpha_Blend<ceDestinationAlpha,IDBLEND::Back_Source>(cpui8cdestinationbase,cui32idestinationdotposition,cui32ddestinationdotoffsetend,cui16ndestinationhdotline,cui16ndestinationlinepitch,cui32ndestinationplanepitch,cpcui8csourcebase,cpcui8csourcea,cui32isourcedotposition,cui16nsourcelinepitch,cui32nsourceplanepitch);
+		break;
+	case IDBLEND::Back_SourceAlpha:
+		RGBX_stCopyAlpha_Blend<ceDestinationAlpha,IDBLEND::Back_SourceAlpha>(cpui8cdestinationbase,cui32idestinationdotposition,cui32ddestinationdotoffsetend,cui16ndestinationhdotline,cui16ndestinationlinepitch,cui32ndestinationplanepitch,cpcui8csourcebase,cpcui8csourcea,cui32isourcedotposition,cui16nsourcelinepitch,cui32nsourceplanepitch);
 		break;
 	case IDBLEND::BackNega_Source:
 		RGBX_stCopyAlpha_Blend<ceDestinationAlpha,IDBLEND::BackNega_Source>(cpui8cdestinationbase,cui32idestinationdotposition,cui32ddestinationdotoffsetend,cui16ndestinationhdotline,cui16ndestinationlinepitch,cui32ndestinationplanepitch,cpcui8csourcebase,cpcui8csourcea,cui32isourcedotposition,cui16nsourcelinepitch,cui32nsourceplanepitch);
@@ -192,6 +220,21 @@ VOID					CANVAS_::A_stCopy(
 		ui32isourcedotposition+=cui32nsourcelinedotpitch;
 	}
 	return;
+}
+
+CCANVAS_CHAR&			CANVAS_::stccvsGetChar(
+	CUINT16					cui16cchar
+)noexcept{
+	GRAPHIC::FONTROM_stWriteData(cui16cchar);
+	if(0x0100<=cui16cchar){
+		for(AUTO& ui16cimage:staui16cCharImage)ui16cimage=GRAPHIC::FONTROM_stui16ReadData();
+	}else{
+		for(UINT8 ui8iline=0;ui8iline<64;ui8iline+=4){
+			staui16cCharImage[ui8iline+0]=GRAPHIC::FONTROM_stui16ReadData();
+			staui16cCharImage[ui8iline+1]=GRAPHIC::FONTROM_stui16ReadData();
+		}
+	}
+	return stcvsChar;
 }
 
 //	private
@@ -745,6 +788,7 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend(
 	AUTO					ui32csourcer=UINT32(cui16ccolor&0x000f);
 	AUTO					ui32csourceg=UINT32(cui16ccolor&0x00f0);
 	AUTO					ui32csourceb=UINT32(cui16ccolor&0x0f00);
+	AUTO					cui8iscalea=UINT8((cui16ccolor&0xf000)>>12);
 
 	ui32csourcer|=ui32csourcer<<4;
 	ui32csourcer|=ui32csourcer<<8;
@@ -759,15 +803,18 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend(
 		CAUTO					cui32idestination_end=ui32idestinationdotposition+cui32ddestinationdotoffsetend;
 		ui32idestinationdotposition<cui32idestination_end;
 		ui32idestinationdotposition+=cui32ndestinationlinedotpitch
-	)RGBX_stFillAlpha_Blend_Line<ceDestinationAlpha,cidBlend>(
-		cpui8cdestinationbase,
-		ui32idestinationdotposition,
-		cui16ndestinationhdotline,
-		cui32ndestinationplanepitch,
-		ui32csourcer,ui32csourceg,ui32csourceb,
-		cpcui8csourcea,
-		ui32isourcedotposition
-	);
+	){
+		RGBX_stFillAlpha_Blend_Line<ceDestinationAlpha,cidBlend>(
+			cpui8cdestinationbase,
+			ui32idestinationdotposition,
+			cui16ndestinationhdotline,
+			cui32ndestinationplanepitch,
+			ui32csourcer,ui32csourceg,ui32csourceb,cui8iscalea,
+			cpcui8csourcea,
+			ui32isourcedotposition
+		);
+		ui32isourcedotposition+=cui32nsourcelinedotpitch;
+	}
 	return;
 }
 
@@ -780,33 +827,34 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line(
 	CUINT32					cui32csourcer,
 	CUINT32					cui32csourceg,
 	CUINT32					cui32csourceb,
+	CUINT8					cui8iscalea,
 	const PCUINT8			cpcui8csourcea,
 	CUINT32					cui32isourcedotposition
 )noexcept{
 	switch(UINT8(cui32idestinationdotposition-cui32isourcedotposition)&7){
 	case 0:
-		RGBX_stFillAlpha_Blend_Line_Offset<ceDestinationAlpha,cidBlend,0>(cpui8cdestinationbase,cui32idestinationdotposition,cui16ndestinationhdotline,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cpcui8csourcea,cui32isourcedotposition);
+		RGBX_stFillAlpha_Blend_Line_Offset<ceDestinationAlpha,cidBlend,0>(cpui8cdestinationbase,cui32idestinationdotposition,cui16ndestinationhdotline,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cui8iscalea,cpcui8csourcea,cui32isourcedotposition);
 		break;
 	case 1:
-		RGBX_stFillAlpha_Blend_Line_Offset<ceDestinationAlpha,cidBlend,1>(cpui8cdestinationbase,cui32idestinationdotposition,cui16ndestinationhdotline,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cpcui8csourcea,cui32isourcedotposition);
+		RGBX_stFillAlpha_Blend_Line_Offset<ceDestinationAlpha,cidBlend,1>(cpui8cdestinationbase,cui32idestinationdotposition,cui16ndestinationhdotline,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cui8iscalea,cpcui8csourcea,cui32isourcedotposition);
 		break;
 	case 2:
-		RGBX_stFillAlpha_Blend_Line_Offset<ceDestinationAlpha,cidBlend,2>(cpui8cdestinationbase,cui32idestinationdotposition,cui16ndestinationhdotline,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cpcui8csourcea,cui32isourcedotposition);
+		RGBX_stFillAlpha_Blend_Line_Offset<ceDestinationAlpha,cidBlend,2>(cpui8cdestinationbase,cui32idestinationdotposition,cui16ndestinationhdotline,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cui8iscalea,cpcui8csourcea,cui32isourcedotposition);
 		break;
 	case 3:
-		RGBX_stFillAlpha_Blend_Line_Offset<ceDestinationAlpha,cidBlend,3>(cpui8cdestinationbase,cui32idestinationdotposition,cui16ndestinationhdotline,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cpcui8csourcea,cui32isourcedotposition);
+		RGBX_stFillAlpha_Blend_Line_Offset<ceDestinationAlpha,cidBlend,3>(cpui8cdestinationbase,cui32idestinationdotposition,cui16ndestinationhdotline,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cui8iscalea,cpcui8csourcea,cui32isourcedotposition);
 		break;
 	case 4:
-		RGBX_stFillAlpha_Blend_Line_Offset<ceDestinationAlpha,cidBlend,4>(cpui8cdestinationbase,cui32idestinationdotposition,cui16ndestinationhdotline,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cpcui8csourcea,cui32isourcedotposition);
+		RGBX_stFillAlpha_Blend_Line_Offset<ceDestinationAlpha,cidBlend,4>(cpui8cdestinationbase,cui32idestinationdotposition,cui16ndestinationhdotline,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cui8iscalea,cpcui8csourcea,cui32isourcedotposition);
 		break;
 	case 5:
-		RGBX_stFillAlpha_Blend_Line_Offset<ceDestinationAlpha,cidBlend,5>(cpui8cdestinationbase,cui32idestinationdotposition,cui16ndestinationhdotline,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cpcui8csourcea,cui32isourcedotposition);
+		RGBX_stFillAlpha_Blend_Line_Offset<ceDestinationAlpha,cidBlend,5>(cpui8cdestinationbase,cui32idestinationdotposition,cui16ndestinationhdotline,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cui8iscalea,cpcui8csourcea,cui32isourcedotposition);
 		break;
 	case 6:
-		RGBX_stFillAlpha_Blend_Line_Offset<ceDestinationAlpha,cidBlend,6>(cpui8cdestinationbase,cui32idestinationdotposition,cui16ndestinationhdotline,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cpcui8csourcea,cui32isourcedotposition);
+		RGBX_stFillAlpha_Blend_Line_Offset<ceDestinationAlpha,cidBlend,6>(cpui8cdestinationbase,cui32idestinationdotposition,cui16ndestinationhdotline,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cui8iscalea,cpcui8csourcea,cui32isourcedotposition);
 		break;
 	case 7:
-		RGBX_stFillAlpha_Blend_Line_Offset<ceDestinationAlpha,cidBlend,7>(cpui8cdestinationbase,cui32idestinationdotposition,cui16ndestinationhdotline,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cpcui8csourcea,cui32isourcedotposition);
+		RGBX_stFillAlpha_Blend_Line_Offset<ceDestinationAlpha,cidBlend,7>(cpui8cdestinationbase,cui32idestinationdotposition,cui16ndestinationhdotline,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cui8iscalea,cpcui8csourcea,cui32isourcedotposition);
 		break;
 	}
 	return;
@@ -821,6 +869,7 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset(
 	CUINT32					cui32csourcer,
 	CUINT32					cui32csourceg,
 	CUINT32					cui32csourceb,
+	CUINT8					cui8iscalea,
 	const PCUINT8			cpcui8csourcea,
 	CUINT32					cui32isourcedotposition
 )noexcept{
@@ -843,14 +892,14 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset(
 				//	ここまでで1ドット超過の端数は処理済みであるので、
 				//	「pui8cdestination」のような進行状況変数を見る必要は無い。
 				if((UINT8(cui32idestinationdotposition)+UINT8(cui16ndestinationhdotline))&1){
-					RGBX_stFillAlpha_Blend_Line_Offset_Bit4L<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,UINT8(cui32csourcer),UINT8(cui32csourceg),UINT8(cui32csourceb),cui32doffsetsourcea);
+					RGBX_stFillAlpha_Blend_Line_Offset_Bit4L<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,UINT8(cui32csourcer),UINT8(cui32csourceg),UINT8(cui32csourceb),cui8iscalea,cui32doffsetsourcea);
 				}
 				return;
 			};
 			CAUTO					cfp_fraction8=[&](VOID)noexcept{
 				//	終了位置に「端数2～4ドット」あるなら、「2ドット(1バイト)」分解消。
 				if(pui8cdestination+1<=cpui8cdestination_end){
-					RGBX_stFillAlpha_Blend_Line_Offset_Bit8<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,UINT8(cui32csourcer),UINT8(cui32csourceg),UINT8(cui32csourceb),cui32doffsetsourcea);
+					RGBX_stFillAlpha_Blend_Line_Offset_Bit8<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,UINT8(cui32csourcer),UINT8(cui32csourceg),UINT8(cui32csourceb),cui8iscalea,cui32doffsetsourcea);
 				}
 				cfp_fraction4l();
 				return;
@@ -858,7 +907,7 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset(
 			CAUTO					cfp_fraction16=[&](VOID)noexcept{
 				//	終了位置に「端数4～8ドット」あるなら、「4ドット(2バイト)」分解消。
 				if(pui8cdestination+2<=cpui8cdestination_end){
-					RGBX_stFillAlpha_Blend_Line_Offset_Bit16<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,UINT16(cui32csourcer),UINT16(cui32csourceg),UINT16(cui32csourceb),cui32doffsetsourcea);
+					RGBX_stFillAlpha_Blend_Line_Offset_Bit16<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,UINT16(cui32csourcer),UINT16(cui32csourceg),UINT16(cui32csourceb),cui8iscalea,cui32doffsetsourcea);
 				}
 				cfp_fraction8();
 				return;
@@ -872,7 +921,7 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset(
 			//	これは更新前の処理初段であるから通用する方法。
 			if(cui32idestinationdotposition&1){
 				//	差は2の倍数なれど、開始位置に「端数1ドット」があるので、それを解消する。
-				RGBX_stFillAlpha_Blend_Line_Offset_Bit4R<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,UINT8(cui32csourcer),UINT8(cui32csourceg),UINT8(cui32csourceb),cui32doffsetsourcea);
+				RGBX_stFillAlpha_Blend_Line_Offset_Bit4R<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,UINT8(cui32csourcer),UINT8(cui32csourceg),UINT8(cui32csourceb),cui8iscalea,cui32doffsetsourcea);
 			}
 			//	この時点で参照ドット位置の差、処理対象位置共に2の倍数になっている。
 			if constexpr((cui8nOffsetDot&2)==0){
@@ -883,7 +932,7 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset(
 						cfp_fraction4l();
 						return;
 					}
-					RGBX_stFillAlpha_Blend_Line_Offset_Bit8<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,UINT8(cui32csourcer),UINT8(cui32csourceg),UINT8(cui32csourceb),cui32doffsetsourcea);
+					RGBX_stFillAlpha_Blend_Line_Offset_Bit8<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,UINT8(cui32csourcer),UINT8(cui32csourceg),UINT8(cui32csourceb),cui8iscalea,cui32doffsetsourcea);
 				}
 				//	この時点で参照ドット位置の差、処理対象位置共に4の倍数になっている。
 				if constexpr((cui8nOffsetDot&4)==0){
@@ -894,13 +943,13 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset(
 							cfp_fraction8();
 							return;
 						}
-						RGBX_stFillAlpha_Blend_Line_Offset_Bit16<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,UINT16(cui32csourcer),UINT16(cui32csourceg),UINT16(cui32csourceb),cui32doffsetsourcea);
+						RGBX_stFillAlpha_Blend_Line_Offset_Bit16<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,UINT16(cui32csourcer),UINT16(cui32csourceg),UINT16(cui32csourceb),cui8iscalea,cui32doffsetsourcea);
 					}
 					//	この時点で参照ドット位置の差、処理対象位置共に8の倍数になっている。
 					if(pui8cdestination+4<=cpui8cdestination_end){
 						CAUTO					cpui8cdestination_endm4=cpui8cdestination_end-4;
 
-						while(pui8cdestination<=cpui8cdestination_endm4)RGBX_stFillAlpha_Blend_Line_Offset_Bit32<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cui32doffsetsourcea);
+						while(pui8cdestination<=cpui8cdestination_endm4)RGBX_stFillAlpha_Blend_Line_Offset_Bit32<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cui8iscalea,cui32doffsetsourcea);
 					}
 					cfp_fraction16();
 				}else{
@@ -908,7 +957,7 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset(
 					if(pui8cdestination+2<=cpui8cdestination_end){
 						CAUTO					cpui8cdestination_endm2=cpui8cdestination_end-2;
 
-						while(pui8cdestination<=cpui8cdestination_endm2)RGBX_stFillAlpha_Blend_Line_Offset_Bit16<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cui32doffsetsourcea);
+						while(pui8cdestination<=cpui8cdestination_endm2)RGBX_stFillAlpha_Blend_Line_Offset_Bit16<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cui8iscalea,cui32doffsetsourcea);
 					}
 					cfp_fraction8();
 				}
@@ -917,7 +966,7 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset(
 				if(pui8cdestination+1<=cpui8cdestination_end){
 					CAUTO					cpui8cdestination_endm1=cpui8cdestination_end-1;
 
-					while(pui8cdestination<=cpui8cdestination_endm1)RGBX_stFillAlpha_Blend_Line_Offset_Bit8<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cui32doffsetsourcea);
+					while(pui8cdestination<=cpui8cdestination_endm1)RGBX_stFillAlpha_Blend_Line_Offset_Bit8<ceDestinationAlpha,cidBlend>(pui8cdestination,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cui8iscalea,cui32doffsetsourcea);
 				}
 				cfp_fraction4l();
 			}
@@ -930,14 +979,14 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset(
 				//	ここまでで1ドット超過の端数は処理済みであるので、
 				//	「pui8cdestination」のような進行状況変数を見る必要は無い。
 				if((UINT8(cui32idestinationdotposition)+UINT8(cui16ndestinationhdotline))&1){
-					RGBX_stFillAlpha_Blend_Line_Offset_Bit4L<ceDestinationAlpha,cidBlend,cui8nOffsetDot>(pui8cdestination,cui32ndestinationplanepitch,UINT8(cui32csourcer),UINT8(cui32csourceg),UINT8(cui32csourceb),cui32doffsetsourcea,&ui32csourcea_previous);
+					RGBX_stFillAlpha_Blend_Line_Offset_Bit4L<ceDestinationAlpha,cidBlend,cui8nOffsetDot>(pui8cdestination,cui32ndestinationplanepitch,UINT8(cui32csourcer),UINT8(cui32csourceg),UINT8(cui32csourceb),cui8iscalea,cui32doffsetsourcea,&ui32csourcea_previous);
 				}
 				return;
 			};
 			CAUTO					cfp_fraction8=[&](VOID)noexcept{
 				//	終了位置に「端数2～4ドット」あるなら、「2ドット(1バイト)」分解消。
 				if(pui8cdestination+1<=cpui8cdestination_end){
-					RGBX_stFillAlpha_Blend_Line_Offset_Bit8<ceDestinationAlpha,cidBlend,cui8nOffsetDot>(pui8cdestination,cui32ndestinationplanepitch,UINT8(cui32csourcer),UINT8(cui32csourceg),UINT8(cui32csourceb),cui32doffsetsourcea,&ui32csourcea_previous);
+					RGBX_stFillAlpha_Blend_Line_Offset_Bit8<ceDestinationAlpha,cidBlend,cui8nOffsetDot>(pui8cdestination,cui32ndestinationplanepitch,UINT8(cui32csourcer),UINT8(cui32csourceg),UINT8(cui32csourceb),cui8iscalea,cui32doffsetsourcea,&ui32csourcea_previous);
 				}
 				cfp_fraction4l();
 				return;
@@ -945,7 +994,7 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset(
 			CAUTO					cfp_fraction16=[&](VOID)noexcept{
 				//	終了位置に「端数4～8ドット」あるなら、「4ドット(2バイト)」分解消。
 				if(pui8cdestination+2<=cpui8cdestination_end){
-					RGBX_stFillAlpha_Blend_Line_Offset_Bit16<ceDestinationAlpha,cidBlend,cui8nOffsetDot>(pui8cdestination,cui32ndestinationplanepitch,UINT16(cui32csourcer),UINT16(cui32csourceg),UINT16(cui32csourceb),cui32doffsetsourcea,&ui32csourcea_previous);
+					RGBX_stFillAlpha_Blend_Line_Offset_Bit16<ceDestinationAlpha,cidBlend,cui8nOffsetDot>(pui8cdestination,cui32ndestinationplanepitch,UINT16(cui32csourcer),UINT16(cui32csourceg),UINT16(cui32csourceb),cui8iscalea,cui32doffsetsourcea,&ui32csourcea_previous);
 				}
 				cfp_fraction8();
 				return;
@@ -957,27 +1006,27 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset(
 			//	「pui8cdestination」には現れないので「cui32ndestinationdotposition」で判定する。
 			//	これは更新前の処理初段であるから通用する方法。
 			if(cui32idestinationdotposition&1){
-				RGBX_stFillAlpha_Blend_Line_Offset_Bit4R<ceDestinationAlpha,cidBlend,cui8nOffsetDot>(pui8cdestination,cui32ndestinationplanepitch,UINT8(cui32csourcer),UINT8(cui32csourceg),UINT8(cui32csourceb),cui32doffsetsourcea,&ui32csourcea_previous);
+				RGBX_stFillAlpha_Blend_Line_Offset_Bit4R<ceDestinationAlpha,cidBlend,cui8nOffsetDot>(pui8cdestination,cui32ndestinationplanepitch,UINT8(cui32csourcer),UINT8(cui32csourceg),UINT8(cui32csourceb),cui8iscalea,cui32doffsetsourcea,&ui32csourcea_previous);
 			}
 			if(PTRINT(pui8cdestination)&1){
 				if(cpui8cdestination_end<pui8cdestination+1){
 					cfp_fraction4l();
 					return;
 				}
-				RGBX_stFillAlpha_Blend_Line_Offset_Bit8<ceDestinationAlpha,cidBlend,cui8nOffsetDot>(pui8cdestination,cui32ndestinationplanepitch,UINT8(cui32csourcer),UINT8(cui32csourceg),UINT8(cui32csourceb),cui32doffsetsourcea,&ui32csourcea_previous);
+				RGBX_stFillAlpha_Blend_Line_Offset_Bit8<ceDestinationAlpha,cidBlend,cui8nOffsetDot>(pui8cdestination,cui32ndestinationplanepitch,UINT8(cui32csourcer),UINT8(cui32csourceg),UINT8(cui32csourceb),cui8iscalea,cui32doffsetsourcea,&ui32csourcea_previous);
 			}
 			if(PTRINT(pui8cdestination)&2){
 				if(cpui8cdestination_end<pui8cdestination+2){
 					cfp_fraction8();
 					return;
 				}
-				RGBX_stFillAlpha_Blend_Line_Offset_Bit16<ceDestinationAlpha,cidBlend,cui8nOffsetDot>(pui8cdestination,cui32ndestinationplanepitch,UINT16(cui32csourcer),UINT16(cui32csourceg),UINT16(cui32csourceb),cui32doffsetsourcea,&ui32csourcea_previous);
+				RGBX_stFillAlpha_Blend_Line_Offset_Bit16<ceDestinationAlpha,cidBlend,cui8nOffsetDot>(pui8cdestination,cui32ndestinationplanepitch,UINT16(cui32csourcer),UINT16(cui32csourceg),UINT16(cui32csourceb),cui8iscalea,cui32doffsetsourcea,&ui32csourcea_previous);
 			}
 			//	書き込み位置32bitアラインできたのでコピーループに入る。
 			if(pui8cdestination+4<=cpui8cdestination_end){
 				CAUTO					cpui8cdestination_endm4=cpui8cdestination_end-4;
 
-				while(pui8cdestination<=cpui8cdestination_endm4)RGBX_stFillAlpha_Blend_Line_Offset_Bit32<ceDestinationAlpha,cidBlend,cui8nOffsetDot>(pui8cdestination,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cui32doffsetsourcea,&ui32csourcea_previous);
+				while(pui8cdestination<=cpui8cdestination_endm4)RGBX_stFillAlpha_Blend_Line_Offset_Bit32<ceDestinationAlpha,cidBlend,cui8nOffsetDot>(pui8cdestination,cui32ndestinationplanepitch,cui32csourcer,cui32csourceg,cui32csourceb,cui8iscalea,cui32doffsetsourcea,&ui32csourcea_previous);
 			}
 			//	32bitアラインコピー出来る分は全て片付けたので、「右側端数ドット」をコピーする。
 			cfp_fraction16();
@@ -993,6 +1042,7 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit4L(
 	CUINT8					cui8csourcer,
 	CUINT8					cui8csourceg,
 	CUINT8					cui8csourceb,
+	CUINT8					cui8iscalea,
 	CUINT32					cui32doffsetsourcea,
 	const PUINT32			cpui32csourcea_previous
 )noexcept{
@@ -1008,20 +1058,22 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit4L(
 	if constexpr(cui8nOffsetDot==0){
 		CAUTO					cpcui8csourcea=PCUINT8(pui8cdestination+cui32doffsetsourcea);
 		CAUTO					cui8csourcea=*cpcui8csourcea;
+		CAUTO					cui8csourcea_result=stui8cMultiply_Bit4L(cui8csourcea,cui8iscalea);
 
-		cfp_blend_bit4lthis(ui8cdestinationr,cui8csourcer,cui8csourcea);
-		cfp_blend_bit4lthis(ui8cdestinationg,cui8csourceg,cui8csourcea);
-		cfp_blend_bit4lthis(ui8cdestinationb,cui8csourceb,cui8csourcea);
+		cfp_blend_bit4lthis(ui8cdestinationr,cui8csourcer,cui8csourcea_result);
+		cfp_blend_bit4lthis(ui8cdestinationg,cui8csourceg,cui8csourcea_result);
+		cfp_blend_bit4lthis(ui8cdestinationb,cui8csourceb,cui8csourcea_result);
 		if constexpr(ceDestinationAlpha){
 			AUTO&					ui8cdestinationa=*cpui8cdestinationa;
 
-			ui8cdestinationa=(ui8cdestinationa&0x0f)|(cui8csourcea&0xf0);
+			ui8cdestinationa=(ui8cdestinationa&0x0f)|(cui8csourcea_result&0xf0);
 		}
 	}else{
 		constexpr AUTO			cui8nshiftbitr=UINT8(cui8nOffsetDot<<2);
 		constexpr AUTO			cui8nshiftbitr_previous=UINT8(cui8nshiftbitr-4);
 		CAUTO					cui32csourcea_previous=*cpui32csourcea_previous;
 		CAUTO					cui8csourcea_merged=UINT8((cui32csourcea_previous>>cui8nshiftbitr_previous)<<4);
+		CAUTO					cui8csourcea_result=stui8cMultiply_Bit4L(cui8csourcea_merged,cui8iscalea);
 
 		//	<cui8nOffsetDot:1>
 		//		previous:--------------X
@@ -1037,13 +1089,13 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit4L(
 		//		|X              |   |
 		//		|               |x  |
 		//		previous:---------------
-		cfp_blend_bit4lthis(ui8cdestinationr,cui8csourcer,cui8csourcea_merged);
-		cfp_blend_bit4lthis(ui8cdestinationg,cui8csourceg,cui8csourcea_merged);
-		cfp_blend_bit4lthis(ui8cdestinationb,cui8csourceb,cui8csourcea_merged);
+		cfp_blend_bit4lthis(ui8cdestinationr,cui8csourcer,cui8csourcea_result);
+		cfp_blend_bit4lthis(ui8cdestinationg,cui8csourceg,cui8csourcea_result);
+		cfp_blend_bit4lthis(ui8cdestinationb,cui8csourceb,cui8csourcea_result);
 		if constexpr(ceDestinationAlpha){
 			AUTO&					ui8cdestinationa=*cpui8cdestinationa;
 
-			ui8cdestinationa=(ui8cdestinationa&0x0f)|(cui8csourcea_merged&0xf0);
+			ui8cdestinationa=(ui8cdestinationa&0x0f)|(cui8csourcea_result&0xf0);
 		}
 	}
 	return;
@@ -1056,6 +1108,7 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit4R(
 	CUINT8					cui8csourcer,
 	CUINT8					cui8csourceg,
 	CUINT8					cui8csourceb,
+	CUINT8					cui8iscalea,
 	CUINT32					cui32doffsetsourcea,
 	const PUINT32			cpui32csourcea_previous
 )noexcept{
@@ -1071,13 +1124,15 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit4R(
 	CAUTO					cui8csourcea=*cpcui8csourcea;
 
 	if constexpr(cui8nOffsetDot==0){
-		cfp_blend_bit4rthis(ui8cdestinationr,cui8csourcer,cui8csourcea);
-		cfp_blend_bit4rthis(ui8cdestinationg,cui8csourceg,cui8csourcea);
-		cfp_blend_bit4rthis(ui8cdestinationb,cui8csourceb,cui8csourcea);
+		CAUTO					cui8csourcea_result=stui8cMultiply_Bit4R(cui8csourcea,cui8iscalea);
+
+		cfp_blend_bit4rthis(ui8cdestinationr,cui8csourcer,cui8csourcea_result);
+		cfp_blend_bit4rthis(ui8cdestinationg,cui8csourceg,cui8csourcea_result);
+		cfp_blend_bit4rthis(ui8cdestinationb,cui8csourceb,cui8csourcea_result);
 		if constexpr(ceDestinationAlpha){
 			AUTO&					ui8cdestinationa=*cpui8cdestinationa;
 
-			ui8cdestinationa=(ui8cdestinationa&0xf0)|(cui8csourcea&0x0f);
+			ui8cdestinationa=(ui8cdestinationa&0xf0)|(cui8csourcea_result&0x0f);
 		}
 	}else{
 		constexpr AUTO			cui8nshiftbitr=UINT8(cui8nOffsetDot<<2);
@@ -1085,6 +1140,7 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit4R(
 
 		if constexpr(cui8nshiftbitr<8){
 			CAUTO					cui8csourcea_merged=UINT8(cui8csourcea>>cui8nshiftbitr);
+			CAUTO					cui8csourcea_result=stui8cMultiply_Bit4R(cui8csourcea_merged,cui8iscalea);
 
 			//	<cui8nOffsetDot:1>
 			//		previous:--------------X
@@ -1093,18 +1149,19 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit4R(
 			//		|R-R|B-B|W-W-W-W|
 			//		|  R|r B|b W-W-W|w
 			//		previous:--------------r
-			cfp_blend_bit4rthis(ui8cdestinationr,cui8csourcer,cui8csourcea_merged);
-			cfp_blend_bit4rthis(ui8cdestinationg,cui8csourceg,cui8csourcea_merged);
-			cfp_blend_bit4rthis(ui8cdestinationb,cui8csourceb,cui8csourcea_merged);
+			cfp_blend_bit4rthis(ui8cdestinationr,cui8csourcer,cui8csourcea_result);
+			cfp_blend_bit4rthis(ui8cdestinationg,cui8csourceg,cui8csourcea_result);
+			cfp_blend_bit4rthis(ui8cdestinationb,cui8csourceb,cui8csourcea_result);
 			if constexpr(ceDestinationAlpha){
 				AUTO&					ui8cdestinationa=*cpui8cdestinationa;
 
-				ui8cdestinationa=(ui8cdestinationa&0xf0)|(cui8csourcea_merged&0x0f);
+				ui8cdestinationa=(ui8cdestinationa&0xf0)|(cui8csourcea_result&0x0f);
 			}
 			ui32csourcea_previous=UINT32(cui8csourcea);
 		}else{
 			constexpr AUTO			cui8nshiftbitr_previous=UINT8(cui8nshiftbitr-8);
 			CAUTO					cui8csourcea_merged=UINT8(ui32csourcea_previous>>cui8nshiftbitr_previous);
+			CAUTO					cui8csourcea_result=stui8cMultiply_Bit4R(cui8csourcea_merged,cui8iscalea);
 
 			//	<cui8nOffsetDot:7>
 			//		previous:----X-X-X-X-X-X
@@ -1113,13 +1170,13 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit4R(
 			//		|   |X-X|X-X-X-X|R-R|B-B|W-W-W-W|
 			//		|               |  x|x x|x x x r|r b b w w w w
 			//		previous:----X-X-X-X-r-r
-			cfp_blend_bit4rthis(ui8cdestinationr,cui8csourcer,cui8csourcea_merged);
-			cfp_blend_bit4rthis(ui8cdestinationg,cui8csourceg,cui8csourcea_merged);
-			cfp_blend_bit4rthis(ui8cdestinationb,cui8csourceb,cui8csourcea_merged);
+			cfp_blend_bit4rthis(ui8cdestinationr,cui8csourcer,cui8csourcea_result);
+			cfp_blend_bit4rthis(ui8cdestinationg,cui8csourceg,cui8csourcea_result);
+			cfp_blend_bit4rthis(ui8cdestinationb,cui8csourceb,cui8csourcea_result);
 			if constexpr(ceDestinationAlpha){
 				AUTO&					ui8cdestinationa=*(cpui8cdestinationa);
 
-				ui8cdestinationa=(ui8cdestinationa&0xf0)|(cui8csourcea_merged&0x0f);
+				ui8cdestinationa=(ui8cdestinationa&0xf0)|(cui8csourcea_result&0x0f);
 			}
 			ui32csourcea_previous=(ui32csourcea_previous<<8)|UINT32(cui8csourcea);
 		}
@@ -1135,6 +1192,7 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit8(
 	CUINT8					cui8csourcer,
 	CUINT8					cui8csourceg,
 	CUINT8					cui8csourceb,
+	CUINT8					cui8iscalea,
 	CUINT32					cui32doffsetsourcea,
 	const PUINT32			cpui32csourcea_previous
 )noexcept{
@@ -1150,13 +1208,15 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit8(
 	CAUTO					cui8csourcea=*cpcui8csourcea;
 
 	if constexpr(cui8nOffsetDot==0){
-		cfp_blend_bit8this(ui8cdestinationr,cui8csourcer,cui8csourcea);
-		cfp_blend_bit8this(ui8cdestinationg,cui8csourceg,cui8csourcea);
-		cfp_blend_bit8this(ui8cdestinationb,cui8csourceb,cui8csourcea);
+		CAUTO					cui8csourcea_result=stui8cMultiply_Bit8(cui8csourcea,cui8iscalea);
+
+		cfp_blend_bit8this(ui8cdestinationr,cui8csourcer,cui8csourcea_result);
+		cfp_blend_bit8this(ui8cdestinationg,cui8csourceg,cui8csourcea_result);
+		cfp_blend_bit8this(ui8cdestinationb,cui8csourceb,cui8csourcea_result);
 		if constexpr(ceDestinationAlpha){
 			AUTO&					ui8cdestinationa=*cpui8cdestinationa;
 
-			ui8cdestinationa=cui8csourcea;
+			ui8cdestinationa=cui8csourcea_result;
 		}
 	}else{
 		constexpr AUTO			cui8nshiftbitr=UINT8(cui8nOffsetDot<<2);
@@ -1165,6 +1225,7 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit8(
 		if constexpr(cui8nshiftbitr<8){
 			constexpr AUTO			cui8nshiftbitl_previous=UINT8(8-cui8nshiftbitr);
 			CAUTO					cui8csourcea_merged=UINT8((cui8csourcea>>cui8nshiftbitr)|UINT8(ui32csourcea_previous<<cui8nshiftbitl_previous));
+			CAUTO					cui8csourcea_result=stui8cMultiply_Bit8(cui8csourcea_merged,cui8iscalea);
 
 			//	<cui8nOffsetDot:1>
 			//		previous:--------------X
@@ -1173,18 +1234,19 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit8(
 			//		|--X|B-B|W-W-W-W|
 			//		|   |x B|b W-W-W|w
 			//		previous:--------------b
-			cfp_blend_bit8this(ui8cdestinationr,cui8csourcer,cui8csourcea_merged);
-			cfp_blend_bit8this(ui8cdestinationg,cui8csourceg,cui8csourcea_merged);
-			cfp_blend_bit8this(ui8cdestinationb,cui8csourceb,cui8csourcea_merged);
+			cfp_blend_bit8this(ui8cdestinationr,cui8csourcer,cui8csourcea_result);
+			cfp_blend_bit8this(ui8cdestinationg,cui8csourceg,cui8csourcea_result);
+			cfp_blend_bit8this(ui8cdestinationb,cui8csourceb,cui8csourcea_result);
 			if constexpr(ceDestinationAlpha){
 				AUTO&					ui8cdestinationa=*cpui8cdestinationa;
 
-				ui8cdestinationa=cui8csourcea_merged;
+				ui8cdestinationa=cui8csourcea_result;
 			}
 			ui32csourcea_previous=UINT32(cui8csourcea);
 		}else{
 			constexpr AUTO			cui8nshiftbitr_previous=UINT8(cui8nshiftbitr-8);
 			CAUTO					cui8csourcea_merged=UINT8(ui32csourcea_previous>>cui8nshiftbitr_previous);
+			CAUTO					cui8csourcea_result=stui8cMultiply_Bit8(cui8csourcea_merged,cui8iscalea);
 
 			//	<cui8nOffsetDot:7>
 			//		previous:--X-X-X-X-X-X-X
@@ -1193,13 +1255,13 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit8(
 			//		|   |--X|X-X-X-X|X-X|B-B|W-W-W-W|
 			//		|               |   |x x|x x x x|x b b w w w w
 			//		previous:--x-x-x-x-x-b-b
-			cfp_blend_bit8this(ui8cdestinationr,cui8csourcer,cui8csourcea_merged);
-			cfp_blend_bit8this(ui8cdestinationg,cui8csourceg,cui8csourcea_merged);
-			cfp_blend_bit8this(ui8cdestinationb,cui8csourceb,cui8csourcea_merged);
+			cfp_blend_bit8this(ui8cdestinationr,cui8csourcer,cui8csourcea_result);
+			cfp_blend_bit8this(ui8cdestinationg,cui8csourceg,cui8csourcea_result);
+			cfp_blend_bit8this(ui8cdestinationb,cui8csourceb,cui8csourcea_result);
 			if constexpr(ceDestinationAlpha){
 				AUTO&					ui8cdestinationa=*(cpui8cdestinationa);
 
-				ui8cdestinationa=cui8csourcea_merged;
+				ui8cdestinationa=cui8csourcea_result;
 			}
 			ui32csourcea_previous=(ui32csourcea_previous<<8)|UINT32(cui8csourcea);
 		}
@@ -1215,6 +1277,7 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit16(
 	CUINT16					cui16csourcer,
 	CUINT16					cui16csourceg,
 	CUINT16					cui16csourceb,
+	CUINT8					cui8iscalea,
 	CUINT32					cui32doffsetsourcea,
 	const PUINT32			cpui32csourcea_previous
 )noexcept{
@@ -1230,13 +1293,15 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit16(
 	CAUTO					cui16csourcea=*PCUINT16(cpcui8csourcea);
 
 	if constexpr(cui8nOffsetDot==0){
-		cfp_blend_bit16this(ui16cdestinationr,cui16csourcer,cui16csourcea);
-		cfp_blend_bit16this(ui16cdestinationg,cui16csourceg,cui16csourcea);
-		cfp_blend_bit16this(ui16cdestinationb,cui16csourceb,cui16csourcea);
+		CAUTO					cui16csourcea_result=stui16cMultiply_Bit16(cui16csourcea,cui8iscalea);
+
+		cfp_blend_bit16this(ui16cdestinationr,cui16csourcer,cui16csourcea_result);
+		cfp_blend_bit16this(ui16cdestinationg,cui16csourceg,cui16csourcea_result);
+		cfp_blend_bit16this(ui16cdestinationb,cui16csourceb,cui16csourcea_result);
 		if constexpr(ceDestinationAlpha){
 			AUTO&					ui16cdestinationa=*PUINT16(cpui8cdestinationa);
 
-			ui16cdestinationa=cui16csourcea;
+			ui16cdestinationa=cui16csourcea_result;
 		}
 	}else{
 		constexpr AUTO			cui8nshiftbitr=UINT8(cui8nOffsetDot<<2);
@@ -1245,6 +1310,7 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit16(
 		if constexpr(cui8nshiftbitr<16){
 			constexpr AUTO			cui8nshiftbitl_previous=UINT8(16-cui8nshiftbitr);
 			CAUTO					cui16csourcea_merged=UINT16((cui16csourcea>>cui8nshiftbitr)|UINT16(ui32csourcea_previous<<cui8nshiftbitl_previous));
+			CAUTO					cui16csourcea_result=stui16cMultiply_Bit16(cui16csourcea_merged,cui8iscalea);
 
 			//	<cui8nOffsetDot:1>
 			//		previous:--------------X
@@ -1253,18 +1319,19 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit16(
 			//		|   |--X|W-W-W-W|
 			//		|       |x W-W-W|w
 			//		previous:--------------w
-			cfp_blend_bit16this(ui16cdestinationr,cui16csourcer,cui16csourcea_merged);
-			cfp_blend_bit16this(ui16cdestinationg,cui16csourceg,cui16csourcea_merged);
-			cfp_blend_bit16this(ui16cdestinationb,cui16csourceb,cui16csourcea_merged);
+			cfp_blend_bit16this(ui16cdestinationr,cui16csourcer,cui16csourcea_result);
+			cfp_blend_bit16this(ui16cdestinationg,cui16csourceg,cui16csourcea_result);
+			cfp_blend_bit16this(ui16cdestinationb,cui16csourceb,cui16csourcea_result);
 			if constexpr(ceDestinationAlpha){
 				AUTO&					ui16cdestinationa=*PUINT16(cpui8cdestinationa);
 
-				ui16cdestinationa=cui16csourcea_merged;
+				ui16cdestinationa=cui16csourcea_result;
 			}
 			ui32csourcea_previous=UINT32(cui16csourcea);
 		}else{
 			constexpr AUTO			cui8nshiftbitr_previous=UINT8(cui8nshiftbitr-16);
 			CAUTO					cui16csourcea_merged=UINT16(ui32csourcea_previous>>cui8nshiftbitr_previous);
+			CAUTO					cui16csourcea_result=stui16cMultiply_Bit16(cui16csourcea_merged,cui8iscalea);
 
 			//	<cui8nOffsetDot:7>
 			//		previous:--X-X-X-X-X-X-X
@@ -1273,13 +1340,13 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit16(
 			//		|       |--X-X-X|X-X-X-X|W-W-W-W|
 			//		|               |       |x x x x|x x x w w w w
 			//		previous:--x-x-x-w-w-w-w
-			cfp_blend_bit16this(ui16cdestinationr,cui16csourcer,cui16csourcea_merged);
-			cfp_blend_bit16this(ui16cdestinationg,cui16csourceg,cui16csourcea_merged);
-			cfp_blend_bit16this(ui16cdestinationb,cui16csourceb,cui16csourcea_merged);
+			cfp_blend_bit16this(ui16cdestinationr,cui16csourcer,cui16csourcea_result);
+			cfp_blend_bit16this(ui16cdestinationg,cui16csourceg,cui16csourcea_result);
+			cfp_blend_bit16this(ui16cdestinationb,cui16csourceb,cui16csourcea_result);
 			if constexpr(ceDestinationAlpha){
 				AUTO&					ui16cdestinationa=*PUINT16(cpui8cdestinationa);
 
-				ui16cdestinationa=cui16csourcea_merged;
+				ui16cdestinationa=cui16csourcea_result;
 			}
 			ui32csourcea_previous=(ui32csourcea_previous<<16)|UINT32(cui16csourcea);
 		}
@@ -1295,6 +1362,7 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit32(
 	CUINT32					cui32csourcer,
 	CUINT32					cui32csourceg,
 	CUINT32					cui32csourceb,
+	CUINT8					cui8iscalea,
 	CUINT32					cui32doffsetsourcea,
 	const PUINT32			cpui32csourcea_previous
 )noexcept{
@@ -1310,19 +1378,22 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit32(
 	CAUTO					cui32csourcea=*PCUINT32(cpcui8csourcea);
 
 	if constexpr(cui8nOffsetDot==0){
-		cfp_blend_bit32this(ui32cdestinationr,cui32csourcer,cui32csourcea);
-		cfp_blend_bit32this(ui32cdestinationg,cui32csourceg,cui32csourcea);
-		cfp_blend_bit32this(ui32cdestinationb,cui32csourceb,cui32csourcea);
+		CAUTO					cui32csourcea_result=stui32cMultiply_Bit32(cui32csourcea,cui8iscalea);
+
+		cfp_blend_bit32this(ui32cdestinationr,cui32csourcer,cui32csourcea_result);
+		cfp_blend_bit32this(ui32cdestinationg,cui32csourceg,cui32csourcea_result);
+		cfp_blend_bit32this(ui32cdestinationb,cui32csourceb,cui32csourcea_result);
 		if constexpr(ceDestinationAlpha){
 			AUTO&					ui32cdestinationa=*PUINT32(cpui8cdestinationa);
 
-			ui32cdestinationa=cui32csourcea;
+			ui32cdestinationa=cui32csourcea_result;
 		}
 	}else{
 		constexpr AUTO			cui8nshiftbitr=UINT8(cui8nOffsetDot<<2);
 		constexpr AUTO			cui8nshiftbitl_previous=UINT8(32-cui8nshiftbitr);
 		AUTO&					ui32csourcea_previous=*cpui32csourcea_previous;
 		CAUTO					cui32csourcea_merged=UINT32((cui32csourcea>>cui8nshiftbitr)|(ui32csourcea_previous<<cui8nshiftbitl_previous));
+		CAUTO					cui32csourcea_result=stui32cMultiply_Bit32(cui32csourcea_merged,cui8iscalea);
 
 		//	<cui8nOffsetDot:1>
 		//		previous:--------------X
@@ -1338,13 +1409,13 @@ _INLINE_ VOID			CANVAS_::RGBX_stFillAlpha_Blend_Line_Offset_Bit32(
 		//		|--X-X-X-X-X-X-X|D-D-D-D-D-D-D-D|
 		//		|               |x x x x x x x D|d d d d d d d
 		//		previous:--d-d-d-d-d-d-d
-		cfp_blend_bit32this(ui32cdestinationr,cui32csourcer,cui32csourcea_merged);
-		cfp_blend_bit32this(ui32cdestinationg,cui32csourceg,cui32csourcea_merged);
-		cfp_blend_bit32this(ui32cdestinationb,cui32csourceb,cui32csourcea_merged);
+		cfp_blend_bit32this(ui32cdestinationr,cui32csourcer,cui32csourcea_result);
+		cfp_blend_bit32this(ui32cdestinationg,cui32csourceg,cui32csourcea_result);
+		cfp_blend_bit32this(ui32cdestinationb,cui32csourceb,cui32csourcea_result);
 		if constexpr(ceDestinationAlpha){
 			AUTO&					ui32cdestinationa=*PUINT32(cpui8cdestinationa);
 
-			ui32cdestinationa=cui32csourcea_merged;
+			ui32cdestinationa=cui32csourcea_result;
 		}
 		ui32csourcea_previous=cui32csourcea;
 	}
@@ -3557,6 +3628,46 @@ _INLINE_ VOID			CANVAS_::A_stCopy_Line_Offset_Bit32(
 	return;
 }
 
+//	乗算
+
+constexpr UINT8			CANVAS_::stui8cMultiply_Bit4L(CUINT8 cui8csource,CUINT8 cui8iscale)noexcept{
+	//	「stui8cBackNega_SourceAlpha_Bit4L(cui8csource,0,(15-cui8iscale)<<4)」相当
+	return stacui8cBlend_BackNega[
+		(UINT16(cui8csource&0xf0)<<4)|UINT16(15-cui8iscale)
+	]&0xf0;
+}
+
+constexpr UINT8			CANVAS_::stui8cMultiply_Bit4R(CUINT8 cui8csource,CUINT8 cui8iscale)noexcept{
+	//	「stui8cBackNega_Source_Bit4R(cui8csource,0,15-cui8iscale)」相当
+	return stacui8cBlend_BackNega[
+		(UINT16(cui8csource&0x0f)<<8)|UINT16(15-cui8iscale)
+	]&0x0f;
+}
+
+constexpr UINT8			CANVAS_::stui8cMultiply_Bit8(CUINT8 cui8csource,CUINT8 cui8iscale)noexcept{
+	return stui8cMultiply_Bit4L(
+		cui8csource,cui8iscale
+	)|stui8cMultiply_Bit4R(
+		cui8csource,cui8iscale
+	);
+}
+
+constexpr UINT16		CANVAS_::stui16cMultiply_Bit16(CUINT16 cui16csource,CUINT8 cui8iscale)noexcept{
+	return (UINT16(stui8cMultiply_Bit8(
+		UINT8(cui16csource>>8),cui8iscale
+	))<<8)|UINT16(stui8cMultiply_Bit8(
+		UINT8(cui16csource),cui8iscale
+	));
+}
+
+constexpr UINT32		CANVAS_::stui32cMultiply_Bit32(CUINT32 cui32csource,CUINT8 cui8iscale)noexcept{
+	return (UINT32(stui16cMultiply_Bit16(
+		UINT16(cui32csource>>16),cui8iscale
+	))<<16)|UINT32(stui16cMultiply_Bit16(
+		UINT16(cui32csource),cui8iscale
+	));
+}
+
 //	ブレンド関数
 
 template<const CANVAS_::IDBLEND cidBlend>
@@ -3565,6 +3676,16 @@ constexpr CANVAS_::FP_BLEND_BIT4L	CANVAS_::stfp_blend_bit4lGetThis(VOID)noexcept
 	case IDBLEND::Source:
 		return [](UINT8& ui8cdestination,CUINT8 cui8csource,CUINT8 cui8calpha)noexcept{
 			ui8cdestination=(ui8cdestination&0x0f)|(cui8csource&0xf0);
+			return;
+		};
+	case IDBLEND::Back_Source:
+		return [](UINT8& ui8cdestination,CUINT8 cui8csource,CUINT8 cui8calpha)noexcept{
+			ui8cdestination=(ui8cdestination&0x0f)|stui8cBack_Source_Bit4L(ui8cdestination,cui8csource,cui8calpha);
+			return;
+		};
+	case IDBLEND::Back_SourceAlpha:
+		return [](UINT8& ui8cdestination,CUINT8 cui8csource,CUINT8 cui8calpha)noexcept{
+			ui8cdestination=(ui8cdestination&0x0f)|stui8cBack_SourceAlpha_Bit4L(ui8cdestination,cui8csource,cui8calpha);
 			return;
 		};
 	case IDBLEND::BackNega_Source:
@@ -3589,6 +3710,16 @@ constexpr CANVAS_::FP_BLEND_BIT4R	CANVAS_::stfp_blend_bit4rGetThis(VOID)noexcept
 			ui8cdestination=(ui8cdestination&0xf0)|(cui8csource&0x0f);
 			return;
 		};
+	case IDBLEND::Back_Source:
+		return [](UINT8& ui8cdestination,CUINT8 cui8csource,CUINT8 cui8calpha)noexcept{
+			ui8cdestination=(ui8cdestination&0xf0)|stui8cBack_Source_Bit4R(ui8cdestination,cui8csource,cui8calpha);
+			return;
+		};
+	case IDBLEND::Back_SourceAlpha:
+		return [](UINT8& ui8cdestination,CUINT8 cui8csource,CUINT8 cui8calpha)noexcept{
+			ui8cdestination=(ui8cdestination&0xf0)|stui8cBack_SourceAlpha_Bit4R(ui8cdestination,cui8csource,cui8calpha);
+			return;
+		};
 	case IDBLEND::BackNega_Source:
 		return [](UINT8& ui8cdestination,CUINT8 cui8csource,CUINT8 cui8calpha)noexcept{
 			ui8cdestination=(ui8cdestination&0xf0)|stui8cBackNega_Source_Bit4R(ui8cdestination,cui8csource,cui8calpha);
@@ -3609,6 +3740,16 @@ constexpr CANVAS_::FP_BLEND_BIT8	CANVAS_::stfp_blend_bit8GetThis(VOID)noexcept{
 	case IDBLEND::Source:
 		return [](UINT8& ui8cdestination,CUINT8 cui8csource,CUINT8 cui8calpha)noexcept{
 			ui8cdestination=cui8csource;
+			return;
+		};
+	case IDBLEND::Back_Source:
+		return [](UINT8& ui8cdestination,CUINT8 cui8csource,CUINT8 cui8calpha)noexcept{
+			ui8cdestination=stui8cBack_Source_Bit8(ui8cdestination,cui8csource,cui8calpha);
+			return;
+		};
+	case IDBLEND::Back_SourceAlpha:
+		return [](UINT8& ui8cdestination,CUINT8 cui8csource,CUINT8 cui8calpha)noexcept{
+			ui8cdestination=stui8cBack_SourceAlpha_Bit8(ui8cdestination,cui8csource,cui8calpha);
 			return;
 		};
 	case IDBLEND::BackNega_Source:
@@ -3633,6 +3774,16 @@ constexpr CANVAS_::FP_BLEND_BIT16	CANVAS_::stfp_blend_bit16GetThis(VOID)noexcept
 			ui16cdestination=cui16csource;
 			return;
 		};
+	case IDBLEND::Back_Source:
+		return [](UINT16& ui16cdestination,CUINT16 cui16csource,CUINT16 cui16calpha)noexcept{
+			ui16cdestination=stui16cBack_Source_Bit16(ui16cdestination,cui16csource,cui16calpha);
+			return;
+		};
+	case IDBLEND::Back_SourceAlpha:
+		return [](UINT16& ui16cdestination,CUINT16 cui16csource,CUINT16 cui16calpha)noexcept{
+			ui16cdestination=stui16cBack_SourceAlpha_Bit16(ui16cdestination,cui16csource,cui16calpha);
+			return;
+		};
 	case IDBLEND::BackNega_Source:
 		return [](UINT16& ui16cdestination,CUINT16 cui16csource,CUINT16 cui16calpha)noexcept{
 			ui16cdestination=stui16cBackNega_Source_Bit16(ui16cdestination,cui16csource,cui16calpha);
@@ -3655,6 +3806,16 @@ constexpr CANVAS_::FP_BLEND_BIT32	CANVAS_::stfp_blend32GetThis(VOID)noexcept{
 			ui32cdestination=cui32csource;
 			return;
 		};
+	case IDBLEND::Back_Source:
+		return [](UINT32& ui32cdestination,CUINT32 cui32csource,CUINT32 cui32calpha)noexcept{
+			ui32cdestination=stui32cBack_Source_Bit32(ui32cdestination,cui32csource,cui32calpha);
+			return;
+		};
+	case IDBLEND::Back_SourceAlpha:
+		return [](UINT32& ui32cdestination,CUINT32 cui32csource,CUINT32 cui32calpha)noexcept{
+			ui32cdestination=stui32cBack_SourceAlpha_Bit32(ui32cdestination,cui32csource,cui32calpha);
+			return;
+		};
 	case IDBLEND::BackNega_Source:
 		return [](UINT32& ui32cdestination,CUINT32 cui32csource,CUINT32 cui32calpha)noexcept{
 			ui32cdestination=stui32cBackNega_Source_Bit32(ui32cdestination,cui32csource,cui32calpha);
@@ -3669,12 +3830,32 @@ constexpr CANVAS_::FP_BLEND_BIT32	CANVAS_::stfp_blend32GetThis(VOID)noexcept{
 	NEVER;
 }
 
+constexpr UINT8			CANVAS_::stui8cBack_Source_Bit4L(
+	CUINT8					cui8cdestination,
+	CUINT8					cui8csource,
+	CUINT8					cui8calpha
+)noexcept{
+	return (stacui8cBlend_Back[
+		(UINT16(cui8cdestination&0xf0)<<4)|UINT16(cui8csource&0xf0)|(UINT16(cui8calpha&0xf0)>>4)
+	]<<4)&0xf0;
+}
+
+constexpr UINT8			CANVAS_::stui8cBack_SourceAlpha_Bit4L(
+	CUINT8					cui8cdestination,
+	CUINT8					cui8csource,
+	CUINT8					cui8calpha
+)noexcept{
+	return stacui8cBlend_Back[
+		(UINT16(cui8cdestination&0xf0)<<4)|UINT16(cui8csource&0xf0)|(UINT16(cui8calpha&0xf0)>>4)
+	]&0xf0;
+}
+
 constexpr UINT8			CANVAS_::stui8cBackNega_Source_Bit4L(
 	CUINT8					cui8cdestination,
 	CUINT8					cui8csource,
 	CUINT8					cui8calpha
 )noexcept{
-	return (stacui8cBlend[
+	return (stacui8cBlend_BackNega[
 		(UINT16(cui8cdestination&0xf0)<<4)|UINT16(cui8csource&0xf0)|(UINT16(cui8calpha&0xf0)>>4)
 	]<<4)&0xf0;
 }
@@ -3684,9 +3865,29 @@ constexpr UINT8			CANVAS_::stui8cBackNega_SourceAlpha_Bit4L(
 	CUINT8					cui8csource,
 	CUINT8					cui8calpha
 )noexcept{
-	return stacui8cBlend[
+	return stacui8cBlend_BackNega[
 		(UINT16(cui8cdestination&0xf0)<<4)|UINT16(cui8csource&0xf0)|(UINT16(cui8calpha&0xf0)>>4)
 	]&0xf0;
+}
+
+constexpr UINT8			CANVAS_::stui8cBack_Source_Bit4R(
+	CUINT8					cui8cdestination,
+	CUINT8					cui8csource,
+	CUINT8					cui8calpha
+)noexcept{
+	return stacui8cBlend_Back[
+		(UINT16(cui8cdestination&0x0f)<<8)|(UINT16(cui8csource&0x0f)<<4)|UINT16(cui8calpha&0x0f)
+	]&0x0f;
+}
+
+constexpr UINT8			CANVAS_::stui8cBack_SourceAlpha_Bit4R(
+	CUINT8					cui8cdestination,
+	CUINT8					cui8csource,
+	CUINT8					cui8calpha
+)noexcept{
+	return (stacui8cBlend_Back[
+		(UINT16(cui8cdestination&0x0f)<<8)|(UINT16(cui8csource&0x0f)<<4)|UINT16(cui8calpha&0x0f)
+	]>>4)&0x0f;
 }
 
 constexpr UINT8			CANVAS_::stui8cBackNega_Source_Bit4R(
@@ -3694,7 +3895,7 @@ constexpr UINT8			CANVAS_::stui8cBackNega_Source_Bit4R(
 	CUINT8					cui8csource,
 	CUINT8					cui8calpha
 )noexcept{
-	return stacui8cBlend[
+	return stacui8cBlend_BackNega[
 		(UINT16(cui8cdestination&0x0f)<<8)|(UINT16(cui8csource&0x0f)<<4)|UINT16(cui8calpha&0x0f)
 	]&0x0f;
 }
@@ -3704,9 +3905,33 @@ constexpr UINT8			CANVAS_::stui8cBackNega_SourceAlpha_Bit4R(
 	CUINT8					cui8csource,
 	CUINT8					cui8calpha
 )noexcept{
-	return (stacui8cBlend[
+	return (stacui8cBlend_BackNega[
 		(UINT16(cui8cdestination&0x0f)<<8)|(UINT16(cui8csource&0x0f)<<4)|UINT16(cui8calpha&0x0f)
 	]>>4)&0x0f;
+}
+
+constexpr UINT8			CANVAS_::stui8cBack_Source_Bit8(
+	CUINT8					cui8cdestination,
+	CUINT8					cui8csource,
+	CUINT8					cui8calpha
+)noexcept{
+	return stui8cBack_Source_Bit4L(
+		cui8cdestination,cui8csource,cui8calpha
+	)|stui8cBack_Source_Bit4R(
+		cui8cdestination,cui8csource,cui8calpha
+	);
+}
+
+constexpr UINT8			CANVAS_::stui8cBack_SourceAlpha_Bit8(
+	CUINT8					cui8cdestination,
+	CUINT8					cui8csource,
+	CUINT8					cui8calpha
+)noexcept{
+	return stui8cBack_SourceAlpha_Bit4L(
+		cui8cdestination,cui8csource,cui8calpha
+	)|stui8cBack_SourceAlpha_Bit4R(
+		cui8cdestination,cui8csource,cui8calpha
+	);
 }
 
 constexpr UINT8			CANVAS_::stui8cBackNega_Source_Bit8(
@@ -3733,6 +3958,30 @@ constexpr UINT8			CANVAS_::stui8cBackNega_SourceAlpha_Bit8(
 	);
 }
 
+constexpr UINT16		CANVAS_::stui16cBack_Source_Bit16(
+	CUINT16					cui16cdestination,
+	CUINT16					cui16csource,
+	CUINT16					cui16calpha
+)noexcept{
+	return (UINT16(stui8cBack_Source_Bit8(
+		UINT8(cui16cdestination>>8),UINT8(cui16csource>>8),UINT8(cui16calpha>>8)
+	))<<8)|UINT16(stui8cBack_Source_Bit8(
+		UINT8(cui16cdestination),UINT8(cui16csource),UINT8(cui16calpha)
+	));
+}
+
+constexpr UINT16		CANVAS_::stui16cBack_SourceAlpha_Bit16(
+	CUINT16					cui16cdestination,
+	CUINT16					cui16csource,
+	CUINT16					cui16calpha
+)noexcept{
+	return (UINT16(stui8cBack_SourceAlpha_Bit8(
+		UINT8(cui16cdestination>>8),UINT8(cui16csource>>8),UINT8(cui16calpha>>8)
+	))<<8)|UINT16(stui8cBack_SourceAlpha_Bit8(
+		UINT8(cui16cdestination),UINT8(cui16csource),UINT8(cui16calpha)
+	));
+}
+
 constexpr UINT16		CANVAS_::stui16cBackNega_Source_Bit16(
 	CUINT16					cui16cdestination,
 	CUINT16					cui16csource,
@@ -3754,6 +4003,30 @@ constexpr UINT16		CANVAS_::stui16cBackNega_SourceAlpha_Bit16(
 		UINT8(cui16cdestination>>8),UINT8(cui16csource>>8),UINT8(cui16calpha>>8)
 	))<<8)|UINT16(stui8cBackNega_SourceAlpha_Bit8(
 		UINT8(cui16cdestination),UINT8(cui16csource),UINT8(cui16calpha)
+	));
+}
+
+constexpr UINT32		CANVAS_::stui32cBack_Source_Bit32(
+	CUINT32					cui32cdestination,
+	CUINT32					cui32csource,
+	CUINT32					cui32calpha
+)noexcept{
+	return (UINT32(stui16cBack_Source_Bit16(
+		UINT16(cui32cdestination>>16),UINT16(cui32csource>>16),UINT16(cui32calpha>>16)
+	))<<16)|UINT32(stui16cBack_Source_Bit16(
+		UINT16(cui32cdestination),UINT16(cui32csource),UINT16(cui32calpha)
+	));
+}
+
+constexpr UINT32		CANVAS_::stui32cBack_SourceAlpha_Bit32(
+	CUINT32					cui32cdestination,
+	CUINT32					cui32csource,
+	CUINT32					cui32calpha
+)noexcept{
+	return (UINT32(stui16cBack_SourceAlpha_Bit16(
+		UINT16(cui32cdestination>>16),UINT16(cui32csource>>16),UINT16(cui32calpha>>16)
+	))<<16)|UINT32(stui16cBack_SourceAlpha_Bit16(
+		UINT16(cui32cdestination),UINT16(cui32csource),UINT16(cui32calpha)
 	));
 }
 

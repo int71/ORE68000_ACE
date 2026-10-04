@@ -53,7 +53,7 @@ namespace m68k::ore68000ace{
 	//	ROM			000000-400000	CODE
 	//				400000-700000	VIDEO(画像系)
 	//				700000-7c0000	SOUND(音系)
-	//				7c0000-7e0000	FONT
+	//				7c0000-7e0000
 	//				7fe000-7ff000	ATAN
 	//				7ff000-7ff400	TRIG(三角関数)
 	//	RAM			800000-a00000
@@ -62,8 +62,6 @@ namespace m68k::ore68000ace{
 	//	COLLIDER	fc0000-fc0200	コライダパラメータメモリ
 	//	COM			fe0000-ff0000	M/Sコミュニケーション用非対称アクセスメモリ
 	//	I/O			ff8000-
-	static constexpr UPERIOD	stcuprdnCPUFrequencyHzM=					16'000'000;
-	static constexpr UPERIOD	stcuprdnCPUFrequencyHzS=					16'000'000;
 	static constexpr UINT32	ROM_stcui32iAddressM=							0x000000;
 	static constexpr UINT32	ROM_stcui32iAddressS=							0x000000;
 	static constexpr UINT32	ROM_stcui32nSizeM=								0x800000;
@@ -92,9 +90,6 @@ namespace m68k::ore68000ace{
 	static constexpr UINT32	ROM_SOUND_stcui32dOffsetS=						0x700000;
 	static constexpr UINT32	ROM_SOUND_stcui32iAddressS=						ROM_stcui32iAddressS+ROM_SOUND_stcui32dOffsetS;
 	static constexpr UINT32	ROM_SOUND_stcui32nSize=							0x0c0000;
-	static constexpr UINT32	ROM_FONT_stcui32dOffsetS=						0x7c0000;
-	static constexpr UINT32	ROM_FONT_stcui32iAddressS=						ROM_stcui32iAddressS+ROM_FONT_stcui32dOffsetS;
-	static constexpr UINT32	ROM_FONT_stcui32nSize=							0x020000;
 	static constexpr UINT8	ATAN_stcui8nTableBit=							6;
 	static constexpr UINT16	ATAN_stcui16nTableSide=							1<<ATAN_stcui8nTableBit;
 	static constexpr UINT32	ROM_ATAN_stcui32dOffsetM=						0x7fe000;
@@ -139,12 +134,20 @@ namespace m68k::ore68000ace{
 	static constexpr UINT32	DEVICE_stcui32nSize=							0x008000;
 	static constexpr UINT16	DEVICE_INTERRUPTER_stcui16dOffsetM=				0x0000;
 	static constexpr UINT16	DEVICE_INTERRUPTER_stcui16dOffsetS=				0x0000;
-	static constexpr UINT16	DEVICE_INTERRUPTER_stcui16nPort=				0x0001;
+	static constexpr UINT16	DEVICE_INTERRUPTER_stcui16nPort=				0x0002;
 	static constexpr UINT16	DEVICE_INTERRUPTER_stcui16dDataOffset=			0x0000;
 	static constexpr UINT16	DEVICE_COM_stcui16dOffsetM=						0x0002;
 	static constexpr UINT16	DEVICE_COM_stcui16dOffsetS=						0x0002;
-	static constexpr UINT16	DEVICE_COM_stcui16nPort=						0x0001;
+	static constexpr UINT16	DEVICE_COM_stcui16nPort=						0x0002;
 	static constexpr UINT16	DEVICE_COM_stcui16dDataOffset=					0x0000;
+	static constexpr UINT16	DEVICE_HPC_stcui16dOffsetM=						0x0004;
+	static constexpr UINT16	DEVICE_HPC_stcui16dOffsetS=						0x0004;
+	static constexpr UINT16	DEVICE_HPC_stcui16nPort=						0x0002;
+	static constexpr UINT16	DEVICE_HPC_stcui16dDataOffset=					0x0000;
+	static constexpr UINT16	DEVICE_SERIAL_stcui16dOffsetM=					0x0006;
+	static constexpr UINT16	DEVICE_SERIAL_stcui16dOffsetS=					0x0006;
+	static constexpr UINT16	DEVICE_SERIAL_stcui16nPort=						0x0002;
+	static constexpr UINT16	DEVICE_SERIAL_stcui16dDataOffset=				0x0000;
 	static constexpr UINT16	DEVICE_VIDEO_stcui16dOffsetS=					0x0010;
 	static constexpr UINT16	DEVICE_VIDEO_stcui16nPort=						0x0008;
 	static constexpr UINT16	DEVICE_VIDEO_stcui16dSelectOffset=				0x0000;
@@ -182,24 +185,21 @@ namespace m68k::ore68000ace{
 	static constexpr UINT16	DEVICE_JOYSTICK_stcui16nPort=					0x0002;
 	static constexpr UINT16	DEVICE_JOYSTICK_stcui16dSelectOffset=			0x0000;
 	static constexpr UINT16	DEVICE_JOYSTICK_stcui16dDataOffset=				0x0001;
-	static constexpr UINT16	DEVICE_HPC_stcui16dOffsetM=						0x0040;
-	static constexpr UINT16	DEVICE_HPC_stcui16dOffsetS=						0x0040;
-	static constexpr UINT16	DEVICE_HPC_stcui16nPort=						0x0002;
-	static constexpr UINT16	DEVICE_HPC_stcui16dDataOffset=					0x0000;
-	static constexpr UINT16	DEVICE_LFSR_stcui16dOffsetM=					0x0044;
-	static constexpr UINT16	DEVICE_LFSR_stcui16dOffsetS=					0x0044;
+	static constexpr UINT16	DEVICE_LFSR_stcui16dOffsetM=					0x0040;
+	static constexpr UINT16	DEVICE_LFSR_stcui16dOffsetS=					0x0040;
 	static constexpr UINT16	DEVICE_LFSR_stcui16nPort=						0x0002;
 	static constexpr UINT16	DEVICE_LFSR_stcui16dDataOffset=					0x0000;
+	static constexpr UINT16	DEVICE_FONTROM_stcui16dOffsetM=					0x0044;
+	static constexpr UINT16	DEVICE_FONTROM_stcui16dOffsetS=					0x0044;
+	static constexpr UINT16	DEVICE_FONTROM_stcui16nPort=					0x0004;
+	static constexpr UINT16	DEVICE_FONTROM_stcui16dBankOffset=				0x0000;
+	static constexpr UINT16	DEVICE_FONTROM_stcui16dDataOffset=				0x0002;
 	static constexpr UINT16	DEVICE_COLLIDER_stcui16dOffsetM=				0x0048;
 	static constexpr UINT16	DEVICE_COLLIDER_stcui16dOffsetS=				0x0048;
 	static constexpr UINT16	DEVICE_COLLIDER_stcui16nPort=					0x0008;
 	static constexpr UINT16	DEVICE_COLLIDER_stcui16dSelectWOffset=			0x0000;
 	static constexpr UINT16	DEVICE_COLLIDER_stcui16dSelectROffset=			0x0002;
 	static constexpr UINT16	DEVICE_COLLIDER_stcui16dDataOffset=				0x0006;
-	static constexpr UINT16	DEVICE_SERIAL_stcui16dOffsetM=					0x0100;
-	static constexpr UINT16	DEVICE_SERIAL_stcui16dOffsetS=					0x0100;
-	static constexpr UINT16	DEVICE_SERIAL_stcui16nPort=						0x0001;
-	static constexpr UINT16	DEVICE_SERIAL_stcui16dDataOffset=				0x0000;
 }
 
 #endif

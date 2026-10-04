@@ -9,7 +9,7 @@
 use strict;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'smf.pl';
-my($sVersion,$sDate)=('2.45','2026/08/26');
+my($sVersion,$sDate)=('2.46','2026/09/30');
 my($COM_sDirectory)=('/d/Sync/Package/Cross/ORE68000_ACE/m68k');
 my($sChannelAdditionalVariableName)=('_INIT');
 new BASE::();
@@ -95,7 +95,7 @@ sub main{
 		}
 		if(defined $$option{'m'}){
 			if($$option{'m'} ne '-'){
-				$switch{'FixedPitchModulation'}=BASE::Fit($$option{'m'},0,127);
+				$switch{'FixedPitchModulation'}=BASE::Clamp($$option{'m'},0,127);
 			}else{
 				$switch{'FixedPitchModulation'}='';
 			}
@@ -424,7 +424,7 @@ sub USR_stSMF2SEQ{
 								}
 							}elsif($$ref_hash_event{'Type_Friendly'} eq 'Volume'){
 								($array_nvolume[$ichannel])=(
-									BASE::Fit(
+									BASE::Clamp(
 										&USR_SMF2SEQ_stnDB2Value($$ref_hash_event{'Value_Friendly'})+$$ref_switch{'VolumeOffset'},
 										0,
 										255

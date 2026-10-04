@@ -114,6 +114,8 @@ VOID					GRAPHIC::stNew(
 		(/*BG0 V循環幅*/0<<12)|
 		(/*BG0 Yオフセット*/0x000<<0)
 	));
+	//	フォントROM
+	FONTROM_stWriteBank(0x0500);
 	//	割り込み設定
 	OS::INT_stSetCallback(
 		[](const OS::IDCALLBACK cidcallback,const PVOID cpobject)noexcept{

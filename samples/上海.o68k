@@ -18,6 +18,7 @@
 //
 
 #define SHOWBACKBITMAP
+#define SHOWENDING
 //#define SHOWARRANGEPROGRESS
 //#define SHOWSHADOWOFFSET
 
@@ -29,10 +30,67 @@ using namespace m68k::ore68000ace;
 using namespace m68k::i71::sub;
 
 //
-//		クラス:USER
+//		クラス:COMMON
 //
 
-class USER{
+class COMMON{
+public:
+	static UINT8			stui8Divide24(CUINT16 cui16source)noexcept{
+		//	「384/24=16」程度が得られれば良い。
+		//	n*11/256
+		CAUTO					cui8result=UINT8((cui16source*11)>>8);
+
+		if(cui16source<UINT16(cui8result)*24)return cui8result-1;
+		return cui8result;
+	}
+	template<CUINT8 cui8nRange>
+	static UINT8			stui8Random(VOID)noexcept{
+		return UINT8(((OS::LFSR_stui16Read()&0xff)*UINT16(cui8nRange))>>8);
+	}
+	template<CUINT8 cui8nThis,class CLASS>
+	static VOID				stShuffle(CLASS* const cpxthis,CUINT8 cui8nrange=cui8nThis)noexcept{
+		for(UINT8 ui8ilocal=0;ui8ilocal<cui8nrange;++ui8ilocal){
+			CAUTO					cui8ilocal_source=stui8Random<cui8nThis>();
+			CAUTO					cxsource=cpxthis[cui8ilocal_source];
+
+			cpxthis[cui8ilocal_source]=cpxthis[ui8ilocal];
+			cpxthis[ui8ilocal]=cxsource;
+		}
+		return;
+	}
+	static constexpr UINT8	stui8nGetLength(const PCUSTR cpcustrsource)noexcept{
+		AUTO					pcustrsource=cpcustrsource;
+
+		while(*pcustrsource)++pcustrsource;
+		return pcustrsource-cpcustrsource;
+	}
+	static VOID				stWrite(const PUSTR cpustrdestination,CUINT16 cui16source)noexcept{
+		PUSTR					pustrdestination=cpustrdestination;
+		AUTO					ui16nrest=cui16source;
+		UINT8					ui8idegree;
+		OFWBOOL					ezero=FALSE;
+
+		for(ui8idegree=0;100<=ui16nrest;++ui8idegree)ui16nrest-=100;
+		if(ui8idegree){
+			*pustrdestination='0'+ui8idegree;++pustrdestination;
+			ezero=TRUE;
+		}
+		for(ui8idegree=0;10<=ui16nrest;++ui8idegree)ui16nrest-=10;
+		if(ui8idegree||ezero){
+			*pustrdestination='0'+ui8idegree;++pustrdestination;
+			ezero=TRUE;
+		}
+		*pustrdestination='0'+ui16nrest;++pustrdestination;
+		*pustrdestination=0;
+		return;
+	}
+};
+
+//
+//		クラス:GAME
+//
+
+class GAME{
 public:
 
 	//
@@ -40,44 +98,13 @@ public:
 	//
 
 	using					IDBLEND=GRAPHIC::IDBLEND;
-	//	UINT8					GAME_staacui8iPosition[144][3]
-	//		牌の配置を保持します。
-	//		「{横,縦,高さ}」を単位として、牌144ヶ分あります。
-	static constexpr UINT8	GAME_staacui8iPosition[][3]={
-		//	第1層
-		           { 2, 0, 0},{ 4, 0, 0},{ 6, 0, 0},{ 8, 0, 0},{10, 0, 0},{12, 0, 0},{14, 0, 0},{16, 0, 0},{18, 0, 0},{20, 0, 0},{22, 0, 0},{24, 0, 0},
-		                                 { 6, 2, 0},{ 8, 2, 0},{10, 2, 0},{12, 2, 0},{14, 2, 0},{16, 2, 0},{18, 2, 0},{20, 2, 0},
-		                      { 4, 4, 0},{ 6, 4, 0},{ 8, 4, 0},{10, 4, 0},{12, 4, 0},{14, 4, 0},{16, 4, 0},{18, 4, 0},{20, 4, 0},{22, 4, 0},
-		           { 2, 6, 0},{ 4, 6, 0},{ 6, 6, 0},{ 8, 6, 0},{10, 6, 0},{12, 6, 0},{14, 6, 0},{16, 6, 0},{18, 6, 0},{20, 6, 0},{22, 6, 0},{24, 6, 0},
-		{ 0, 7, 0},{ 2, 8, 0},{ 4, 8, 0},{ 6, 8, 0},{ 8, 8, 0},{10, 8, 0},{12, 8, 0},{14, 8, 0},{16, 8, 0},{18, 8, 0},{20, 8, 0},{22, 8, 0},{24, 8, 0},{26, 7, 0},{28, 7, 0},
-		                      { 4,10, 0},{ 6,10, 0},{ 8,10, 0},{10,10, 0},{12,10, 0},{14,10, 0},{16,10, 0},{18,10, 0},{20,10, 0},{22,10, 0},
-		                                 { 6,12, 0},{ 8,12, 0},{10,12, 0},{12,12, 0},{14,12, 0},{16,12, 0},{18,12, 0},{20,12, 0},
-		           { 2,14, 0},{ 4,14, 0},{ 6,14, 0},{ 8,14, 0},{10,14, 0},{12,14, 0},{14,14, 0},{16,14, 0},{18,14, 0},{20,14, 0},{22,14, 0},{24,14, 0},
-		//	第2層
-		                                            { 8, 2, 1},{10, 2, 1},{12, 2, 1},{14, 2, 1},{16, 2, 1},{18, 2, 1},
-		                                            { 8, 4, 1},{10, 4, 1},{12, 4, 1},{14, 4, 1},{16, 4, 1},{18, 4, 1},
-		                                            { 8, 6, 1},{10, 6, 1},{12, 6, 1},{14, 6, 1},{16, 6, 1},{18, 6, 1},
-		                                            { 8, 8, 1},{10, 8, 1},{12, 8, 1},{14, 8, 1},{16, 8, 1},{18, 8, 1},
-		                                            { 8,10, 1},{10,10, 1},{12,10, 1},{14,10, 1},{16,10, 1},{18,10, 1},
-		                                            { 8,12, 1},{10,12, 1},{12,12, 1},{14,12, 1},{16,12, 1},{18,12, 1},
-		//	第3層
-		                                                       {10, 4, 2},{12, 4, 2},{14, 4, 2},{16, 4, 2},
-		                                                       {10, 6, 2},{12, 6, 2},{14, 6, 2},{16, 6, 2},
-		                                                       {10, 8, 2},{12, 8, 2},{14, 8, 2},{16, 8, 2},
-		                                                       {10,10, 2},{12,10, 2},{14,10, 2},{16,10, 2},
-		//	第4層
-		                                                                  {12, 6, 3},{14, 6, 3},
-		                                                                  {12, 8, 3},{14, 8, 3},
-		//	第5層
-		                                                                  {13, 7, 4}
-	};
-	//	UINT8					GAME_staacui8iPattern[144][2]
+	//	UINT8					staacui8iPattern[144][2]
 	//		牌と絵柄パターンの対応を保持します。
 	//		「{横,縦}」を単位として、牌144ヶ分あります。
-	//		縦横の値は「lesson12_BITMAP.png」の座標に対応しており、
+	//		縦横の値は「牌_BITMAP_TILE.png」の座標に対応しており、
 	//		わざわざ1牌単位で対応させているのは、
 	//		「季節」と「花」が4牌別絵柄であるためです。
-	static constexpr UINT8	GAME_staacui8iPattern[][2]={
+	static constexpr UINT8	staacui8iPattern[][2]={
 		{0x00,0x00},{0x00,0x00},{0x00,0x00},{0x00,0x00},	//	一萬
 		{0x20,0x00},{0x20,0x00},{0x20,0x00},{0x20,0x00},	//	二萬
 		{0x40,0x00},{0x40,0x00},{0x40,0x00},{0x40,0x00},	//	三萬
@@ -115,18 +142,18 @@ public:
 		{0x40,0xc0},{0x60,0xc0},{0x80,0xc0},{0xa0,0xc0},	//	季節
 		{0xc0,0xc0},{0xe0,0xc0},{0x00,0xf0},{0x20,0xf0}		//	花
 	};
-	static constexpr UINT8	GAME_stcui8nTile=UINT8(SIZEOF(GAME_staacui8iPattern)/(SIZEOF(UINT8)*2));
-	static constexpr UINT8	GAME_stcui8nWidth=15*2;
-	static constexpr UINT8	GAME_stcui8nHeight=8*2;
-	static constexpr UINT8	GAME_stcui8nLayer=5;
-	static constexpr UINT8	GAME_stcui8nDifficulty=0;
-	static constexpr UINT8	GAME_stcui8iTileUndefined=0xff;
-	static constexpr UINT16	GAME_stcui16cTilePartMask=0x0300;
-	static constexpr UINT16	GAME_stcui16cTilePartLU=0x0000;
-	static constexpr UINT16	GAME_stcui16cTilePartRU=0x0100;
-	static constexpr UINT16	GAME_stcui16cTilePartLD=0x0200;
-	static constexpr UINT16	GAME_stcui16cTilePartRD=0x0300;
-	static constexpr UINT16	GAME_stcui16cTileSelectedMask=0x0400;
+	static constexpr UINT8	stcui8nTile=UINT8(SIZEOF(staacui8iPattern)/(SIZEOF(UINT8)*2));
+	static constexpr UINT8	stcui8nWidth=15*2;
+	static constexpr UINT8	stcui8nHeight=8*2;
+	static constexpr UINT8	stcui8nLayer=5;
+	static constexpr UINT8	stcui8nLayout=6;
+	static constexpr UINT8	stcui8iTileUndefined=0xff;
+	static constexpr UINT16	stcui16cTilePartMask=0x0300;
+	static constexpr UINT16	stcui16cTilePartLU=0x0000;
+	static constexpr UINT16	stcui16cTilePartRU=0x0100;
+	static constexpr UINT16	stcui16cTilePartLD=0x0200;
+	static constexpr UINT16	stcui16cTilePartRD=0x0300;
+	static constexpr UINT16	stcui16cTileSelectedMask=0x0400;
 	static constexpr UINT8	IMAGE_stcui8nUnitWidth=16;
 	static constexpr UINT8	IMAGE_stcui8nUnitHeight=24;
 	static constexpr UINT8	IMAGE_stcui8nPerspectiveWidth=4;
@@ -140,21 +167,23 @@ public:
 	static constexpr AUTO	IMAGE_stcv2iSideD=VECTOR2(INT16(IMAGE_stcui8nUnitWidth*2)*3+8,INT16(IMAGE_stcui8nUnitHeight*2)*5);
 	static constexpr AUTO	IMAGE_stcv2iSideRD=VECTOR2(INT16(IMAGE_stcui8nUnitWidth*2)*4+8,INT16(IMAGE_stcui8nUnitHeight*2)*5);
 	static constexpr AUTO	IMAGE_stcv2iShadow=VECTOR2(INT16(IMAGE_stcui8nUnitWidth*2)*4-8,INT16(IMAGE_stcui8nUnitHeight*2)*6-8);
-
 	static constexpr AUTO	IMAGE_stcv2iSelected=VECTOR2(INT16(IMAGE_stcui8nUnitWidth*2)*2,INT16(IMAGE_stcui8nUnitHeight*2)*5);
 	//	CANVAS_RGBA_ROM			IMAGE_stccvsTile
 	//		牌絵柄ビットマップデータを保持します。
 	//		横32、縦48ドット単位で並べています。
 	//		「-cm 0」は減色方法指示で、「0」は「単純切り捨て」です。
 	//		「1」の誤差拡散はちょっとノイジーだったんで。
-	static _INLINE_ CAUTO	IMAGE_stccvsTile=__O68K_CANVAS_RGBA_ROM("(Resource)/牌_BITMAP_TILE.png","-cm 0");
+	static inline CAUTO		IMAGE_stccvsTile=__O68K_CANVAS_RGBA_ROM("(Resource)/上海 - 牌.png","-cm 0");
+#ifdef SHOWENDING
+	static inline CAUTO		IMAGE_stccvsEnd=__O68K_CANVAS_RGBA_ROM("(Resource)/上海 - 天晴.png");
+#endif
 #ifdef SHOWBACKBITMAP
-	static _INLINE_ CAUTO	IMAGE_stccvsBack=__O68K_CANVAS_RGB_ROM("(Resource)/床面_BITMAP.png");
+	static inline CAUTO		IMAGE_stccvsBack=__O68K_CANVAS_RGB_ROM("(Resource)/上海 - 床面.png");
 #else
 	static constexpr UINT16	stcui16cColorBack=0x141;
 #endif
 	static constexpr UINT8	SCREEN_stcui8iXBasis=10;
-	static constexpr UINT8	SCREEN_stcui8iYBasis=6;
+	static constexpr UINT8	SCREEN_stcui8iYBasis=9;
 
 	//
 	//		クラス
@@ -179,33 +208,46 @@ public:
 	};
 
 	//
-	//		定義本体:USER
+	//		定義本体:GAME
 	//
 
+public:
+	static inline UINT8		stui8nTileRest;
+	static inline OFWBOOL	SELECT_eSelected;
+	static inline UINT8		SELECT_ui8iTile;
+	static inline UINT8		SELECT_ui8iX,SELECT_ui8iY,SELECT_ui8iLayer;
 private:
-	static _INLINE_ MOUSESTATE	MOUSE_ststatState;
-	//	UINT16					GAME_staaaui16cTile[stcui8nLayer][stcui8nHeight][stcui8nWidth]
+	//	CUINT8[144][3]*			stpcacui8iPositionCurrent
+	//		プレー中の配置型たる、牌座標群へのポインタです。
+	//		参照先の座標群は「[144][3]」の2次元配列ですが、
+	//		1次元配列へのポインタが配列長の概念を持たない事と同様、
+	//		「stpcacui8iPositionCurrent」も「144」という配列長は関知しません。
+	//		つまり、言語仕様的に範囲外チェックできません。
+	static inline CUINT8	(*stpcacui8iPositionCurrent)[3];
+	//	UINT16					staaaui16cTile[stcui8nLayer][stcui8nHeight][stcui8nWidth]
 	//		牌の配置状況を保持します。
 	//		「半分ずらし」があるので牌1つで田の字「2x2」の領域を占めます。
 	//		位置0～7の8ビットは牌個体識別で、「0」は無し(空白)、「1～144」が牌通し番号になります。
 	//		位置8～9の2ビットは田の字中の位置を示し、左上0、右上1、左下2、右下を設定します。
 	//		これにより、配列1要素だけで牌の位置が分かります。
-	static _INLINE_ UINT16	GAME_staaaui16cTile[GAME_stcui8nLayer][GAME_stcui8nHeight][GAME_stcui8nWidth];
+	static inline UINT16	staaaui16cTile[stcui8nLayer][stcui8nHeight][stcui8nWidth];
+	static inline OFWBOOL	steProgressive;
+	static inline MOUSESTATE	MOUSE_ststatState;
 	//	CANVAS_RGB_RAM			OFF_stcvsOne
 	//		非表示状態処理するためのバッファです。
 	//		牌の大きさは32x48ドットですが、
 	//		「半分ずらし」があるので処理単位は16x24ドットにしています。
-	static _INLINE_ AUTO	OFF_stcvsOne=CANVAS_RGB_RAM<UINT16(IMAGE_stcui8nUnitWidth),UINT16(IMAGE_stcui8nUnitHeight)>();
-	static _INLINE_ OFWBOOL	OFF_steUpdated;
+	static inline AUTO		OFF_stcvsOne=CANVAS_RGB_RAM<UINT16(IMAGE_stcui8nUnitWidth),UINT16(IMAGE_stcui8nUnitHeight)>();
+	static inline OFWBOOL	OFF_steUpdated;
 	//	VECTOR2					SCREEN_stv2iOne
 	//		描画位置を画面座標で保持します。
-	static _INLINE_ VECTOR2	SCREEN_stv2iOne;
+	static inline VECTOR2	SCREEN_stv2iOne;
 public:
 	static VOID				stNew(VOID)noexcept{
 		constexpr UINT8			pattern_acui8ccursor[]=__O68K_PATTERN("(Resource)/00_SPRITE_CURSOR.png");
 		constexpr UINT16		palette_acui16ccursor[]=__O68K_PALETTE("(Resource)/00_SPRITE_CURSOR.png");
-		constexpr UINT8			pattern_acui8cgame[]=__O68K_PATTERN("(Resource)/10_SPRITE_lesson12.png");
-		constexpr UINT16		palette_acui16cgame[]=__O68K_PALETTE("(Resource)/10_SPRITE_lesson12.png");
+		constexpr UINT8			pattern_acui8cgame[]=__O68K_PATTERN("(Resource)/上海 - スプライト.png");
+		constexpr UINT16		palette_acui16cgame[]=__O68K_PALETTE("(Resource)/上海 - スプライト.png");
 
 		MOUSE_ststatState.v2iCursor={320,240};
 		MOUSE_ststatState.ui16cButtonCurrent=0x0000;
@@ -216,311 +258,147 @@ public:
 		GRAPHIC::PATTERN_SPRITE_stWrite(0,8,pattern_acui8ccursor);
 		GRAPHIC::PATTERN_SPRITE_stWrite(8,8,pattern_acui8cgame);
 		GRAPHIC::VBLANK_stSetCallback(VBLANK_stCallback,NULL);
-#ifdef SHOWBACKBITMAP
-		GRAPHIC::stCopy(IMAGE_stccvsBack,VECTOR2::stv2ImmediateZero());
-#else
-		GRAPHIC::stFill(stcui16cColorBack);
-#endif
+		stClear();
 		return;
 	}
 	static VOID				stDelete(VOID)noexcept{
 		GRAPHIC::stDelete();
 		return;
 	}
-	static _INLINE_ MOUSESTATE	MOUSE_ststatGetState(VOID)noexcept{
-		return MOUSE_ststatState;
-	}
-	static _INLINE_ VOID	MOUSE_stSetBusy(COFWBOOL cebusy)noexcept{
-		MOUSE_ststatState.eBusy=cebusy;
-		return;
-	}
-	static VOID				GAME_stArrange(CUINT32 cui32cseed=0)noexcept{
-		//	UINT8&					aacui8iposition[144][3]
-		//		複数配置対応しやすいよう、別名設定しておく。
-		CAUTO&					aacui8iposition=GAME_staacui8iPosition;
-		//	UINT8					aui8iarrange[144]
-		//		「0～143」の「配置番号」を混ぜた状態で保持します。
-		//		混ぜるのは解のバリエーションを持たせるためです。
-		UINT8					aui8iarrange[GAME_stcui8nTile];
-		UINT8					aui8itile[GAME_stcui8nTile];
-		//	UINT8					ui8itile
-		//		次に設置する「牌番号」を保持します。
-		//		配置進捗と見なせます。
-		UINT8					ui8itile;
-		CAUTO&					cfp_searchone=[&](UINT8& ui8ilocal,UINT8& ui8ix,UINT8& ui8iy,UINT8& ui8ilayer,UINT8& ui8ndistance)noexcept{
-			for(;ui8ilocal<GAME_stcui8nTile;++ui8ilocal){
-				CAUTO					cui8iarrange=aui8iarrange[ui8ilocal];
-
-				if(cui8iarrange!=GAME_stcui8iTileUndefined){
-					CAUTO&					acui8iposition=aacui8iposition[cui8iarrange];
-
-					//	配置番号は「済」ではなかった
-					ui8ix=acui8iposition[0];
-					ui8iy=acui8iposition[1];
-					ui8ilayer=acui8iposition[2];
-					if(GAME_steArrange_IsSettable(ui8ix,ui8iy,ui8ilayer,ui8ndistance))break;
-				}
-			}
-			return;
-		};
-		CAUTO&					cfp_searchpair=[&](UINT8& ui8ilocal0,UINT8& ui8ix0,UINT8& ui8iy0,UINT8& ui8ilayer0,UINT8& ui8ilocal1,UINT8& ui8ix1,UINT8& ui8iy1,UINT8& ui8ilayer1,UINT8& ui8ndistance)noexcept{
-			UINT8					ui8ndistance1;
-
-			cfp_searchone(ui8ilocal0,ui8ix0,ui8iy0,ui8ilayer0,ui8ndistance);
-			if(ui8ilocal0<GAME_stcui8nTile){
-				for(ui8ilocal1=ui8ilocal0+1;ui8ilocal1<GAME_stcui8nTile;++ui8ilocal1){
-					cfp_searchone(ui8ilocal1,ui8ix1,ui8iy1,ui8ilayer1,ui8ndistance1);
-					if(ui8ilocal1<GAME_stcui8nTile){
-						//	牌2つ目も「配置可能」であった。
-						//	ただし、「同じ高さで離れている」ような状況なら配置してはならないので、
-						//	牌1つ目を「仮配置」して再チェックする。
-						GAME_stWriteTile4(ui8ix0,ui8iy0,ui8ilayer0,UINT16(0x0001),TRUE);
-						{
-							CAUTO			cesettable=GAME_steArrange_IsSettable(ui8ix1,ui8iy1,ui8ilayer1,ui8ndistance1);
-
-							GAME_stWriteTile4(ui8ix0,ui8iy0,ui8ilayer0,UINT16(GAME_stcui8iTileUndefined),TRUE);
-							if(cesettable){
-								ui8ndistance=STD::stxGetMinimum(ui8ndistance,ui8ndistance1);
-								return;
-							}
-						}
-					}
-				}
-			}
-			ui8ilocal1=GAME_stcui8nTile;
-			return;
-		};
-
-		OS::LFSR_stSetSeed(cui32cseed);
-		STD::stFill(GAME_staaaui16cTile,SIZEOF(GAME_staaaui16cTile),0x00);
-		do{
-			//	実は「追加配置不可」の状況に陥る場合があるため、
-			//	やり直し想定でループにしておきます。
-			for(UINT8 ui8iarrange=0;ui8iarrange<GAME_stcui8nTile;++ui8iarrange){
-				CAUTO&					acui8iposition=aacui8iposition[ui8iarrange];
-
-				//	左右方向への走査を行えるよう、
-				//	「GAME_stcui16cTileTemporaryMask」付きで「田の字」属性を設定。
-				GAME_stWriteTile4(
-					acui8iposition[0],		//	cui8ix
-					acui8iposition[1],		//	cui8iy
-					acui8iposition[2],		//	cui8ilayer
-					UINT16(GAME_stcui8iTileUndefined),	//	cui16ctile
-					TRUE					//	cepart
-				);
-				//	ついでに配置番号を「整列状態」で設定
-				aui8iarrange[ui8iarrange]=ui8iarrange;
-				aui8itile[ui8iarrange]=ui8iarrange+1;
-			}
-			//	混ぜる事で「0～143」出現順をランダムに
-			for(UINT8 ui8ilocal=0;ui8ilocal<GAME_stcui8nTile;++ui8ilocal){
-				CAUTO					cui8ilocal_source=stui8Random<GAME_stcui8nTile>();
-				CAUTO					cui8iarrange_source=aui8iarrange[cui8ilocal_source];
-
-				aui8iarrange[cui8ilocal_source]=aui8iarrange[ui8ilocal];
-				aui8iarrange[ui8ilocal]=cui8iarrange_source;
-			}
-			//	牌4つセットでの混ぜ(難易度無関係)
-			{
-				constexpr AUTO			cui8npair4=UINT8(GAME_stcui8nTile>>2);
-
-				for(UINT8 ui8ilocal=0;ui8ilocal<cui8npair4;++ui8ilocal){
-					CAUTO					cui8ilocal4=ui8ilocal<<2;
-					CAUTO					cui8ilocal4_source=UINT8(stui8Random<cui8npair4>()<<2);
-					CAUTO					cui8itile_source0=aui8itile[cui8ilocal4_source+0];
-					CAUTO					cui8itile_source1=aui8itile[cui8ilocal4_source+1];
-					CAUTO					cui8itile_source2=aui8itile[cui8ilocal4_source+2];
-					CAUTO					cui8itile_source3=aui8itile[cui8ilocal4_source+3];
-
-					aui8itile[cui8ilocal4_source+0]=aui8itile[cui8ilocal4+0];
-					aui8itile[cui8ilocal4_source+1]=aui8itile[cui8ilocal4+1];
-					aui8itile[cui8ilocal4_source+2]=aui8itile[cui8ilocal4+2];
-					aui8itile[cui8ilocal4_source+3]=aui8itile[cui8ilocal4+3];
-					aui8itile[cui8ilocal4+0]=cui8itile_source0;
-					aui8itile[cui8ilocal4+1]=cui8itile_source1;
-					aui8itile[cui8ilocal4+2]=cui8itile_source2;
-					aui8itile[cui8ilocal4+3]=cui8itile_source3;
-				}
-			}
-			//	牌2つセットでの混ぜ(難易度左右する)
-			{
-				constexpr AUTO			cui8npair2=UINT8(GAME_stcui8nTile>>1);
-
-				for(UINT8 ui8ilocal=0;ui8ilocal<GAME_stcui8nDifficulty;++ui8ilocal){
-					CAUTO					cui8ilocal2_destination=UINT8(stui8Random<cui8npair2>()<<1);
-					CAUTO					cui8ilocal2_source=UINT8(stui8Random<cui8npair2>()<<1);
-					CAUTO					cui8itile_source0=aui8itile[cui8ilocal2_source+0];
-					CAUTO					cui8itile_source1=aui8itile[cui8ilocal2_source+1];
-
-					aui8itile[cui8ilocal2_source+0]=aui8itile[cui8ilocal2_destination+0];
-					aui8itile[cui8ilocal2_source+1]=aui8itile[cui8ilocal2_destination+1];
-					aui8itile[cui8ilocal2_destination+0]=cui8itile_source0;
-					aui8itile[cui8ilocal2_destination+1]=cui8itile_source1;
-				}
-			}
-			//	配置情報に従って置き場所を決め、
-			//	「設置して良いかどうか」を、左右の空き、下層の牌有無で判定。
-			//	2牌1組で置き場所を決めるのがミソ。
-			//	「処理が進まないと配置出来ない」位置もあるため、
-			//	配置ループは数度回る事が前提。
-			ui8itile=0;
-			while(ui8itile<GAME_stcui8nTile){
-				//	UINT8					cui8itile_start
-				//		配置ループ開始前の「牌番号」を保持します。
-				//		「進捗有無」判定に使います。
-				CAUTO					cui8itile_start=ui8itile;
-
-				for(UINT8 ui8ilocal=0;ui8ilocal<GAME_stcui8nTile;++ui8ilocal){
-					UINT8					ui8ilocal0,ui8ix0,ui8iy0,ui8ilayer0;
-					UINT8					ui8ilocal1,ui8ix1,ui8iy1,ui8ilayer1;
-					UINT8					ui8ndistance;
-
-					//	ここから実配置開始。
-					//	恐らく、ループは一度で完了しない。
-					//	とりあえず「配置可能」の候補2つをゲットする。
-					//	「左右空きが大きい」方から埋めていく事で「追加配置不可」の状況を起きにくくする。
-					ui8ilocal0=ui8ilocal;
-					cfp_searchpair(ui8ilocal0,ui8ix0,ui8iy0,ui8ilayer0,ui8ilocal1,ui8ix1,ui8iy1,ui8ilayer1,ui8ndistance);
-					if(ui8ilocal1<GAME_stcui8nTile){
-						{
-							UINT8					ui8ilocal0d,ui8ix0d,ui8iy0d,ui8ilayer0d;
-							UINT8					ui8ilocal1d,ui8ix1d,ui8iy1d,ui8ilayer1d;
-							UINT8					ui8ndistanced;
-
-							ui8ilocal0d=ui8ilocal1+1;
-							cfp_searchpair(ui8ilocal0d,ui8ix0d,ui8iy0d,ui8ilayer0d,ui8ilocal1d,ui8ix1d,ui8iy1d,ui8ilayer1d,ui8ndistanced);
-							if(ui8ilocal1d<GAME_stcui8nTile){
-								if(ui8ndistance<ui8ndistanced){
-									ui8ilocal0=		ui8ilocal0d;
-									ui8ix0=			ui8ix0d;
-									ui8iy0=			ui8iy0d;
-									ui8ilayer0=		ui8ilayer0d;
-									ui8ilocal1=		ui8ilocal1d;
-									ui8ix1=			ui8ix1d;
-									ui8iy1=			ui8iy1d;
-									ui8ilayer1=		ui8ilayer1d;
-									ui8ndistance=	ui8ndistanced;
-								}
-							}
-						}
-						//	無事牌2つ目も「配置可能」で確定できたので、処理済みにマーク
-						aui8iarrange[ui8ilocal0]=GAME_stcui8iTileUndefined;
-						aui8iarrange[ui8ilocal1]=GAME_stcui8iTileUndefined;
+	static VOID				stInitialize(CUINT8 cui8ilayout,CUINT32 cui32cseed,CUINT8 cui8ndifficulty)noexcept{
+		stArrange(cui8ilayout,cui32cseed,cui8ndifficulty);
 #ifdef SHOWARRANGEPROGRESS
-						GAME_stWriteTile(ui8ix0,ui8iy0,ui8ilayer0,aui8itile[ui8itile],TRUE);++ui8itile;
-						GAME_stWriteTile(ui8ix1,ui8iy1,ui8ilayer1,aui8itile[ui8itile],TRUE);++ui8itile;
 #else
-						GAME_stWriteTile4(ui8ix0,ui8iy0,ui8ilayer0,UINT16(aui8itile[ui8itile]),TRUE);++ui8itile;
-						GAME_stWriteTile4(ui8ix1,ui8iy1,ui8ilayer1,UINT16(aui8itile[ui8itile]),TRUE);++ui8itile;
+		SCREEN_stDraw();
 #endif
-						ui8ilocal=ui8ilocal1;
-					}
-				}
-				if(ui8itile==cui8itile_start){
-					//	ここに至ったという事は進捗ゼロであったという事。
-					//	不幸にも「追加配置不可」の状況に陥った。
-					break;
-				}
-			}
-		}while(ui8itile<GAME_stcui8nTile);
+		MOUSE_stSetBusy(FALSE);
 		return;
 	}
-	//	VOID					GAME_stWriteTile(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,CUINT8 cui8itile,COFWBOOL ceupdate)
-	//		牌の配置状況「GAME_staaaui16cTile」に対し、
+	//	VOID					stCheckProgressive(VOID)
+	//		「取れる牌が残っているか」、つまり「ゲームオーバーでないか」のチェックを行い、
+	//		状態を更新します。
+	static VOID				stCheckProgressive(VOID)noexcept{
+		OFWBOOL					aeselectable[stcui8nTile>>2];
+
+		for(AUTO& eselectable:aeselectable)eselectable=FALSE;
+		for(UINT8 ui8itile=0;ui8itile<stcui8nTile;++ui8itile){
+			CAUTO					acui8iposition=stpcacui8iPositionCurrent[ui8itile];
+			CAUTO					cui8ix=acui8iposition[0];
+			CAUTO					cui8iy=acui8iposition[1];
+			CAUTO					cui8ilayer=acui8iposition[2];
+
+			if(
+				CAUTO					cui8itile=UINT8(staaaui16cTile[cui8ilayer][cui8iy][cui8ix]&0xff);
+				cui8itile
+			)if(steIsSelectable(cui8ix,cui8iy,cui8ilayer)){
+				AUTO&					eselectable=aeselectable[stui8iGetTileGroup(cui8itile)>>2];
+
+				if(eselectable)return;
+				eselectable=TRUE;
+			}
+		}
+		steProgressive=FALSE;
+		return;
+	}
+	static OFWBOOL			steIsProgressive(VOID)noexcept{
+		return steProgressive;
+	}
+	//	VOID					stWriteTile(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,CUINT8 cui8itile,COFWBOOL ceupdate)
+	//		牌の配置状況「staaaui16cTile」に対し、
 	//		横「cui8ix」、縦「cui8iy」、高さ「cui8ilayer」で通し番号「cui8itile」の牌を設定します。
 	//		「cui8itile」を「0」で呼び出すと、牌が除去されます。
 	//		牌設定、除去共に「2x2」単位で処理を行うので田の字4回呼び出しは不要です。
 	//		「ceupdate」に「TRUE」を指定すると表示更新も行います。
-	static VOID				GAME_stWriteTile(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,CUINT8 cui8itile,COFWBOOL ceupdate=TRUE)noexcept{
+	static VOID				stWriteTile(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,CUINT8 cui8itile,COFWBOOL ceupdate=TRUE)noexcept{
 		if(cui8itile){
-			GAME_stWriteTile4(cui8ix,cui8iy,cui8ilayer,UINT16(cui8itile),TRUE);
+			stWriteTile4(cui8ix,cui8iy,cui8ilayer,UINT16(cui8itile),TRUE);
 			if(ceupdate)SCREEN_stDraw(cui8ix,cui8iy,cui8ilayer);
 		}else{
 			if(
-				AUTO					ui16ctile=GAME_staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
+				AUTO					ui16ctile=staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
 				ui16ctile
 			){
 				AUTO					ui8ix=cui8ix,ui8iy=cui8iy;
 
-				GAME_stAdjustPosition(ui8ix,ui8iy,ui16ctile);
-				GAME_stWriteTile4(ui8ix,ui8iy,cui8ilayer,0x0000,FALSE);
+				stAdjustPosition(ui8ix,ui8iy,ui16ctile);
+				stWriteTile4(ui8ix,ui8iy,cui8ilayer,0x0000,FALSE);
 				if(ceupdate)SCREEN_stDraw(ui8ix,ui8iy,cui8ilayer);
 			}
 		}
 		return;
 	}
-	static OFWBOOL			GAME_steIsSelectable(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
+	static OFWBOOL			steIsSelectable(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
 		if(
-			AUTO					ui16ctile=GAME_staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
+			AUTO					ui16ctile=staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
 			ui16ctile
 		){
 			AUTO					ui8ix=cui8ix,ui8iy=cui8iy;
 
-			GAME_stAdjustPosition(ui8ix,ui8iy,ui16ctile);
+			stAdjustPosition(ui8ix,ui8iy,ui16ctile);
 			if(
-				(cui8ilayer+1<GAME_stcui8nLayer)?(
-					(GAME_staaaui16cTile[cui8ilayer+1][cui8iy+0][cui8ix+0]==0x0000)&&
-					(GAME_staaaui16cTile[cui8ilayer+1][cui8iy+0][cui8ix+1]==0x0000)&&
-					(GAME_staaaui16cTile[cui8ilayer+1][cui8iy+1][cui8ix+0]==0x0000)&&
-					(GAME_staaaui16cTile[cui8ilayer+1][cui8iy+1][cui8ix+1]==0x0000)
+				(cui8ilayer+1<stcui8nLayer)?(
+					(staaaui16cTile[cui8ilayer+1][cui8iy+0][cui8ix+0]==0x0000)&&
+					(staaaui16cTile[cui8ilayer+1][cui8iy+0][cui8ix+1]==0x0000)&&
+					(staaaui16cTile[cui8ilayer+1][cui8iy+1][cui8ix+0]==0x0000)&&
+					(staaaui16cTile[cui8ilayer+1][cui8iy+1][cui8ix+1]==0x0000)
 				):TRUE
 			)return OFWBOOL((2<=ui8ix)?(
-				(GAME_staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix-1]==0x0000)&&
-				(GAME_staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix-1]==0x0000)
-			):TRUE)||OFWBOOL((ui8ix+2<GAME_stcui8nWidth)?(
-				(GAME_staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+2]==0x0000)&&
-				(GAME_staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+2]==0x0000)
+				(staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix-1]==0x0000)&&
+				(staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix-1]==0x0000)
+			):TRUE)||OFWBOOL((ui8ix+2<stcui8nWidth)?(
+				(staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+2]==0x0000)&&
+				(staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+2]==0x0000)
 			):TRUE);
 		}
 		return FALSE;
 	}
-	static VOID				GAME_stSelectTile(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,COFWBOOL ceselected,COFWBOOL ceupdate=TRUE)noexcept{
+	static VOID				stSelectTile(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,COFWBOOL ceselected,COFWBOOL ceupdate=TRUE)noexcept{
 		if(
-			AUTO					ui16ctile=GAME_staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
+			AUTO					ui16ctile=staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
 			ui16ctile
 		){
 			AUTO					ui8ix=cui8ix,ui8iy=cui8iy;
 
-			GAME_stAdjustPosition(ui8ix,ui8iy,ui16ctile);
-			GAME_stWriteTile4(
+			stAdjustPosition(ui8ix,ui8iy,ui16ctile);
+			stWriteTile4(
 				ui8ix,ui8iy,cui8ilayer,
-				ceselected?(ui16ctile|GAME_stcui16cTileSelectedMask):(ui16ctile&~GAME_stcui16cTileSelectedMask),
+				ceselected?(ui16ctile|stcui16cTileSelectedMask):(ui16ctile&~stcui16cTileSelectedMask),
 				TRUE
 			);
 			if(ceupdate)SCREEN_stDrawFace(ui8ix,ui8iy,cui8ilayer);
 		}
 		return;
 	}
-	static _INLINE_ UINT16	GAME_stui16cGetTile(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
+	static _INLINE_ UINT16	stui16cGetTile(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
 #ifdef SHOWARRANGEPROGRESS
 		CAUTO					cui16ctile=GAME_staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
 
 		return ((cui16ctile&0xff)!=GAME_stcui8iTileUndefined)?cui16ctile:0x0000;
 #else
-		return GAME_staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
+		return staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
 #endif
 	}
-	static UINT16			GAME_stui16cGetTilebyScreenPosition(UINT8& ui8ix,UINT8& ui8iy,UINT8& ui8ilayer,CVECTOR2& cv2iposition)noexcept{
+	static UINT16			stui16cGetTilebyScreenPosition(UINT8& ui8ix,UINT8& ui8iy,UINT8& ui8ilayer,CVECTOR2& cv2iposition)noexcept{
 		//	通常高さでのチェック
-		for(UINT8 ui8ilayer1=GAME_stcui8nLayer;0<ui8ilayer1;--ui8ilayer1){
+		for(UINT8 ui8ilayer1=stcui8nLayer;0<ui8ilayer1;--ui8ilayer1){
 			CAUTO				cui8ilayer=UINT8(ui8ilayer1-1);
 
 			if(
 				CAUTO					cv2ipoint=cv2iposition+SCREEN_stv2dGetOffset(INT8(cui8ilayer));
 				(0<=cv2ipoint.i16iX())&&
-				(cv2ipoint.i16iX()<INT16(GAME_stcui8nWidth)*INT16(IMAGE_stcui8nUnitWidth))&&
+				(cv2ipoint.i16iX()<INT16(stcui8nWidth)*INT16(IMAGE_stcui8nUnitWidth))&&
 				(0<=cv2ipoint.i16iY())&&
-				(cv2ipoint.i16iY()<INT16(GAME_stcui8nHeight)*INT16(IMAGE_stcui8nUnitHeight))
+				(cv2ipoint.i16iY()<INT16(stcui8nHeight)*INT16(IMAGE_stcui8nUnitHeight))
 			){
-				ui8ix=UINT8(cv2ipoint.i16iX()/USER::IMAGE_stcui8nUnitWidth);
-				ui8iy=stui8Divide24(UINT16(cv2ipoint.i16iY()));
-				for(UINT8 ui8ilayer1_over=GAME_stcui8nLayer;cui8ilayer<ui8ilayer1_over;--ui8ilayer1_over){
+				ui8ix=UINT8(cv2ipoint.i16iX()/GAME::IMAGE_stcui8nUnitWidth);
+				ui8iy=COMMON::stui8Divide24(UINT16(cv2ipoint.i16iY()));
+				for(UINT8 ui8ilayer1_over=stcui8nLayer;cui8ilayer<ui8ilayer1_over;--ui8ilayer1_over){
 					ui8ilayer=UINT8(ui8ilayer1_over-1);
 					if(
-						AUTO					ui16ctile=GAME_staaaui16cTile[ui8ilayer][ui8iy][ui8ix];
+						AUTO					ui16ctile=staaaui16cTile[ui8ilayer][ui8iy][ui8ix];
 						ui16ctile
 					){
-						GAME_stAdjustPosition(ui8ix,ui8iy,ui16ctile);
+						stAdjustPosition(ui8ix,ui8iy,ui16ctile);
 						return ui16ctile;
 					}
 				}
@@ -531,21 +409,31 @@ public:
 		if(
 			CAUTO					cv2ipoint=cv2iposition+SCREEN_stv2dGetOffset(-1);
 			(0<=cv2ipoint.i16iX())&&
-			(cv2ipoint.i16iX()<INT16(GAME_stcui8nWidth)*INT16(IMAGE_stcui8nUnitWidth))&&
+			(cv2ipoint.i16iX()<INT16(stcui8nWidth)*INT16(IMAGE_stcui8nUnitWidth))&&
 			(0<=cv2ipoint.i16iY())&&
-			(cv2ipoint.i16iY()<INT16(GAME_stcui8nHeight)*INT16(IMAGE_stcui8nUnitHeight))
+			(cv2ipoint.i16iY()<INT16(stcui8nHeight)*INT16(IMAGE_stcui8nUnitHeight))
 		){
-			ui8ix=UINT8(cv2ipoint.i16iX()/USER::IMAGE_stcui8nUnitWidth);
-			ui8iy=stui8Divide24(UINT16(cv2ipoint.i16iY()));
+			ui8ix=UINT8(cv2ipoint.i16iX()/GAME::IMAGE_stcui8nUnitWidth);
+			ui8iy=COMMON::stui8Divide24(UINT16(cv2ipoint.i16iY()));
 			if(
-				AUTO					ui16ctile=GAME_staaaui16cTile[0][ui8iy][ui8ix];
+				AUTO					ui16ctile=staaaui16cTile[0][ui8iy][ui8ix];
 				ui16ctile
 			){
-				GAME_stAdjustPosition(ui8ix,ui8iy,ui16ctile);
+				stAdjustPosition(ui8ix,ui8iy,ui16ctile);
 				return ui16ctile;
 			}
 		}
 		return 0x0000;
+	}
+	static constexpr UINT8	stui8iGetTileGroup(CUINT8 cui8itile)noexcept{
+		return (UINT8(cui8itile)-1)&~3;
+	}
+	static _INLINE_ MOUSESTATE	MOUSE_ststatGetState(VOID)noexcept{
+		return MOUSE_ststatState;
+	}
+	static _INLINE_ VOID	MOUSE_stSetBusy(COFWBOOL cebusy)noexcept{
+		MOUSE_ststatState.eBusy=cebusy;
+		return;
 	}
 	static _INLINE_ VECTOR2	SCREEN_stv2dGetOffset(CINT8 ci8ilayer)noexcept{
 		return {
@@ -555,17 +443,29 @@ public:
 	}
 	static VECTOR2			SCREEN_stv2iGetPosition(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
 		return VECTOR2(
-			INT16(cui8ix)*INT16(USER::IMAGE_stcui8nUnitWidth),
-			INT16(cui8iy)*INT16(USER::IMAGE_stcui8nUnitHeight)
+			INT16(cui8ix)*INT16(GAME::IMAGE_stcui8nUnitWidth),
+			INT16(cui8iy)*INT16(GAME::IMAGE_stcui8nUnitHeight)
 		)-SCREEN_stv2dGetOffset(INT8(cui8ilayer));
+	}
+	static _INLINE_ VOID	SCREEN_stClear(VOID)noexcept{
+		SCREEN_stClear({VECTOR2::stv2ImmediateZero(),GRAPHIC::stcv2nScreen});
+		return;
+	}
+	static _INLINE_ VOID	SCREEN_stClear(GRAPHIC::CSHAPE& cshpsource)noexcept{
+#ifdef SHOWBACKBITMAP
+		GRAPHIC::stCopyRect(IMAGE_stccvsBack,cshpsource,cshpsource.v2iPosition);
+#else
+		GRAPHIC::stFillRect(stcui16cColorBack,cshpsource);
+#endif
+		return;
 	}
 	//	VOID					SCREEN_stDraw(VOID)
 	//		全画面更新します。
 	//		残念な事に遅いので、初期表示時以外は位置指定するようにしてください。
 	static VOID				SCREEN_stDraw(VOID)noexcept{
-		for(UINT8 ui8iy=0;ui8iy<GAME_stcui8nHeight+2;++ui8iy){
-			for(UINT8 ui8ix=0;ui8ix<GAME_stcui8nWidth+2;++ui8ix){
-				SCREEN_stDraw_Layered(ui8ix,ui8iy,GAME_stcui8nLayer-1);
+		for(UINT8 ui8iy=0;ui8iy<stcui8nHeight+2;++ui8iy){
+			for(UINT8 ui8ix=0;ui8ix<stcui8nWidth+2;++ui8ix){
+				SCREEN_stDraw_Layered(ui8ix,ui8iy,stcui8nLayer-1);
 			}
 		}
 		return;
@@ -580,10 +480,10 @@ public:
 		AUTO					ui8iy=cui8iy;
 
 		//	もし牌があるなら左上起点になるよう補正
-		if((cui8ix<GAME_stcui8nWidth)&&(cui8iy<GAME_stcui8nHeight))if(
-			AUTO					ui16ctile=GAME_stui16cGetTile(cui8ix,cui8iy,cui8ilayer);
+		if((cui8ix<stcui8nWidth)&&(cui8iy<stcui8nHeight))if(
+			AUTO					ui16ctile=stui16cGetTile(cui8ix,cui8iy,cui8ilayer);
 			ui16ctile
-		)GAME_stAdjustPosition(ui8ix,ui8iy,ui16ctile);
+		)stAdjustPosition(ui8ix,ui8iy,ui16ctile);
 		//	横っ面と影で右「(4+8)*(段番号+1)」ドット、下「(8+8)*(段番号+1)」ドット拡大があるので、
 		//	その表示範囲をカバーすべく、処理範囲を決定。
 		{
@@ -614,11 +514,11 @@ public:
 		AUTO					ui8iy=cui8iy;
 
 		//	もし牌があるなら左上起点になるよう補正
-		if((cui8ix<GAME_stcui8nWidth)&&(cui8iy<GAME_stcui8nHeight))if(
-			AUTO					ui16ctile=GAME_stui16cGetTile(cui8ix,cui8iy,cui8ilayer);
+		if((cui8ix<stcui8nWidth)&&(cui8iy<stcui8nHeight))if(
+			AUTO					ui16ctile=stui16cGetTile(cui8ix,cui8iy,cui8ilayer);
 			ui16ctile
 		){
-			GAME_stAdjustPosition(ui8ix,ui8iy,ui16ctile);
+			stAdjustPosition(ui8ix,ui8iy,ui16ctile);
 			SCREEN_stDraw_Layered(ui8ix,ui8iy,cui8ilayer);
 			SCREEN_stDraw_Layered(ui8ix+1,ui8iy,cui8ilayer);
 			SCREEN_stDraw_Layered(ui8ix,ui8iy+1,cui8ilayer);
@@ -626,18 +526,611 @@ public:
 		}
 		return;
 	}
-private:
-	static UINT8			stui8Divide24(CUINT16 cui16source)noexcept{
-		//	「384/24=16」程度が得られれば良い。
-		//	n*11/256
-		CAUTO					cui8result=UINT8((cui16source*11)>>8);
+	template<CUINT16 DCLASS_cui16nWidth,CUINT16 DCLASS_cui16nHeight>
+	static _INLINE_ VOID	OFF_stDrawBack(CANVAS_RGB_RAM<DCLASS_cui16nWidth,DCLASS_cui16nHeight>& cvsthis,CVECTOR2& cv2iposition_screen)noexcept{
+		using					DCLASS=CANVAS_RGB_RAM<DCLASS_cui16nWidth,DCLASS_cui16nHeight>;
 
-		if(cui16source<UINT16(cui8result)*24)return cui8result-1;
-		return cui8result;
+#ifdef SHOWBACKBITMAP
+		cvsthis.CopyRect(
+			IMAGE_stccvsBack,
+			{cv2iposition_screen,DCLASS::stcv2nSize},
+			VECTOR2::stv2ImmediateZero()
+		);
+#else
+		ccvsthis.Fill(stcui16cColorBack);
+#endif
+		return;
 	}
-	template<CUINT8 cui8nRange>
-	static UINT8			stui8Random(VOID)noexcept{
-		return UINT8(((OS::LFSR_stui16Read()&0xff)*UINT16(cui8nRange))>>8);
+private:
+	static VOID				stClear(VOID)noexcept{
+		stui8nTileRest=0;
+		SELECT_eSelected=FALSE;
+		STD::stFill(staaaui16cTile,SIZEOF(staaaui16cTile),0x00);
+		steProgressive=FALSE;
+		return;
+	}
+	static VOID				stArrange(CUINT8 cui8ilayout,CUINT32 cui32cseed,CUINT8 cui8ndifficulty)noexcept{
+		//	UINT8					staaacui8iposition[][144][3]
+		//		牌の配置を保持します。
+		//		「{横,縦,高さ}」を単位として、牌144ヶ分あります。
+		static constexpr UINT8	staaacui8iposition[stcui8nLayout][stcui8nTile][3]={
+			//	配置「龍」
+			{
+				//	第1層
+				          { 2, 0,0},{ 4, 0,0},{ 6, 0,0},{ 8, 0,0},{10, 0,0},{12, 0,0},{14, 0,0},{16, 0,0},{18, 0,0},{20, 0,0},{22, 0,0},{24, 0,0},
+				                              { 6, 2,0},{ 8, 2,0},{10, 2,0},{12, 2,0},{14, 2,0},{16, 2,0},{18, 2,0},{20, 2,0},
+				                    { 4, 4,0},{ 6, 4,0},{ 8, 4,0},{10, 4,0},{12, 4,0},{14, 4,0},{16, 4,0},{18, 4,0},{20, 4,0},{22, 4,0},
+				          { 2, 6,0},{ 4, 6,0},{ 6, 6,0},{ 8, 6,0},{10, 6,0},{12, 6,0},{14, 6,0},{16, 6,0},{18, 6,0},{20, 6,0},{22, 6,0},{24, 6,0},
+				{ 0, 7,0},{ 2, 8,0},{ 4, 8,0},{ 6, 8,0},{ 8, 8,0},{10, 8,0},{12, 8,0},{14, 8,0},{16, 8,0},{18, 8,0},{20, 8,0},{22, 8,0},{24, 8,0},{26, 7,0},{28, 7,0},
+				                    { 4,10,0},{ 6,10,0},{ 8,10,0},{10,10,0},{12,10,0},{14,10,0},{16,10,0},{18,10,0},{20,10,0},{22,10,0},
+				                              { 6,12,0},{ 8,12,0},{10,12,0},{12,12,0},{14,12,0},{16,12,0},{18,12,0},{20,12,0},
+				          { 2,14,0},{ 4,14,0},{ 6,14,0},{ 8,14,0},{10,14,0},{12,14,0},{14,14,0},{16,14,0},{18,14,0},{20,14,0},{22,14,0},{24,14,0},
+				//	第2層
+				                                        { 8, 2,1},{10, 2,1},{12, 2,1},{14, 2,1},{16, 2,1},{18, 2,1},
+				                                        { 8, 4,1},{10, 4,1},{12, 4,1},{14, 4,1},{16, 4,1},{18, 4,1},
+				                                        { 8, 6,1},{10, 6,1},{12, 6,1},{14, 6,1},{16, 6,1},{18, 6,1},
+				                                        { 8, 8,1},{10, 8,1},{12, 8,1},{14, 8,1},{16, 8,1},{18, 8,1},
+				                                        { 8,10,1},{10,10,1},{12,10,1},{14,10,1},{16,10,1},{18,10,1},
+				                                        { 8,12,1},{10,12,1},{12,12,1},{14,12,1},{16,12,1},{18,12,1},
+				//	第3層
+				                                                  {10, 4,2},{12, 4,2},{14, 4,2},{16, 4,2},
+				                                                  {10, 6,2},{12, 6,2},{14, 6,2},{16, 6,2},
+				                                                  {10, 8,2},{12, 8,2},{14, 8,2},{16, 8,2},
+				                                                  {10,10,2},{12,10,2},{14,10,2},{16,10,2},
+				//	第4層
+				                                                            {12, 6,3},{14, 6,3},
+				                                                            {12, 8,3},{14, 8,3},
+				//	第5層
+				                                                                 {13, 7,4}
+			},
+			//	配置「虎」
+			{
+				//	第1層
+				                         { 5, 0,0},{ 7, 0,0},{ 9, 0,0},{11, 0,0},
+				                                             { 9, 2,0},{11, 2,0},{13, 2,0},{15, 2,0},{17, 2,0},
+				                         { 5, 4,0},{ 7, 4,0},{ 9, 4,0},{11, 4,0},{13, 4,0},{15, 4,0},{17, 4,0},{19, 4,0},{21, 4,0},{23, 4,0},          {27, 3,0},
+				               { 3, 6,0},{ 5, 6,0},{ 7, 6,0},{ 9, 6,0},{11, 6,0},{13, 6,0},{15, 6,0},{17, 6,0},{19, 6,0},{21, 6,0},{23, 6,0},{25, 6,0},{27, 5,0},
+				     { 1, 7,0},{ 3, 8,0},{ 5, 8,0},{ 7, 8,0},{ 9, 8,0},{11, 8,0},{13, 8,0},{15, 8,0},{17, 8,0},{19, 8,0},{21, 8,0},{23, 8,0},{25, 8,0},{27, 7,0},
+				     { 1, 9,0},          { 5,10,0},{ 7,10,0},{ 9,10,0},{11,10,0},{13,10,0},{15,10,0},{17,10,0},{19,10,0},{21,10,0},{23,10,0},
+				     { 1,11,0},                                        {11,12,0},{13,12,0},{15,12,0},{17,12,0},{19,12,0},
+				                                                                                     {17,14,0},{19,14,0},{21,14,0},{23,14,0},
+				//	第2層
+				                                                                 {13, 2,1},{15, 2,1},
+				                                             { 9, 4,1},{11, 4,1},{13, 4,1},{15, 4,1},{17, 4,1},{19, 4,1},
+				                                   { 7, 6,1},{ 9, 6,1},{11, 6,1},{13, 6,1},{15, 6,1},{17, 6,1},{19, 6,1},{21, 6,1},
+				                         { 5, 7,1},{ 7, 8,1},{ 9, 8,1},{11, 8,1},{13, 8,1},{15, 8,1},{17, 8,1},{19, 8,1},{21, 8,1},{23, 7,1},
+				                                             { 9,10,1},{11,10,1},{13,10,1},{15,10,1},{17,10,1},{19,10,1},
+				                                                                 {13,12,1},{15,12,1},
+				//	第3層
+				                                                                      {14, 2,2},
+				                                                       {11, 4,2},{13, 4,2},{15, 4,2},{17, 4,2},
+				                                             { 9, 6,2},{11, 6,2},{13, 6,2},{15, 6,2},{17, 6,2},{19, 6,2},
+				                                   { 7, 7,2},{ 9, 8,2},{11, 8,2},{13, 8,2},{15, 8,2},{17, 8,2},{19, 8,2},{21, 7,2},
+				                                                       {11,10,2},{13,10,2},{15,10,2},{17,10,2},
+				                                                                      {14,12,2},
+				//	第4層
+				                                                                 {13, 4,3},{15, 4,3},
+				                                                       {11, 6,3},{13, 6,3},{15, 6,3},{17, 6,3},
+				                                             { 9, 7,3},{11, 8,3},{13, 8,3},{15, 8,3},{17, 8,3},{19, 7,3},
+				                                                                 {13,10,3},{15,10,3},
+				//	第5層
+				                                                                      {14, 5,4},
+				                                                                 {13, 7,4},{15, 7,4},
+				                                                                      {14, 9,4}
+			},
+			//	配置「サソリ」
+			{
+				//	第1層
+				          { 2, 1,0},{ 4, 1,0},{ 6, 1,0},{ 8, 1,0},{10, 1,0},{12, 1,0},{14, 1,0},{16, 1,0},{18, 1,0},{20, 1,0},{22, 1,0},{24, 1,0},{26, 1,0},
+				{ 0, 2,0},{ 2, 3,0},{ 4, 3,0},{ 6, 3,0},{ 8, 3,0},{10, 3,0},{12, 3,0},{14, 3,0},{16, 3,0},{18, 3,0},{20, 3,0},{22, 3,0},{24, 3,0},{26, 3,0},{28, 2,0},
+				                    { 4, 5,0},{ 6, 5,0},{ 8, 5,0},{10, 5,0},{12, 5,0},{14, 5,0},{16, 5,0},{18, 5,0},{20, 5,0},{22, 5,0},{24, 5,0},
+				                              { 6, 7,0},{ 8, 7,0},{10, 7,0},{12, 7,0},{14, 7,0},{16, 7,0},{18, 7,0},{20, 7,0},{22, 7,0},
+				                                        { 8, 9,0},{10, 9,0},{12, 9,0},{14, 9,0},{16, 9,0},{18, 9,0},{20, 9,0},
+				                                                  {10,11,0},{12,11,0},{14,11,0},{16,11,0},{18,11,0},
+				          { 2,13,0},{ 4,13,0},{ 6,13,0},{ 8,13,0},{10,13,0},{12,13,0},{14,13,0},{16,13,0},{18,13,0},{20,13,0},{22,13,0},{24,13,0},{26,13,0},
+				//	第2層
+				                              { 6, 1,1},{ 8, 1,1},{10, 1,1},{12, 1,1},{14, 1,1},{16, 1,1},{18, 1,1},{20, 1,1},{22, 1,1},
+				                    { 4, 2,1},{ 6, 3,1},{ 8, 3,1},{10, 3,1},{12, 3,1},{14, 3,1},{16, 3,1},{18, 3,1},{20, 3,1},{22, 3,1},{24, 2,1},
+				                                        { 8, 5,1},{10, 5,1},{12, 5,1},{14, 5,1},{16, 5,1},{18, 5,1},{20, 5,1},
+				                                                  {10, 7,1},{12, 7,1},{14, 7,1},{16, 7,1},{18, 7,1},
+				                                                            {12, 9,1},{14, 9,1},{16, 9,1},
+				
+				          { 2,13,1},{ 4,13,1},{ 6,13,1},{ 8,13,1},{10,13,1},{12,13,1},{14,13,1},{16,13,1},{18,13,1},{20,13,1},{22,13,1},{24,13,1},{26,13,1},
+				//	第3層
+				                                        { 8, 1,2},{10, 1,2},{12, 1,2},{14, 1,2},{16, 1,2},{18, 1,2},{20, 1,2},
+				                                                  {10, 3,2},{12, 3,2},{14, 3,2},{16, 3,2},{18, 3,2},
+				                                                            {12, 5,2},{14, 5,2},{16, 5,2},
+				                                                                 {13, 7,2},{15, 7,2},
+				//	第4層
+				                                                            {12, 1,3},{14, 1,3},{16, 1,3},
+				                                                                 {13, 3,3},{15, 3,3},
+
+				                                                                      {14, 2,4}
+			},
+			//	配置「猿」
+			{
+				//	第1層
+				                                                  {10, 0,0},{12, 0,0},{14, 0,0},{16, 0,0},{18, 0,0},
+				                              { 6, 2,0},{ 8, 1,0},{10, 2,0},{12, 2,0},{14, 2,0},{16, 2,0},{18, 2,0},{20, 1,0},{22, 2,0},
+				          { 2, 4,0},{ 4, 3,0},          { 8, 3,0},{10, 4,0},{12, 4,0},{14, 4,0},{16, 4,0},{18, 4,0},{20, 3,0},          {24, 3,0},{26, 4,0},
+				{ 0, 5,0},{ 2, 6,0},{ 4, 5,0},{ 6, 6,0},{ 8, 5,0},{10, 6,0},{12, 6,0},{14, 6,0},{16, 6,0},{18, 6,0},{20, 5,0},{22, 6,0},{24, 5,0},{26, 6,0},{28, 5,0},
+				{ 0, 7,0},{ 2, 8,0},{ 4, 7,0},{ 6, 8,0},{ 8, 7,0},{10, 8,0},{12, 8,0},{14, 8,0},{16, 8,0},{18, 8,0},{20, 7,0},{22, 8,0},{24, 7,0},{26, 8,0},{28, 7,0},
+				{ 0, 9,0},{ 2,10,0},{ 4, 9,0},          { 8, 9,0},{10,10,0},{12,10,0},{14,10,0},{16,10,0},{18,10,0},{20, 9,0},          {24, 9,0},{26,10,0},{28, 9,0},
+				                    { 4,11,0},{ 6,12,0},{ 8,11,0},{10,12,0},{12,12,0},{14,12,0},{16,12,0},{18,12,0},{20,11,0},{22,12,0},{24,11,0},
+				                                        { 8,13,0},{10,14,0},{12,14,0},{14,14,0},{16,14,0},{18,14,0},{20,13,0},
+				//	第2層
+				                                                                      {14, 1,1},
+				                                                  {10, 3,1},{12, 2,1},{14, 3,1},{16, 2,1},{18, 3,1},
+				                                                  {10, 5,1},{12, 4,1},{14, 5,1},{16, 4,1},{18, 5,1},
+				          { 2, 7,1},{ 4, 7,1},{ 6, 7,1},{ 8, 6,1},{10, 7,1},{12, 6,1},{14, 7,1},{16, 6,1},{18, 7,1},{20, 6,1},{22, 7,1},{24, 7,1},{26, 7,1},
+				                                        { 8, 8,1},{10, 9,1},{12, 8,1},{14, 9,1},{16, 8,1},{18, 9,1},{20, 8,1},
+				                                                  {10,11,1},{12,10,1},{14,11,1},{16,10,1},{18,11,1},
+				                                                            {12,12,1},{14,13,1},{16,12,1},
+				//	第3層
+				                                                                 {13, 5,2},{15, 5,2},
+				                                             { 9, 7,2},{11, 6,2},{13, 7,2},{15, 7,2},{17, 6,2},{19, 7,2},
+				                                                       {11, 8,2},{13, 9,2},{15, 9,2},{17, 8,2},
+				//	第4層
+				                                                                 {13, 6,3},{15, 6,3},
+				                                                       {11, 7,3},{13, 8,3},{15, 8,3},{17, 7,3},
+				//	第5層
+				                                                                      {14, 7,4}
+			},
+			//	配置「蛇」
+			{
+				//	第1層
+				               { 3, 0,0},{ 5, 0,0},{ 7, 0,0},{ 9, 0,0},{11, 0,0},{13, 0,0},{15, 0,0},{17, 0,0},{19, 0,0},{21, 0,0},{23, 0,0},{25, 0,0},
+				               { 3, 2,0},{ 5, 2,0},{ 7, 2,0},{ 9, 2,0},{11, 2,0},
+				               { 3, 4,0},                    { 9, 4,0},{11, 4,0},
+				               { 3, 6,0},{ 5, 6,0},{ 7, 6,0},{ 9, 6,0},{11, 6,0},{13, 6,0},{15, 6,0},{17, 6,0},{19, 6,0},{21, 6,0},{23, 6,0},{25, 6,0},
+				               { 3, 8,0},{ 5, 8,0},{ 7, 8,0},{ 9, 8,0},{11, 8,0},{13, 8,0},{15, 8,0},{17, 8,0},{19, 8,0},{21, 8,0},{23, 8,0},{25, 8,0},
+				                                                                                     {17,10,0},{19,10,0},                    {25,10,0},
+				                                                                                     {17,12,0},{19,12,0},{21,12,0},{23,12,0},{25,12,0},
+				               { 3,14,0},{ 5,14,0},{ 7,14,0},{ 9,14,0},{11,14,0},{13,14,0},{15,14,0},{17,14,0},{19,14,0},{21,14,0},{23,14,0},{25,14,0},
+				//	第2層
+				               { 3, 0,1},{ 5, 0,1},{ 7, 0,1},{ 9, 0,1},
+				               { 3, 2,1},{ 5, 2,1},{ 7, 2,1},{ 9, 2,1},{11, 2,1},
+				                                             { 9, 4,1},{11, 4,1},
+				                         { 5, 6,1},          { 9, 6,1},{11, 6,1},{13, 6,1},{15, 6,1},{17, 6,1},{19, 6,1},          {23, 6,1},
+				               { 3, 7,1},{ 5, 8,1},{ 7, 7,1},{ 9, 8,1},{11, 8,1},{13, 8,1},{15, 8,1},{17, 8,1},{19, 8,1},{21, 7,1},{23, 8,1},{25, 7,1},
+				                                                                                     {17,10,1},{19,10,1},
+				                                                                                     {17,12,1},{19,12,1},{21,12,1},{23,12,1},{25,12,1},
+				                                                                                               {19,14,1},{21,14,1},{23,14,1},{25,14,1},
+				//	第3層
+				                    { 4, 1,2},{ 6, 1,2},{ 8, 1,2},
+				                                                  {10, 3,2},
+				                                                  {10, 5,2},
+				                    { 4, 7,2},{ 6, 7,2},          {10, 7,2},{12, 7,2},{14, 7,2},{16, 7,2},{18, 7,2},          {22, 7,2},{24, 7,2},
+				                                                                                          {18, 9,2},
+				                                                                                          {18,11,2},
+				                                                                                                    {20,13,2},{22,13,2},{24,13,2},
+				//	第4層
+				                         { 5, 1,3},{ 7, 1,3},
+
+				                                                  {10, 4,3},
+				                         { 5, 7,3},               {10, 6,3},{12, 7,3},{14, 7,3},{16, 7,3},                         {23, 7,3},
+				                                                                                          {18, 8,3},
+				                                                                                          {18,10,3},
+
+				                                                                                                         {21,13,3},{23,13,3},
+				//	第5層
+				                              { 6, 1,4},
+
+				                                                  {10, 5,4},
+				                                                                 {13, 7,4},{15, 7,4},
+				                                                                                          {18, 9,4},
+
+				                                                                                                              {22,13,4}
+			},
+			//	配置「豹」
+			{
+				//	第1層
+				                    { 4, 2,0},{ 6, 2,0},{ 8, 2,0},                                                  {20, 2,0},{22, 2,0},{24, 2,0},
+				          { 2, 4,0},{ 4, 4,0},{ 6, 4,0},{ 8, 4,0},{10, 4,0},                              {18, 4,0},{20, 4,0},{22, 4,0},{24, 4,0},{26, 4,0},
+				{ 0, 5,0},{ 2, 6,0},{ 4, 6,0},{ 6, 6,0},{ 8, 6,0},{10, 6,0},{12, 5,0},{14, 5,0},{16, 5,0},{18, 6,0},{20, 6,0},{22, 6,0},{24, 6,0},{26, 6,0},{28, 5,0},
+				{ 0, 7,0},{ 2, 8,0},{ 4, 8,0},{ 6, 8,0},{ 8, 8,0},{10, 8,0},{12, 7,0},{14, 7,0},{16, 7,0},{18, 8,0},{20, 8,0},{22, 8,0},{24, 8,0},{26, 8,0},{28, 7,0},
+				{ 0, 9,0},{ 2,10,0},{ 4,10,0},{ 6,10,0},{ 8,10,0},{10,10,0},{12, 9,0},{14, 9,0},{16, 9,0},{18,10,0},{20,10,0},{22,10,0},{24,10,0},{26,10,0},{28, 9,0},
+				                    { 4,12,0},{ 6,12,0},{ 8,12,0},                                                  {20,12,0},{22,12,0},{24,12,0},
+				//	第2層
+				                              { 6, 2,1},                                                                      {22, 2,1},
+				                    { 4, 4,1},{ 6, 4,1},{ 8, 4,1},                                                  {20, 4,1},{22, 4,1},{24, 4,1},
+				                    { 4, 6,1},{ 6, 6,1},{ 8, 6,1},                                                  {20, 6,1},{22, 6,1},{24, 6,1},
+				{ 0, 7,1},{ 2, 7,1},{ 4, 8,1},{ 6, 8,1},{ 8, 8,1},{10, 7,1},{12, 7,1},{14, 7,1},{16, 7,1},{18, 7,1},{20, 8,1},{22, 8,1},{24, 8,1},{26, 7,1},{28, 7,1},
+				                    { 4,10,1},{ 6,10,1},{ 8,10,1},                                                  {20,10,1},{22,10,1},{24,10,1},
+				                              { 6,12,1},                                                                      {22,12,1},
+				//	第3層
+				                              { 6, 4,2},                                                                      {22, 4,2},
+				                    { 4, 6,2},{ 6, 6,2},{ 8, 6,2},                                                  {20, 6,2},{22, 6,2},{24, 6,2},
+				          { 2, 7,2},{ 4, 8,2},{ 6, 8,2},{ 8, 8,2},{10, 7,2},{12, 7,2},          {16, 7,2},{18, 7,2},{20, 8,2},{22, 8,2},{24, 8,2},{26, 7,2},
+				                              { 6,10,2},                                                                      {22,10,2},
+				//	第4層
+				                    { 4, 6,3},{ 6, 6,3},{ 8, 6,3},                                                  {20, 6,3},{22, 6,3},{24, 6,3},
+				                    { 4, 8,3},{ 6, 8,3},{ 8, 8,3},{10, 7,3},                              {18, 7,3},{20, 8,3},{22, 8,3},{24, 8,3},
+				//	第5層
+				                         { 5, 7,4},{ 7, 7,4},                                                            {21, 7,4},{23, 7,4}
+			}
+		};
+		//	UINT8					aui8iarrange[144]
+		//		「0～143」の「配置番号」を混ぜた状態で保持します。
+		//		混ぜるのは解のバリエーションを持たせるためです。
+		UINT8					aui8iarrange[stcui8nTile];
+		UINT8					aui8itile[stcui8nTile];
+		//	UINT8					ui8itile
+		//		次に設置する「牌番号」を保持します。
+		//		配置進捗と見なせます。
+		UINT8					ui8itile;
+		CAUTO&					cfp_searchone=[&](UINT8& ui8ilocal,UINT8& ui8ix,UINT8& ui8iy,UINT8& ui8ilayer,UINT8& ui8ndistance)noexcept{
+			for(;ui8ilocal<stcui8nTile;++ui8ilocal){
+				CAUTO					cui8iarrange=aui8iarrange[ui8ilocal];
+
+				if(cui8iarrange!=stcui8iTileUndefined){
+					CAUTO&					acui8iposition=stpcacui8iPositionCurrent[cui8iarrange];
+
+					//	配置番号は「済」ではなかった
+					ui8ix=acui8iposition[0];
+					ui8iy=acui8iposition[1];
+					ui8ilayer=acui8iposition[2];
+					if(steArrange_IsSettable(ui8ix,ui8iy,ui8ilayer,ui8ndistance))break;
+				}
+			}
+			return;
+		};
+		CAUTO&					cfp_searchpair=[&](UINT8& ui8ilocal0,UINT8& ui8ix0,UINT8& ui8iy0,UINT8& ui8ilayer0,UINT8& ui8ilocal1,UINT8& ui8ix1,UINT8& ui8iy1,UINT8& ui8ilayer1,UINT8& ui8ndistance)noexcept{
+			UINT8					ui8ndistance1;
+
+			cfp_searchone(ui8ilocal0,ui8ix0,ui8iy0,ui8ilayer0,ui8ndistance);
+			if(ui8ilocal0<stcui8nTile){
+				for(ui8ilocal1=ui8ilocal0+1;ui8ilocal1<stcui8nTile;++ui8ilocal1){
+					cfp_searchone(ui8ilocal1,ui8ix1,ui8iy1,ui8ilayer1,ui8ndistance1);
+					if(ui8ilocal1<stcui8nTile){
+						//	牌2つ目も「配置可能」であった。
+						//	ただし、「同じ高さで離れている」ような状況なら配置してはならないので、
+						//	牌1つ目を「仮配置」して再チェックする。
+						stWriteTile4(ui8ix0,ui8iy0,ui8ilayer0,UINT16(0x0001),TRUE);
+						{
+							CAUTO			cesettable=steArrange_IsSettable(ui8ix1,ui8iy1,ui8ilayer1,ui8ndistance1);
+
+							stWriteTile4(ui8ix0,ui8iy0,ui8ilayer0,UINT16(stcui8iTileUndefined),TRUE);
+							if(cesettable){
+								ui8ndistance=STD::stxGetMinimum(ui8ndistance,ui8ndistance1);
+								return;
+							}
+						}
+					}
+				}
+			}
+			ui8ilocal1=stcui8nTile;
+			return;
+		};
+
+		stpcacui8iPositionCurrent=staaacui8iposition[cui8ilayout];
+		OS::LFSR_stSetSeed(cui32cseed);
+		stClear();
+		for(UINT8 ui8iarrange=0;ui8iarrange<stcui8nTile;++ui8iarrange)aui8itile[ui8iarrange]=ui8iarrange+1;
+		//	季節牌混ぜ
+		COMMON::stShuffle<4>(aui8itile+stcui8nTile-8);
+		//	花牌混ぜ
+		COMMON::stShuffle<4>(aui8itile+stcui8nTile-4);
+		//	牌4つセット混ぜ(難易度無関係)
+		COMMON::stShuffle<stcui8nTile/4>(PUINT32(aui8itile));
+		//	牌2つセット混ぜ(難易度左右する)
+		COMMON::stShuffle<stcui8nTile/2>(PUINT16(aui8itile),cui8ndifficulty);
+		//	牌4つセット混ぜ(難易度無関係)
+		//	再度実行しているのは、「牌2つセット混ぜ」が前半「cui8ndifficulty」ヶ分だけだから。
+		COMMON::stShuffle<stcui8nTile/4>(PUINT32(aui8itile));
+		do{
+			//	実は「追加配置不可」の状況に陥る場合があるため、
+			//	やり直し想定でループにしておきます。
+			for(UINT8 ui8iarrange=0;ui8iarrange<stcui8nTile;++ui8iarrange){
+				CAUTO&					acui8iposition=stpcacui8iPositionCurrent[ui8iarrange];
+
+				//	左右方向への走査を行えるよう、
+				//	「GAME_stcui16cTileTemporaryMask」付きで「田の字」属性を設定。
+				stWriteTile4(
+					acui8iposition[0],		//	cui8ix
+					acui8iposition[1],		//	cui8iy
+					acui8iposition[2],		//	cui8ilayer
+					UINT16(stcui8iTileUndefined),	//	cui16ctile
+					TRUE					//	cepart
+				);
+				//	ついでに配置番号を「整列状態」で設定
+				aui8iarrange[ui8iarrange]=ui8iarrange;
+			}
+			//	混ぜる事で「0～143」出現順をランダムに
+			COMMON::stShuffle<stcui8nTile>(aui8iarrange);
+			//	配置情報に従って置き場所を決め、
+			//	「設置して良いかどうか」を、左右の空き、下層の牌有無で判定。
+			//	2牌1組で置き場所を決めるのがミソ。
+			//	「処理が進まないと配置出来ない」位置もあるため、
+			//	配置ループは数度回る事が前提。
+			ui8itile=0;
+			while(ui8itile<stcui8nTile){
+				//	UINT8					cui8itile_start
+				//		配置ループ開始前の「牌番号」を保持します。
+				//		「進捗有無」判定に使います。
+				CAUTO					cui8itile_start=ui8itile;
+
+				for(UINT8 ui8ilocal=0;ui8ilocal<stcui8nTile;++ui8ilocal){
+					UINT8					ui8ilocal0,ui8ix0,ui8iy0,ui8ilayer0;
+					UINT8					ui8ilocal1,ui8ix1,ui8iy1,ui8ilayer1;
+					UINT8					ui8ndistance;
+
+					//	ここから実配置開始。
+					//	恐らく、ループは一度で完了しない。
+					//	とりあえず「配置可能」の候補2つをゲットする。
+					//	「左右空きが大きい」方から埋めていく事で「追加配置不可」の状況を起きにくくする。
+					ui8ilocal0=ui8ilocal;
+					cfp_searchpair(ui8ilocal0,ui8ix0,ui8iy0,ui8ilayer0,ui8ilocal1,ui8ix1,ui8iy1,ui8ilayer1,ui8ndistance);
+					if(ui8ilocal1<stcui8nTile){
+						{
+							UINT8					ui8ilocal0d,ui8ix0d,ui8iy0d,ui8ilayer0d;
+							UINT8					ui8ilocal1d,ui8ix1d,ui8iy1d,ui8ilayer1d;
+							UINT8					ui8ndistanced;
+
+							ui8ilocal0d=ui8ilocal1+1;
+							cfp_searchpair(ui8ilocal0d,ui8ix0d,ui8iy0d,ui8ilayer0d,ui8ilocal1d,ui8ix1d,ui8iy1d,ui8ilayer1d,ui8ndistanced);
+							if(ui8ilocal1d<stcui8nTile){
+								CAUTO					cui8nlayersum=ui8ilayer0+ui8ilayer1;
+								CAUTO					cui8nlayersumd=ui8ilayer0d+ui8ilayer1d;
+
+								if(
+									(cui8nlayersum==cui8nlayersumd)?(
+										//	高さが同じなら配置で詰みにくい選択を。
+										ui8ndistance<ui8ndistanced
+									):(
+										//	さもなければ難易度に応じて高層からの積みを選択
+										(COMMON::stui8Random<(stcui8nTile>>1)>()<cui8ndifficulty)?(
+											cui8nlayersum<cui8nlayersumd
+										):(
+											cui8nlayersumd<cui8nlayersum
+										)
+									)
+								){
+									ui8ilocal0=		ui8ilocal0d;
+									ui8ix0=			ui8ix0d;
+									ui8iy0=			ui8iy0d;
+									ui8ilayer0=		ui8ilayer0d;
+									ui8ilocal1=		ui8ilocal1d;
+									ui8ix1=			ui8ix1d;
+									ui8iy1=			ui8iy1d;
+									ui8ilayer1=		ui8ilayer1d;
+									ui8ndistance=	ui8ndistanced;
+								}
+							}
+						}
+						//	無事牌2つ目も「配置可能」で確定できたので、処理済みにマーク
+						aui8iarrange[ui8ilocal0]=stcui8iTileUndefined;
+						aui8iarrange[ui8ilocal1]=stcui8iTileUndefined;
+#ifdef SHOWARRANGEPROGRESS
+						GAME_stWriteTile(ui8ix0,ui8iy0,ui8ilayer0,aui8itile[ui8itile],TRUE);++ui8itile;
+						GAME_stWriteTile(ui8ix1,ui8iy1,ui8ilayer1,aui8itile[ui8itile],TRUE);++ui8itile;
+#else
+						stWriteTile4(ui8ix0,ui8iy0,ui8ilayer0,UINT16(aui8itile[ui8itile]),TRUE);++ui8itile;
+						stWriteTile4(ui8ix1,ui8iy1,ui8ilayer1,UINT16(aui8itile[ui8itile]),TRUE);++ui8itile;
+#endif
+						ui8ilocal=ui8ilocal1;
+					}
+				}
+				if(ui8itile==cui8itile_start){
+					//	ここに至ったという事は進捗ゼロであったという事。
+					//	不幸にも「追加配置不可」の状況に陥った。
+#ifdef SHOWARRANGEPROGRESS
+					SCREEN_stClear(FALSE);
+#endif
+					break;
+				}
+			}
+		}while(ui8itile<stcui8nTile);
+		stui8nTileRest=stcui8nTile;
+		steProgressive=TRUE;
+		return;
+	}
+	static VOID				stAdjustPosition(UINT8& ui8ix,UINT8& ui8iy,UINT16& ui16ctile)noexcept{
+		switch(ui16ctile&stcui16cTilePartMask){
+		case stcui16cTilePartLU:
+			break;
+		case stcui16cTilePartRU:
+			--ui8ix;
+			break;
+		case stcui16cTilePartLD:
+			--ui8iy;
+			break;
+		case stcui16cTilePartRD:
+			--ui8ix;
+			--ui8iy;
+			break;
+		}
+		ui16ctile&=~stcui16cTilePartMask;
+		return;
+	}
+	static _INLINE_ VOID	stWriteTile4(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,CUINT16 cui16ctile,COFWBOOL cepart)noexcept{
+		staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+0]=cui16ctile|(cepart?stcui16cTilePartLU:0x0000);
+		staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+1]=cui16ctile|(cepart?stcui16cTilePartRU:0x0000);
+		staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+0]=cui16ctile|(cepart?stcui16cTilePartLD:0x0000);
+		staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+1]=cui16ctile|(cepart?stcui16cTilePartRD:0x0000);
+		return;
+	}
+	//	OFWBOOL					steArrange_IsSettable(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,UINT8& ui8ndistance)
+	//		位置「(cui8ix,cui8iy,cui8ilayer)」に配置可能であるかどうかを返します。
+	//		下記条件に合致すると「配置可能」と判定します。
+	//		・牌が存在しない事
+	//		・下層が存在する事
+	//		・下記条件を満たす事
+	//		  ・左右延長線上に牌が存在しない
+	//		  ・左延長線上に牌が存在せず、右に牌が隣接している
+	//		  ・右延長線上に牌が存在せず、左に牌が隣接している
+	static OFWBOOL			steArrange_IsSettable(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,UINT8& ui8ndistance)noexcept{
+		CAUTO					cui16ctile=staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
+		OFWBOOL					eneighbour;
+
+		if(steArrange_IsThisExists(cui8ix,cui8iy,cui8ilayer))return FALSE;
+		if(!steArrange_IsFootExists(cui8ix,cui8iy,cui8ilayer))return FALSE;
+		ui8ndistance=0;
+		if(steArrange_IsSettable_Side(cui8ix,cui8iy,cui8ilayer,TRUE,eneighbour,ui8ndistance)){
+			if(eneighbour){
+				UINT8					ui8ndistancer=0;
+
+				if(steArrange_IsSettable_Side(cui8ix,cui8iy,cui8ilayer,FALSE,eneighbour,ui8ndistancer)){
+					ui8ndistance=STD::stxGetMaximum(ui8ndistance,ui8ndistancer);
+					return !eneighbour;
+				}else{
+					return FALSE;
+				}
+			}else{
+				return steArrange_IsSettable_Side(cui8ix,cui8iy,cui8ilayer,FALSE,eneighbour,ui8ndistance);
+			}
+		}
+		return FALSE;
+	}
+	static OFWBOOL			steArrange_IsSettable_Side(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,COFWBOOL cel,OFWBOOL& eneighbour,UINT8& ui8ndistance)noexcept{
+		//	この時点で、位置「(cui8ix,cui8iy,cui8ilayer)」に牌が存在しない事が前提。
+		//	下層は存在しない場合もあり得るが、
+		//	後に下層が置かれた結果「延長線上にある」状態となる可能性があるため、
+		//	延長線上チェックは下層有無関係無く実施する必要あり。
+		++ui8ndistance;
+		if(cel?(2<=cui8ix):(cui8ix<stcui8nWidth-2)){
+			AUTO					ui8ixh=cel?UINT8(cui8ix-2):UINT8(cui8ix+2);
+			AUTO					ui16ctile=staaaui16cTile[cui8ilayer][cui8iy][ui8ixh];
+
+			if(ui16ctile){
+				AUTO					ui8iyh=cui8iy;
+
+				//	「空き(端)」ではない。
+				stAdjustPosition(ui8ixh,ui8iyh,ui16ctile);
+				if(ui8iyh==cui8iy){
+					//	「半分ずらし」ではない
+					if(steArrange_IsExists(ui16ctile)){
+						//	実在なので「隣接あり設置可能」で確定
+						eneighbour=TRUE;
+						return TRUE;
+					}else{
+						//	ひとまず隣は空いているが、延長線上がどうかは分からない。
+						if(steArrange_IsSettable_Side(ui8ixh,ui8iyh,cui8ilayer,cel,eneighbour,ui8ndistance)){
+							//	ここで「eneighbour」が「TRUE」だと、
+							//	「1つ離れて存在」という事になるので設置してはならない。
+							//	返すべきは「eneighbour」の否定。
+							return !eneighbour;
+						}else{
+							//	延長線上にあるか何かした。
+							return FALSE;
+						}
+					}
+				}else{
+					//	「半分ずらし」になっている
+					if(steArrange_IsExists(ui16ctile)){
+						//	下隣の状態チェック
+						if(
+							CAUTO					cui16ctileh=staaaui16cTile[cui8ilayer][ui8iyh+2][ui8ixh];
+							cui16ctileh
+						){
+							//	下隣は「空き(端)」ではない。
+							if(steArrange_IsExists(cui16ctileh)){
+								//	下隣にも存在するので、「隣接あり設置可能」で良し
+								eneighbour=TRUE;
+								return TRUE;
+							}else if(steArrange_IsSettable_Side(ui8ixh,ui8iyh+2,cui8ilayer,cel,eneighbour,ui8ndistance)){
+								//	ここで「eneighbour」が「TRUE」だと、
+								//	「1つ離れて存在」という事になるので設置してはならない。
+								//	返すべきは「eneighbour」の否定。
+								if(eneighbour){
+									return FALSE;
+								}else{
+									eneighbour=TRUE;
+									return TRUE;
+								}
+							}else{
+								//	延長線上にあるか何かした。
+								return FALSE;
+							}
+						}else{
+							//	下隣は「空き(端)」であった。
+							eneighbour=TRUE;
+							return TRUE;
+						}
+					}else{
+						AUTO					ui8ndistanced=ui8ndistance;
+
+						//	ひとまず上隣は空いているが、延長線上がどうかは分からない。
+						if(steArrange_IsSettable_Side(ui8ixh,ui8iyh,cui8ilayer,cel,eneighbour,ui8ndistance)){
+							//	ここで「eneighbour」が「TRUE」だと、
+							//	「1つおきで存在」という事になるので設置してはならない。
+							if(eneighbour){
+								return FALSE;
+							}else{
+								//	上隣は純然たる空き(端ではない)である。
+								if(
+									CAUTO					cui16ctileh=staaaui16cTile[cui8ilayer][ui8iyh+2][ui8ixh];
+									cui16ctileh
+								){
+									//	下隣は「空き(端)」ではない。
+									if(steArrange_IsExists(cui16ctileh)){
+										//	下隣に存在するので、「隣接あり設置可能」で良し。
+										eneighbour=TRUE;
+										return TRUE;
+									}else{
+										if(steArrange_IsSettable_Side(ui8ixh,ui8iyh+2,cui8ilayer,cel,eneighbour,ui8ndistanced)){
+											ui8ndistance=STD::stxGetMaximum(ui8ndistance,ui8ndistanced);
+											//	ここで「eneighbour」が「TRUE」だと、
+											//	「1つ離れて存在」という事になるので設置してはならない。
+											//	返すべきは「eneighbour」の否定。
+											return !eneighbour;
+										}else{
+											return FALSE;
+										}
+									}
+								}else{
+									//	下隣も「空き(端)」であった。
+								}
+							}
+						}else{
+							return FALSE;
+						}
+					}
+				}
+			}else{
+				AUTO					ui8iyh=UINT8(cui8iy+1);
+
+				//	「空き(端)」であった。
+				ui16ctile=staaaui16cTile[cui8ilayer][ui8iyh][ui8ixh];
+				if(ui16ctile){
+					//	「半分ずらし」になっている
+					if(steArrange_IsExists(ui16ctile)){
+						//	実在なので「隣接あり設置可能」で確定
+						eneighbour=TRUE;
+						return TRUE;
+					}else{
+						if(steArrange_IsSettable_Side(ui8ixh,ui8iyh,cui8ilayer,cel,eneighbour,ui8ndistance)){
+							//	ここで「eneighbour」が「TRUE」だと、
+							//	「1つ離れて存在」という事になるので設置してはならない。
+							//	返すべきは「eneighbour」の否定。
+							return !eneighbour;
+						}else{
+							//	延長線上にあるか何かした。
+							return FALSE;
+						}
+					}
+				}
+			}
+		}
+		eneighbour=FALSE;
+		return TRUE;
+	}
+	static _INLINE_ OFWBOOL	steArrange_IsFootExists(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
+		CAUTO					celayern=OFWBOOL(0<cui8ilayer);
+		CAUTO					cefootlu=celayern?steArrange_IsThisExists(cui8ix+0,cui8iy+0,cui8ilayer-1):TRUE;
+		CAUTO					cefootru=celayern?steArrange_IsThisExists(cui8ix+1,cui8iy+0,cui8ilayer-1):TRUE;
+		CAUTO					cefootld=celayern?steArrange_IsThisExists(cui8ix+0,cui8iy+1,cui8ilayer-1):TRUE;
+		CAUTO					cefootrd=celayern?steArrange_IsThisExists(cui8ix+1,cui8iy+1,cui8ilayer-1):TRUE;
+
+		return (cefootlu&&cefootru&&cefootld&&cefootrd);
+	}
+	static _INLINE_ OFWBOOL	steArrange_IsThisExists(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
+		return steArrange_IsExists(staaaui16cTile[cui8ilayer][cui8iy][cui8ix]);
+	}
+	static constexpr OFWBOOL	steArrange_IsExists(CUINT16 cui16ctile)noexcept{
+		CAUTO					cui8itile=UINT8(cui16ctile&0xff);
+
+		return OFWBOOL((cui8itile!=0x00)&&(cui8itile!=stcui8iTileUndefined));
 	}
 	static VOID				VBLANK_stCallback(const PVOID cpobject)noexcept{
 		CAUTO					cstatmouse=OS::DEVICE_MOUSE_ststatRead();
@@ -651,173 +1144,6 @@ private:
 		MOUSE_ststatState.ui16cButtonCurrent=cstatmouse.ui16cButton;
 		return;
 	}
-	static VOID				GAME_stAdjustPosition(UINT8& ui8ix,UINT8& ui8iy,UINT16& ui16ctile)noexcept{
-		switch(ui16ctile&GAME_stcui16cTilePartMask){
-		case GAME_stcui16cTilePartLU:
-			break;
-		case GAME_stcui16cTilePartRU:
-			--ui8ix;
-			break;
-		case GAME_stcui16cTilePartLD:
-			--ui8iy;
-			break;
-		case GAME_stcui16cTilePartRD:
-			--ui8ix;
-			--ui8iy;
-			break;
-		}
-		ui16ctile&=~GAME_stcui16cTilePartMask;
-		return;
-	}
-	static _INLINE_ VOID	GAME_stWriteTile4(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,CUINT16 cui16ctile,COFWBOOL cepart)noexcept{
-		GAME_staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+0]=cui16ctile|(cepart?GAME_stcui16cTilePartLU:0x0000);
-		GAME_staaaui16cTile[cui8ilayer][cui8iy+0][cui8ix+1]=cui16ctile|(cepart?GAME_stcui16cTilePartRU:0x0000);
-		GAME_staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+0]=cui16ctile|(cepart?GAME_stcui16cTilePartLD:0x0000);
-		GAME_staaaui16cTile[cui8ilayer][cui8iy+1][cui8ix+1]=cui16ctile|(cepart?GAME_stcui16cTilePartRD:0x0000);
-		return;
-	}
-	//	OFWBOOL					GAME_steArrange_IsSettable(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,UINT8& ui8ndistance)
-	//		位置「(cui8ix,cui8iy,cui8ilayer)」に配置可能であるかどうかを返します。
-	//		下記条件に合致すると「配置可能」と判定します。
-	//		・牌が存在しない事
-	//		・下層が存在する事
-	//		・下記条件を満たす事
-	//		  ・左右延長線上に牌が存在しない
-	//		  ・左延長線上に牌が存在せず、右に牌が隣接している
-	//		  ・右延長線上に牌が存在せず、左に牌が隣接している
-	static OFWBOOL			GAME_steArrange_IsSettable(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,UINT8& ui8ndistance)noexcept{
-		CAUTO					cui16ctile=GAME_staaaui16cTile[cui8ilayer][cui8iy][cui8ix];
-		OFWBOOL					eneighbour;
-
-		if(GAME_steArrange_IsThisExists(cui8ix,cui8iy,cui8ilayer))return FALSE;
-		if(!GAME_steArrange_IsFootExists(cui8ix,cui8iy,cui8ilayer))return FALSE;
-		ui8ndistance=0;
-		if(GAME_steArrange_IsSettable_Side(cui8ix,cui8iy,cui8ilayer,TRUE,eneighbour,ui8ndistance)){
-			if(eneighbour){
-				UINT8					ui8ndistancer=0;
-
-				if(GAME_steArrange_IsSettable_Side(cui8ix,cui8iy,cui8ilayer,FALSE,eneighbour,ui8ndistancer)){
-					ui8ndistance=STD::stxGetMaximum(ui8ndistance,ui8ndistancer);
-					return !eneighbour;
-				}else{
-					return FALSE;
-				}
-			}else{
-				return GAME_steArrange_IsSettable_Side(cui8ix,cui8iy,cui8ilayer,FALSE,eneighbour,ui8ndistance);
-			}
-		}
-		return FALSE;
-	}
-	static OFWBOOL			GAME_steArrange_IsSettable_Side(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,COFWBOOL cel,OFWBOOL& eneighbour,UINT8& ui8ndistance)noexcept{
-		//	この時点で、位置「(cui8ix,cui8iy,cui8ilayer)」に牌が存在しない事は前提。
-		++ui8ndistance;
-		if(cel?(2<=cui8ix):(cui8ix<GAME_stcui8nWidth-2)){
-			AUTO					ui8ixh=cel?UINT8(cui8ix-2):UINT8(cui8ix+2);
-			AUTO					ui16ctile=GAME_staaaui16cTile[cui8ilayer][cui8iy][ui8ixh];
-
-			if(ui16ctile){
-				AUTO					ui8iyh=cui8iy;
-
-				//	「空き(端)」ではない。
-				GAME_stAdjustPosition(ui8ixh,ui8iyh,ui16ctile);
-				if(ui8iyh==cui8iy){
-					//	「半分ずらし」ではない
-					if(GAME_steArrange_IsExists(ui16ctile)){
-						//	実在なので「隣接あり設置可能」で確定
-						eneighbour=TRUE;
-						return TRUE;
-					}else{
-						//	ひとまず隣は空いているが、延長線上がどうかは分からない。
-						if(GAME_steArrange_IsFootExists(ui8ixh,ui8iyh,cui8ilayer)){
-							if(GAME_steArrange_IsSettable_Side(ui8ixh,ui8iyh,cui8ilayer,cel,eneighbour,ui8ndistance)){
-								//	ここで「eneighbour」が「TRUE」だと、
-								//	「1つ離れて存在」という事になるので設置してはならない。
-								//	返すべきは「eneighbour」の否定。
-								return !eneighbour;
-							}else{
-								//	延長線上にあるか何かした。
-								return FALSE;
-							}
-						}else{
-							//	下層が存在していないなら「延長線自体無い」という事なので、「隣接無し配置可能」で確定。
-							eneighbour=FALSE;
-							return TRUE;
-						}
-					}
-				}else{
-					//	「半分ずらし」になっている
-					if(GAME_steArrange_IsExists(ui16ctile)){
-						OFWBOOL					eneighbour_dummy;
-
-						//	実在なので「隣接設置可能」で仮
-						eneighbour=TRUE;
-						//	「設置可能」でありさえすれば、
-						//	「隣接設置可能」で確定
-						return GAME_steArrange_IsSettable_Side(ui8ixh,ui8iyh+2,cui8ilayer,cel,eneighbour_dummy,ui8ndistance);
-					}else{
-						//	ひとまず上隣は空いているが、延長線上がどうかは分からない。
-						if(GAME_steArrange_IsFootExists(ui8ixh,ui8iyh,cui8ilayer)){
-							AUTO					ui8ndistanced=ui8ndistance;
-
-							if(GAME_steArrange_IsSettable_Side(ui8ixh,ui8iyh,cui8ilayer,cel,eneighbour,ui8ndistance)){
-								//	ここで「eneighbour」が「TRUE」だと、
-								//	「1つおきで存在」という事になるので設置してはならない。
-								if(eneighbour){
-									return FALSE;
-								}else{
-									CAUTO					cesettable=GAME_steArrange_IsSettable_Side(ui8ixh,ui8iyh+2,cui8ilayer,cel,eneighbour,ui8ndistanced);
-
-									ui8ndistance=STD::stxGetMaximum(ui8ndistance,ui8ndistanced);
-									return cesettable;
-								}
-							}else{
-								return FALSE;
-							}
-						}else{
-							//	上隣に下層は存在していないので「延長線自体無い」。
-							return GAME_steArrange_IsSettable_Side(ui8ixh,ui8iyh+2,cui8ilayer,cel,eneighbour,ui8ndistance);
-						}
-					}
-				}
-			}else{
-				AUTO					ui8iyh=UINT8(cui8iy+1);
-
-				//	「空き(端)」であった。
-				ui16ctile=GAME_staaaui16cTile[cui8ilayer][ui8iyh][ui8ixh];
-				if(ui16ctile){
-					//	「半分ずらし」になっている
-					if(GAME_steArrange_IsExists(ui16ctile)){
-						//	実在なので「隣接あり設置可能」で確定
-						eneighbour=TRUE;
-						return TRUE;
-					}else{
-						if(GAME_steArrange_IsFootExists(ui8ixh,ui8iyh,cui8ilayer)){
-							return GAME_steArrange_IsSettable_Side(ui8ixh,ui8iyh,cui8ilayer,cel,eneighbour,ui8ndistance);
-						}
-					}
-				}
-			}
-		}
-		eneighbour=FALSE;
-		return TRUE;
-	}
-	static _INLINE_ OFWBOOL	GAME_steArrange_IsFootExists(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
-		CAUTO					celayern=OFWBOOL(0<cui8ilayer);
-		CAUTO					cefootlu=celayern?GAME_steArrange_IsThisExists(cui8ix+0,cui8iy+0,cui8ilayer-1):TRUE;
-		CAUTO					cefootru=celayern?GAME_steArrange_IsThisExists(cui8ix+1,cui8iy+0,cui8ilayer-1):TRUE;
-		CAUTO					cefootld=celayern?GAME_steArrange_IsThisExists(cui8ix+0,cui8iy+1,cui8ilayer-1):TRUE;
-		CAUTO					cefootrd=celayern?GAME_steArrange_IsThisExists(cui8ix+1,cui8iy+1,cui8ilayer-1):TRUE;
-
-		return (cefootlu&&cefootru&&cefootld&&cefootrd);
-	}
-	static _INLINE_ OFWBOOL	GAME_steArrange_IsThisExists(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
-		return GAME_steArrange_IsExists(GAME_staaaui16cTile[cui8ilayer][cui8iy][cui8ix]);
-	}
-	static constexpr OFWBOOL	GAME_steArrange_IsExists(CUINT16 cui16ctile)noexcept{
-		CAUTO					cui8itile=UINT8(cui16ctile&0xff);
-
-		return OFWBOOL((cui8itile!=0x00)&&(cui8itile!=GAME_stcui8iTileUndefined));
-	}
 	//	VOID					SCREEN_stDraw_Layered(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)
 	//		高さ「cui8ilayer」での、位置「(cui8ix,cui8iy)」右下方向「1x1」単位(1/2牌分)領域の表示更新を行います。
 	//		「cui8ilayer」は画面表示上の位置を決めるためのもので、
@@ -825,7 +1151,7 @@ private:
 	static VOID				SCREEN_stDraw_Layered(CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer,COFWBOOL ceupdateforced=FALSE)noexcept{
 		OFF_stDraw_Begin(cui8ix,cui8iy,cui8ilayer);
 		if(ceupdateforced)OFF_stDraw_MarkUpdate();
-		for(UINT8 ui8ilayer_drawing=0;ui8ilayer_drawing<GAME_stcui8nLayer;++ui8ilayer_drawing)OFF_stDraw_Layer(cui8ix,cui8iy,cui8ilayer,ui8ilayer_drawing);
+		for(UINT8 ui8ilayer_drawing=0;ui8ilayer_drawing<stcui8nLayer;++ui8ilayer_drawing)OFF_stDraw_Layer(cui8ix,cui8iy,cui8ilayer,ui8ilayer_drawing);
 		if(OFF_steUpdated)GRAPHIC::stCopy(OFF_stcvsOne,SCREEN_stv2iOne);
 		return;
 	}
@@ -895,31 +1221,31 @@ private:
 	//		牌の表面以外、表示範囲に含まれる側面、床面、影の描画も行います。
 	//		床面への影描画はオフセット「(+4,+8)」があるため、横「-19」、縦「-31」までは描画がありえます。
 	static VOID				OFF_stDraw_Layer_Positioned(CVECTOR2& cv2idestination,CUINT8 cui8ix,CUINT8 cui8iy,CUINT8 cui8ilayer)noexcept{
-		CAUTO					cerange=OFWBOOL((cui8ix<GAME_stcui8nWidth)&&(cui8iy<GAME_stcui8nHeight));
-		CAUTO					ceup1=(cerange&&(cui8ilayer<GAME_stcui8nLayer-1))?(GAME_stui16cGetTile(cui8ix,cui8iy,cui8ilayer+1)!=0):FALSE;
-		CAUTO					ceup2=(cerange&&(cui8ilayer<GAME_stcui8nLayer-2))?(GAME_stui16cGetTile(cui8ix,cui8iy,cui8ilayer+2)!=0):FALSE;
+		CAUTO					cerange=OFWBOOL((cui8ix<stcui8nWidth)&&(cui8iy<stcui8nHeight));
+		CAUTO					ceup1=(cerange&&(cui8ilayer<stcui8nLayer-1))?(stui16cGetTile(cui8ix,cui8iy,cui8ilayer+1)!=0):FALSE;
+		CAUTO					ceup2=(cerange&&(cui8ilayer<stcui8nLayer-2))?(stui16cGetTile(cui8ix,cui8iy,cui8ilayer+2)!=0):FALSE;
 
 		if(!ceup2){
-			CAUTO					cex0=OFWBOOL(cui8ix<GAME_stcui8nWidth);
-			CAUTO					cex1=OFWBOOL((1<=cui8ix)&&(cui8ix<GAME_stcui8nWidth+1));
-			CAUTO					cey0=OFWBOOL(cui8iy<GAME_stcui8nHeight);
-			CAUTO					cey1=OFWBOOL((1<=cui8iy)&&(cui8iy<GAME_stcui8nHeight+1));
+			CAUTO					cex0=OFWBOOL(cui8ix<stcui8nWidth);
+			CAUTO					cex1=OFWBOOL((1<=cui8ix)&&(cui8ix<stcui8nWidth+1));
+			CAUTO					cey0=OFWBOOL(cui8iy<stcui8nHeight);
+			CAUTO					cey1=OFWBOOL((1<=cui8iy)&&(cui8iy<stcui8nHeight+1));
 			CAUTO					cex0y0=OFWBOOL(cex0&&cey0);
 			CAUTO					cex0y1=OFWBOOL(cex0&&cey1);
 			CAUTO					cex1y0=OFWBOOL(cex1&&cey0);
 			CAUTO					cex1y1=OFWBOOL(cex1&&cey1);
-			CAUTO					cui16cx0y1=cex0y1?GAME_stui16cGetTile(cui8ix+0,cui8iy-1,cui8ilayer):UINT16(0x0000);
-			CAUTO					cui16cx1y1=cex1y1?GAME_stui16cGetTile(cui8ix-1,cui8iy-1,cui8ilayer):UINT16(0x0000);
-			CAUTO					cui16cx1y0=cex1y0?GAME_stui16cGetTile(cui8ix-1,cui8iy+0,cui8ilayer):UINT16(0x0000);
+			CAUTO					cui16cx0y1=cex0y1?stui16cGetTile(cui8ix+0,cui8iy-1,cui8ilayer):UINT16(0x0000);
+			CAUTO					cui16cx1y1=cex1y1?stui16cGetTile(cui8ix-1,cui8iy-1,cui8ilayer):UINT16(0x0000);
+			CAUTO					cui16cx1y0=cex1y0?stui16cGetTile(cui8ix-1,cui8iy+0,cui8ilayer):UINT16(0x0000);
 
 			//	側壁
 			if(cui16cx1y1){
 				OFF_stDraw_MarkUpdate();
-				switch(cui16cx1y1&GAME_stcui16cTilePartMask){
-				case GAME_stcui16cTilePartLU:
+				switch(cui16cx1y1&stcui16cTilePartMask){
+				case stcui16cTilePartLU:
 					//	状況的にあり得ない
 					break;
-				case GAME_stcui16cTilePartRU:
+				case stcui16cTilePartRU:
 					OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
 						{
 							IMAGE_stcv2iSideR.i16iX(),
@@ -965,7 +1291,7 @@ private:
 						//	+-----------+ |     //
 					}
 					break;
-				case GAME_stcui16cTilePartLD:
+				case stcui16cTilePartLD:
 					OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
 						{
 							IMAGE_stcv2iSideD.i16iX()+INT16(IMAGE_stcui8nUnitWidth),
@@ -1011,7 +1337,7 @@ private:
 						//	                    //
 					}
 					break;
-				case GAME_stcui16cTilePartRD:
+				case stcui16cTilePartRD:
 					OFF_stcvsOne.CopyRect(IMAGE_stccvsTile,{
 						IMAGE_stcv2iSideRD,{
 							INT16(IMAGE_stcui8nPerspectiveWidth),
@@ -1185,18 +1511,18 @@ private:
 		}
 		if(!ceup1){
 			if(
-				CAUTO					cui16ctile=cerange?GAME_stui16cGetTile(cui8ix,cui8iy,cui8ilayer):UINT16(0x0000);
+				CAUTO					cui16ctile=cerange?stui16cGetTile(cui8ix,cui8iy,cui8ilayer):UINT16(0x0000);
 				cui16ctile
 			){
 				constexpr AUTO			cv2iselectedrd=IMAGE_stcv2iSelected+IMAGE_stcv2nUnit;
-				CAUTO&					acui8ipattern=GAME_staacui8iPattern[(cui16ctile&0xff)-1];
+				CAUTO&					acui8ipattern=staacui8iPattern[(cui16ctile&0xff)-1];
 				CAUTO					cv2isource=VECTOR2(INT16(acui8ipattern[0]),INT16(acui8ipattern[1]));
 				CAUTO					cv2isourcerd=cv2isource+IMAGE_stcv2nUnit;
-				CAUTO					ceselected=OFWBOOL(cui16ctile&GAME_stcui16cTileSelectedMask);
+				CAUTO					ceselected=OFWBOOL(cui16ctile&stcui16cTileSelectedMask);
 
 				//	表面
-				switch(cui16ctile&GAME_stcui16cTilePartMask){
-				case GAME_stcui16cTilePartLU:
+				switch(cui16ctile&stcui16cTilePartMask){
+				case stcui16cTilePartLU:
 					OFF_stDraw_Layer_Positioned_Face(cv2idestination,{
 						cv2isource.i16iX(),		cv2isource.i16iY()
 					});
@@ -1205,7 +1531,7 @@ private:
 						IMAGE_stcv2iSelected.i16iX(),	IMAGE_stcv2iSelected.i16iY()
 					},IMAGE_stcv2nUnit},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 					break;
-				case GAME_stcui16cTilePartRU:
+				case stcui16cTilePartRU:
 					OFF_stDraw_Layer_Positioned_Face(cv2idestination,{
 						cv2isourcerd.i16iX(),	cv2isource.i16iY()
 					});
@@ -1214,7 +1540,7 @@ private:
 						cv2iselectedrd.i16iX(),	IMAGE_stcv2iSelected.i16iY()
 					},IMAGE_stcv2nUnit},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 					break;
-				case GAME_stcui16cTilePartLD:
+				case stcui16cTilePartLD:
 					OFF_stDraw_Layer_Positioned_Face(cv2idestination,{
 						cv2isource.i16iX(),		cv2isourcerd.i16iY()
 					});
@@ -1223,7 +1549,7 @@ private:
 						IMAGE_stcv2iSelected.i16iX(),	cv2iselectedrd.i16iY()
 					},IMAGE_stcv2nUnit},cv2idestination,IDBLEND::BackNega_SourceAlpha);
 					break;
-				case GAME_stcui16cTilePartRD:
+				case stcui16cTilePartRD:
 					OFF_stDraw_Layer_Positioned_Face(cv2idestination,{
 						cv2isourcerd.i16iX(),	cv2isourcerd.i16iY()
 					});
@@ -1337,13 +1663,13 @@ private:
 		CAUTO					cui8ilayer3=cui8ilayer1+2;
 		CAUTO					cui8ilayer4=cui8ilayer1+3;
 		CAUTO					cui8ilayer5=cui8ilayer1+4;
-		CAUTO					cex0=OFWBOOL(cui8ix0<GAME_stcui8nWidth);
-		CAUTO					cex1=OFWBOOL(cui8ix1<GAME_stcui8nWidth);
-		CAUTO					cex2=OFWBOOL(cui8ix2<GAME_stcui8nWidth);
-		CAUTO					cex3=OFWBOOL(cui8ix3<GAME_stcui8nWidth);
-		CAUTO					cey0=OFWBOOL(cui8iy0<GAME_stcui8nHeight);
-		CAUTO					cey1=OFWBOOL(cui8iy1<GAME_stcui8nHeight);
-		CAUTO					cey2=OFWBOOL(cui8iy2<GAME_stcui8nHeight);
+		CAUTO					cex0=OFWBOOL(cui8ix0<stcui8nWidth);
+		CAUTO					cex1=OFWBOOL(cui8ix1<stcui8nWidth);
+		CAUTO					cex2=OFWBOOL(cui8ix2<stcui8nWidth);
+		CAUTO					cex3=OFWBOOL(cui8ix3<stcui8nWidth);
+		CAUTO					cey0=OFWBOOL(cui8iy0<stcui8nHeight);
+		CAUTO					cey1=OFWBOOL(cui8iy1<stcui8nHeight);
+		CAUTO					cey2=OFWBOOL(cui8iy2<stcui8nHeight);
 		CAUTO					cex1y0=OFWBOOL(cex1&&cey0);
 		CAUTO					cex2y0=OFWBOOL(cex2&&cey0);
 		CAUTO					cex0y1=OFWBOOL(cex0&&cey1);
@@ -1353,11 +1679,11 @@ private:
 		CAUTO					cex1y2=OFWBOOL(cex1&&cey2);
 		CAUTO					cex2y2=OFWBOOL(cex2&&cey2);
 		CAUTO					cex3y2=OFWBOOL(cex3&&cey2);
-		CAUTO					cel1=OFWBOOL(cui8ilayer1<GAME_stcui8nLayer);
-		CAUTO					cel2=OFWBOOL(cui8ilayer2<GAME_stcui8nLayer);
-		CAUTO					cel3=OFWBOOL(cui8ilayer3<GAME_stcui8nLayer);
-		CAUTO					cel4=OFWBOOL(cui8ilayer4<GAME_stcui8nLayer);
-		CAUTO					cel5=OFWBOOL(cui8ilayer5<GAME_stcui8nLayer);
+		CAUTO					cel1=OFWBOOL(cui8ilayer1<stcui8nLayer);
+		CAUTO					cel2=OFWBOOL(cui8ilayer2<stcui8nLayer);
+		CAUTO					cel3=OFWBOOL(cui8ilayer3<stcui8nLayer);
+		CAUTO					cel4=OFWBOOL(cui8ilayer4<stcui8nLayer);
+		CAUTO					cel5=OFWBOOL(cui8ilayer5<stcui8nLayer);
 		//	<X1Y0>    |  |  +               //
 		//	|         |  |  |\              //
 		//	|         |  |  | \             //
@@ -1371,15 +1697,15 @@ private:
 		//	       \         \ | 1 12 2 #3  //
 		//	        \1        \|1 ＼|2 ＼|  //
 		//	         +---------1--1-1--2-2  //
-		CAUTO					cui16cx1y0l1=(cex1y0&&cel1)?GAME_stui16cGetTile(cui8ix1,cui8iy0,cui8ilayer1):UINT16(0x0000);
-		CAUTO					cui16cx1y0l2=(cex1y0&&cel2)?GAME_stui16cGetTile(cui8ix1,cui8iy0,cui8ilayer2):UINT16(0x0000);
-		CAUTO					cui16cx1y0l3=(cex1y0&&cel3)?GAME_stui16cGetTile(cui8ix1,cui8iy0,cui8ilayer3):UINT16(0x0000);
+		CAUTO					cui16cx1y0l1=(cex1y0&&cel1)?stui16cGetTile(cui8ix1,cui8iy0,cui8ilayer1):UINT16(0x0000);
+		CAUTO					cui16cx1y0l2=(cex1y0&&cel2)?stui16cGetTile(cui8ix1,cui8iy0,cui8ilayer2):UINT16(0x0000);
+		CAUTO					cui16cx1y0l3=(cex1y0&&cel3)?stui16cGetTile(cui8ix1,cui8iy0,cui8ilayer3):UINT16(0x0000);
 		constexpr AUTO			cex1y0_0a=OFWBOOL(FALSE);
 		CAUTO					cex1y0_0b=OFWBOOL(cui16cx1y0l1);
 		constexpr AUTO			cex1y0_0c=OFWBOOL(FALSE);
 		constexpr AUTO			cex1y0_0d=OFWBOOL(FALSE);
 		CAUTO					cex1y0_0e=OFWBOOL(cui16cx1y0l1);
-		CAUTO					cex1y0_0f=OFWBOOL((cui16cx1y0l1&&((cui16cx1y0l1&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU))||cui16cx1y0l2);
+		CAUTO					cex1y0_0f=OFWBOOL((cui16cx1y0l1&&((cui16cx1y0l1&stcui16cTilePartMask)!=stcui16cTilePartRU))||cui16cx1y0l2);
 		CAUTO					cex1y0_0g=OFWBOOL(cui16cx1y0l1);
 		constexpr AUTO			cex1y0_0h=OFWBOOL(FALSE);
 		constexpr AUTO			cex1y0_1a=OFWBOOL(FALSE);
@@ -1389,7 +1715,7 @@ private:
 		constexpr AUTO			cex1y0_1e=OFWBOOL(FALSE);
 		constexpr AUTO			cex1y0_1f=OFWBOOL(FALSE);
 		constexpr AUTO			cex1y0_1h=OFWBOOL(FALSE);
-		CAUTO					cex1y0_2a=OFWBOOL(cui16cx1y0l1&&((cui16cx1y0l1&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU));
+		CAUTO					cex1y0_2a=OFWBOOL(cui16cx1y0l1&&((cui16cx1y0l1&stcui16cTilePartMask)!=stcui16cTilePartRU));
 		CAUTO					cex1y0_2b=OFWBOOL(cui16cx1y0l1);
 		CAUTO					cex1y0_2c=OFWBOOL(cui16cx1y0l1);
 		CAUTO					cex1y0_2d=OFWBOOL(cui16cx1y0l2);
@@ -1401,7 +1727,7 @@ private:
 		constexpr AUTO			cex1y0_3c=OFWBOOL(FALSE);
 		constexpr AUTO			cex1y0_3d=OFWBOOL(FALSE);
 		CAUTO					cex1y0_3e=OFWBOOL(cui16cx1y0l2);
-		CAUTO					cex1y0_3f=OFWBOOL((cui16cx1y0l2&&((cui16cx1y0l2&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU))||cui16cx1y0l3);
+		CAUTO					cex1y0_3f=OFWBOOL((cui16cx1y0l2&&((cui16cx1y0l2&stcui16cTilePartMask)!=stcui16cTilePartRU))||cui16cx1y0l3);
 		CAUTO					cex1y0_4a=OFWBOOL(cui16cx1y0l1);
 		CAUTO					cex1y0_4b=OFWBOOL(cui16cx1y0l1);
 		CAUTO					cex1y0_4c=OFWBOOL(cui16cx1y0l1);
@@ -1409,7 +1735,7 @@ private:
 		CAUTO					cex1y0_4e=OFWBOOL(cui16cx1y0l1);
 		CAUTO					cex1y0_4f=OFWBOOL(cui16cx1y0l1);
 		CAUTO					cex1y0_4g=OFWBOOL(cui16cx1y0l1);
-		CAUTO					cex1y0_5a=OFWBOOL(cui16cx1y0l2&&((cui16cx1y0l2&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU));
+		CAUTO					cex1y0_5a=OFWBOOL(cui16cx1y0l2&&((cui16cx1y0l2&stcui16cTilePartMask)!=stcui16cTilePartRU));
 		CAUTO					cex1y0_5b=OFWBOOL(cui16cx1y0l2);
 		CAUTO					cex1y0_5c=OFWBOOL(cui16cx1y0l2);
 		CAUTO					cex1y0_5d=OFWBOOL(cui16cx1y0l3);
@@ -1428,9 +1754,9 @@ private:
 		//	       \         \ |    |    | * ** * **    //
 		//	        \1        \|    |    |3 ＼|* ＼|    //
 		//	         +---------+(1)-|(2)-3--3-3--*-*    //
-		CAUTO					cui16cx2y0l2=(cex2y0&&cel2)?GAME_stui16cGetTile(cui8ix2,cui8iy0,cui8ilayer2):UINT16(0x0000);
-		CAUTO					cui16cx2y0l3=(cex2y0&&cel3)?GAME_stui16cGetTile(cui8ix2,cui8iy0,cui8ilayer3):UINT16(0x0000);
-		CAUTO					cui16cx2y0l4=(cex2y0&&cel4)?GAME_stui16cGetTile(cui8ix2,cui8iy0,cui8ilayer4):UINT16(0x0000);
+		CAUTO					cui16cx2y0l2=(cex2y0&&cel2)?stui16cGetTile(cui8ix2,cui8iy0,cui8ilayer2):UINT16(0x0000);
+		CAUTO					cui16cx2y0l3=(cex2y0&&cel3)?stui16cGetTile(cui8ix2,cui8iy0,cui8ilayer3):UINT16(0x0000);
+		CAUTO					cui16cx2y0l4=(cex2y0&&cel4)?stui16cGetTile(cui8ix2,cui8iy0,cui8ilayer4):UINT16(0x0000);
 		constexpr AUTO			cex2y0_0a=OFWBOOL(FALSE);
 		constexpr AUTO			cex2y0_0b=OFWBOOL(FALSE);
 		constexpr AUTO			cex2y0_0c=OFWBOOL(FALSE);
@@ -1464,7 +1790,7 @@ private:
 		constexpr AUTO			cex2y0_4c=OFWBOOL(FALSE);
 		constexpr AUTO			cex2y0_4d=OFWBOOL(FALSE);
 		CAUTO					cex2y0_4e=OFWBOOL(cui16cx2y0l3);
-		CAUTO					cex2y0_4f=OFWBOOL((cui16cx2y0l3&&((cui16cx2y0l3&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU))||cui16cx2y0l4);
+		CAUTO					cex2y0_4f=OFWBOOL((cui16cx2y0l3&&((cui16cx2y0l3&stcui16cTilePartMask)!=stcui16cTilePartRU))||cui16cx2y0l4);
 		CAUTO					cex2y0_4g=OFWBOOL(cui16cx2y0l3);
 		constexpr AUTO			cex2y0_5a=OFWBOOL(FALSE);
 		constexpr AUTO			cex2y0_5b=OFWBOOL(FALSE);
@@ -1491,19 +1817,19 @@ private:
 		//	      | * ** * **   //
 		//	      |* ＼|* ＼|   //
 		//	      *--*-*--*-*   //
-		CAUTO					cui16cx0y1l1=(cex0y1&&cel1)?GAME_stui16cGetTile(cui8ix0,cui8iy1,cui8ilayer1):UINT16(0x0000);
-		CAUTO					cui16cx0y1l2=(cex0y1&&cel2)?GAME_stui16cGetTile(cui8ix0,cui8iy1,cui8ilayer2):UINT16(0x0000);
-		CAUTO					cui16cx0y1l3=(cex0y1&&cel3)?GAME_stui16cGetTile(cui8ix0,cui8iy1,cui8ilayer3):UINT16(0x0000);
+		CAUTO					cui16cx0y1l1=(cex0y1&&cel1)?stui16cGetTile(cui8ix0,cui8iy1,cui8ilayer1):UINT16(0x0000);
+		CAUTO					cui16cx0y1l2=(cex0y1&&cel2)?stui16cGetTile(cui8ix0,cui8iy1,cui8ilayer2):UINT16(0x0000);
+		CAUTO					cui16cx0y1l3=(cex0y1&&cel3)?stui16cGetTile(cui8ix0,cui8iy1,cui8ilayer3):UINT16(0x0000);
 		CAUTO					cex0y1_0a=OFWBOOL(cui16cx0y1l1);
 		constexpr AUTO			cex0y1_0b=OFWBOOL(FALSE);
 		constexpr AUTO			cex0y1_0c=OFWBOOL(FALSE);
 		CAUTO					cex0y1_0d=OFWBOOL(cui16cx0y1l1);
 		constexpr AUTO			cex0y1_0e=OFWBOOL(FALSE);
-		CAUTO					cex0y1_0f=OFWBOOL((cui16cx0y1l1&&((cui16cx0y1l1&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD))||cui16cx0y1l2);
+		CAUTO					cex0y1_0f=OFWBOOL((cui16cx0y1l1&&((cui16cx0y1l1&stcui16cTilePartMask)!=stcui16cTilePartLD))||cui16cx0y1l2);
 		constexpr AUTO			cex0y1_0g=OFWBOOL(FALSE);
 		CAUTO					cex0y1_0h=OFWBOOL(cui16cx0y1l1);
 		CAUTO					cex0y1_1a=OFWBOOL(cui16cx0y1l1);
-		CAUTO					cex0y1_1b=OFWBOOL(cui16cx0y1l1&&((cui16cx0y1l1&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD));
+		CAUTO					cex0y1_1b=OFWBOOL(cui16cx0y1l1&&((cui16cx0y1l1&stcui16cTilePartMask)!=stcui16cTilePartLD));
 		CAUTO					cex0y1_1c=OFWBOOL(cui16cx0y1l1);
 		CAUTO					cex0y1_1d=OFWBOOL(cui16cx0y1l1);
 		CAUTO					cex0y1_1e=OFWBOOL(cui16cx0y1l2);
@@ -1521,7 +1847,7 @@ private:
 		constexpr AUTO			cex0y1_3c=OFWBOOL(FALSE);
 		CAUTO					cex0y1_3d=OFWBOOL(cui16cx0y1l2);
 		constexpr AUTO			cex0y1_3e=OFWBOOL(FALSE);
-		CAUTO					cex0y1_3f=OFWBOOL((cui16cx0y1l2&&((cui16cx0y1l2&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD))||cui16cx0y1l3);
+		CAUTO					cex0y1_3f=OFWBOOL((cui16cx0y1l2&&((cui16cx0y1l2&stcui16cTilePartMask)!=stcui16cTilePartLD))||cui16cx0y1l3);
 		constexpr AUTO			cex0y1_4a=OFWBOOL(FALSE);
 		constexpr AUTO			cex0y1_4b=OFWBOOL(FALSE);
 		constexpr AUTO			cex0y1_4c=OFWBOOL(FALSE);
@@ -1554,16 +1880,16 @@ private:
 		//	                | * 33 3 33 //
 		//	                |* ＼|# ＼| //
 		//	                *--*-3--4-3 //
-		CAUTO					cui16cx1y1l1=(cex1y1&&cel1)?GAME_stui16cGetTile(cui8ix1,cui8iy1,cui8ilayer1):UINT16(0x0000);
-		CAUTO					cui16cx1y1l2=(cex1y1&&cel2)?GAME_stui16cGetTile(cui8ix1,cui8iy1,cui8ilayer2):UINT16(0x0000);
-		CAUTO					cui16cx1y1l3=(cex1y1&&cel3)?GAME_stui16cGetTile(cui8ix1,cui8iy1,cui8ilayer3):UINT16(0x0000);
-		CAUTO					cui16cx1y1l4=(cex1y1&&cel4)?GAME_stui16cGetTile(cui8ix1,cui8iy1,cui8ilayer4):UINT16(0x0000);
+		CAUTO					cui16cx1y1l1=(cex1y1&&cel1)?stui16cGetTile(cui8ix1,cui8iy1,cui8ilayer1):UINT16(0x0000);
+		CAUTO					cui16cx1y1l2=(cex1y1&&cel2)?stui16cGetTile(cui8ix1,cui8iy1,cui8ilayer2):UINT16(0x0000);
+		CAUTO					cui16cx1y1l3=(cex1y1&&cel3)?stui16cGetTile(cui8ix1,cui8iy1,cui8ilayer3):UINT16(0x0000);
+		CAUTO					cui16cx1y1l4=(cex1y1&&cel4)?stui16cGetTile(cui8ix1,cui8iy1,cui8ilayer4):UINT16(0x0000);
 		CAUTO					cex1y1_0a=OFWBOOL(cui16cx1y1l1);
 		CAUTO					cex1y1_0b=OFWBOOL(cui16cx1y1l1);
 		CAUTO					cex1y1_0c=OFWBOOL(cui16cx1y1l1);
 		CAUTO					cex1y1_0d=OFWBOOL(cui16cx1y1l2);
 		CAUTO					cex1y1_0e=OFWBOOL(cui16cx1y1l2);
-		CAUTO					cex1y1_0f=OFWBOOL((cui16cx1y1l1&&((cui16cx1y1l1&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRD))||cui16cx1y1l2);
+		CAUTO					cex1y1_0f=OFWBOOL((cui16cx1y1l1&&((cui16cx1y1l1&stcui16cTilePartMask)!=stcui16cTilePartRD))||cui16cx1y1l2);
 		CAUTO					cex1y1_0g=OFWBOOL(cui16cx1y1l1);
 		CAUTO					cex1y1_0h=OFWBOOL(cui16cx1y1l1);
 		CAUTO					cex1y1_1a=OFWBOOL(cui16cx1y1l2);
@@ -1574,27 +1900,27 @@ private:
 		CAUTO					cex1y1_1f=OFWBOOL(cui16cx1y1l2);
 		CAUTO					cex1y1_1h=OFWBOOL(cui16cx1y1l2);
 		CAUTO					cex1y1_2a=OFWBOOL(cui16cx1y1l2);
-		CAUTO					cex1y1_2b=OFWBOOL(cui16cx1y1l2&&((cui16cx1y1l2&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD));
+		CAUTO					cex1y1_2b=OFWBOOL(cui16cx1y1l2&&((cui16cx1y1l2&stcui16cTilePartMask)!=stcui16cTilePartLD));
 		CAUTO					cex1y1_2c=OFWBOOL(cui16cx1y1l2);
 		CAUTO					cex1y1_2d=OFWBOOL(cui16cx1y1l2);
 		CAUTO					cex1y1_2e=OFWBOOL(cui16cx1y1l3);
 		CAUTO					cex1y1_2f=OFWBOOL(cui16cx1y1l2);
-		CAUTO					cex1y1_2g=OFWBOOL((cui16cx1y1l2&&((cui16cx1y1l2&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD))||cui16cx1y1l3);
+		CAUTO					cex1y1_2g=OFWBOOL((cui16cx1y1l2&&((cui16cx1y1l2&stcui16cTilePartMask)!=stcui16cTilePartLD))||cui16cx1y1l3);
 		CAUTO					cex1y1_3a=OFWBOOL(cui16cx1y1l2);
 		CAUTO					cex1y1_3b=OFWBOOL(cui16cx1y1l2);
 		CAUTO					cex1y1_3c=OFWBOOL(cui16cx1y1l2);
 		CAUTO					cex1y1_3d=OFWBOOL(cui16cx1y1l3);
 		CAUTO					cex1y1_3e=OFWBOOL(cui16cx1y1l3);
-		CAUTO					cex1y1_3f=OFWBOOL((cui16cx1y1l2&&((cui16cx1y1l2&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRD))||cui16cx1y1l3);
+		CAUTO					cex1y1_3f=OFWBOOL((cui16cx1y1l2&&((cui16cx1y1l2&stcui16cTilePartMask)!=stcui16cTilePartRD))||cui16cx1y1l3);
 		CAUTO					cex1y1_4a=OFWBOOL(cui16cx1y1l3);
 		constexpr AUTO			cex1y1_4b=OFWBOOL(FALSE);
 		constexpr AUTO			cex1y1_4c=OFWBOOL(FALSE);
 		CAUTO					cex1y1_4d=OFWBOOL(cui16cx1y1l3);
 		constexpr AUTO			cex1y1_4e=OFWBOOL(FALSE);
-		CAUTO					cex1y1_4f=OFWBOOL((cui16cx1y1l3&&((cui16cx1y1l3&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD))||cui16cx1y1l4);
+		CAUTO					cex1y1_4f=OFWBOOL((cui16cx1y1l3&&((cui16cx1y1l3&stcui16cTilePartMask)!=stcui16cTilePartLD))||cui16cx1y1l4);
 		constexpr AUTO			cex1y1_4g=OFWBOOL(FALSE);
 		CAUTO					cex1y1_5a=OFWBOOL(cui16cx1y1l3);
-		CAUTO					cex1y1_5b=OFWBOOL(cui16cx1y1l3&&((cui16cx1y1l3&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD));
+		CAUTO					cex1y1_5b=OFWBOOL(cui16cx1y1l3&&((cui16cx1y1l3&stcui16cTilePartMask)!=stcui16cTilePartLD));
 		CAUTO					cex1y1_5c=OFWBOOL(cui16cx1y1l3);
 		CAUTO					cex1y1_5d=OFWBOOL(cui16cx1y1l3);
 		CAUTO					cex1y1_5e=OFWBOOL(cui16cx1y1l4);
@@ -1618,24 +1944,24 @@ private:
 		//	                 ＼       | 3 34 4 45   //
 		//	                   ＼(3)  |3 ＼|4 ＼|   //
 		//	                     \--- 3--4-3--4-4   //
-		CAUTO					cui16cx2y1l2=(cex2y1&&cel2)?GAME_stui16cGetTile(cui8ix2,cui8iy1,cui8ilayer2):UINT16(0x0000);
-		CAUTO					cui16cx2y1l3=(cex2y1&&cel3)?GAME_stui16cGetTile(cui8ix2,cui8iy1,cui8ilayer3):UINT16(0x0000);
-		CAUTO					cui16cx2y1l4=(cex2y1&&cel4)?GAME_stui16cGetTile(cui8ix2,cui8iy1,cui8ilayer4):UINT16(0x0000);
-		CAUTO					cui16cx2y1l5=(cex2y1&&cel5)?GAME_stui16cGetTile(cui8ix2,cui8iy1,cui8ilayer5):UINT16(0x0000);
-		CAUTO					cex2y1_0a=OFWBOOL(cui16cx2y1l3&&((cui16cx2y1l3&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU));
+		CAUTO					cui16cx2y1l2=(cex2y1&&cel2)?stui16cGetTile(cui8ix2,cui8iy1,cui8ilayer2):UINT16(0x0000);
+		CAUTO					cui16cx2y1l3=(cex2y1&&cel3)?stui16cGetTile(cui8ix2,cui8iy1,cui8ilayer3):UINT16(0x0000);
+		CAUTO					cui16cx2y1l4=(cex2y1&&cel4)?stui16cGetTile(cui8ix2,cui8iy1,cui8ilayer4):UINT16(0x0000);
+		CAUTO					cui16cx2y1l5=(cex2y1&&cel5)?stui16cGetTile(cui8ix2,cui8iy1,cui8ilayer5):UINT16(0x0000);
+		CAUTO					cex2y1_0a=OFWBOOL(cui16cx2y1l3&&((cui16cx2y1l3&stcui16cTilePartMask)!=stcui16cTilePartRU));
 		CAUTO					cex2y1_0b=OFWBOOL(cui16cx2y1l3);
 		CAUTO					cex2y1_0c=OFWBOOL(cui16cx2y1l3);
 		CAUTO					cex2y1_0d=OFWBOOL(cui16cx2y1l4);
 		CAUTO					cex2y1_0e=OFWBOOL(cui16cx2y1l3);
 		CAUTO					cex2y1_0f=OFWBOOL(cui16cx2y1l3);
 		CAUTO					cex2y1_0g=OFWBOOL(cui16cx2y1l3);
-		CAUTO					cex2y1_0h=OFWBOOL((cui16cx2y1l3&&((cui16cx2y1l3&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU))||cui16cx2y1l4);
+		CAUTO					cex2y1_0h=OFWBOOL((cui16cx2y1l3&&((cui16cx2y1l3&stcui16cTilePartMask)!=stcui16cTilePartRU))||cui16cx2y1l4);
 		constexpr AUTO			cex2y1_1a=OFWBOOL(FALSE);
 		CAUTO					cex2y1_1b=OFWBOOL(cui16cx2y1l4);
 		constexpr AUTO			cex2y1_1c=OFWBOOL(FALSE);
 		constexpr AUTO			cex2y1_1d=OFWBOOL(FALSE);
 		CAUTO					cex2y1_1e=OFWBOOL(cui16cx2y1l4);
-		CAUTO					cex2y1_1f=OFWBOOL((cui16cx2y1l4&&((cui16cx2y1l4&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU))||cui16cx2y1l5);
+		CAUTO					cex2y1_1f=OFWBOOL((cui16cx2y1l4&&((cui16cx2y1l4&stcui16cTilePartMask)!=stcui16cTilePartRU))||cui16cx2y1l5);
 		constexpr AUTO			cex2y1_1h=OFWBOOL(FALSE);
 		CAUTO					cex2y1_2a=OFWBOOL(cui16cx2y1l3);
 		CAUTO					cex2y1_2b=OFWBOOL(cui16cx2y1l3);
@@ -1644,7 +1970,7 @@ private:
 		CAUTO					cex2y1_2e=OFWBOOL(cui16cx2y1l3);
 		CAUTO					cex2y1_2f=OFWBOOL(cui16cx2y1l3);
 		CAUTO					cex2y1_2g=OFWBOOL(cui16cx2y1l3);
-		CAUTO					cex2y1_3a=OFWBOOL(cui16cx2y1l4&&((cui16cx2y1l4&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU));
+		CAUTO					cex2y1_3a=OFWBOOL(cui16cx2y1l4&&((cui16cx2y1l4&stcui16cTilePartMask)!=stcui16cTilePartRU));
 		CAUTO					cex2y1_3b=OFWBOOL(cui16cx2y1l4);
 		CAUTO					cex2y1_3c=OFWBOOL(cui16cx2y1l4);
 		CAUTO					cex2y1_3d=OFWBOOL(cui16cx2y1l5);
@@ -1655,7 +1981,7 @@ private:
 		CAUTO					cex2y1_4c=OFWBOOL(cui16cx2y1l3);
 		CAUTO					cex2y1_4d=OFWBOOL(cui16cx2y1l4);
 		CAUTO					cex2y1_4e=OFWBOOL(cui16cx2y1l4);
-		CAUTO					cex2y1_4f=OFWBOOL((cui16cx2y1l3&&((cui16cx2y1l3&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRD))||cui16cx2y1l4);
+		CAUTO					cex2y1_4f=OFWBOOL((cui16cx2y1l3&&((cui16cx2y1l3&stcui16cTilePartMask)!=stcui16cTilePartRD))||cui16cx2y1l4);
 		CAUTO					cex2y1_4g=OFWBOOL(cui16cx2y1l3);
 		CAUTO					cex2y1_5a=OFWBOOL(cui16cx2y1l4);
 		CAUTO					cex2y1_5b=OFWBOOL(cui16cx2y1l4);
@@ -1682,7 +2008,7 @@ private:
 		//	                 ＼        ＼  |    | 5 #* * ** //
 		//	                   ＼(3)     ＼|    |5 ＼|* ＼| //
 		//	                     \---------\(4) 5--5-5--*-* //
-		CAUTO					cui16cx3y1l5=(cex3y1&&cel5)?GAME_stui16cGetTile(cui8ix3,cui8iy1,cui8ilayer5):UINT16(0x0000);
+		CAUTO					cui16cx3y1l5=(cex3y1&&cel5)?stui16cGetTile(cui8ix3,cui8iy1,cui8ilayer5):UINT16(0x0000);
 		constexpr AUTO			cex3y1_0a=OFWBOOL(FALSE);
 		constexpr AUTO			cex3y1_0b=OFWBOOL(FALSE);
 		constexpr AUTO			cex3y1_0c=OFWBOOL(FALSE);
@@ -1703,7 +2029,7 @@ private:
 		constexpr AUTO			cex3y1_2c=OFWBOOL(FALSE);
 		constexpr AUTO			cex3y1_2d=OFWBOOL(FALSE);
 		CAUTO					cex3y1_2e=OFWBOOL(cui16cx3y1l5);
-		CAUTO					cex3y1_2f=OFWBOOL(cui16cx3y1l5&&((cui16cx3y1l5&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU));
+		CAUTO					cex3y1_2f=OFWBOOL(cui16cx3y1l5&&((cui16cx3y1l5&stcui16cTilePartMask)!=stcui16cTilePartRU));
 		CAUTO					cex3y1_2g=OFWBOOL(cui16cx3y1l5);
 		constexpr AUTO			cex3y1_3a=OFWBOOL(FALSE);
 		constexpr AUTO			cex3y1_3b=OFWBOOL(FALSE);
@@ -1711,7 +2037,7 @@ private:
 		constexpr AUTO			cex3y1_3d=OFWBOOL(FALSE);
 		constexpr AUTO			cex3y1_3e=OFWBOOL(FALSE);
 		constexpr AUTO			cex3y1_3f=OFWBOOL(FALSE);
-		CAUTO					cex3y1_4a=OFWBOOL(cui16cx3y1l5&&((cui16cx3y1l5&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRU));
+		CAUTO					cex3y1_4a=OFWBOOL(cui16cx3y1l5&&((cui16cx3y1l5&stcui16cTilePartMask)!=stcui16cTilePartRU));
 		CAUTO					cex3y1_4b=OFWBOOL(cui16cx3y1l5);
 		CAUTO					cex3y1_4c=OFWBOOL(cui16cx3y1l5);
 		CAUTO					cex3y1_4d=OFWBOOL(cui16cx3y1l5);
@@ -1752,8 +2078,8 @@ private:
 		//	                | * ** * ** //
 		//	                |* ＼|* ＼| //
 		//	                +--*-*--*-* //
-		CAUTO					cui16cx1y2l4=(cex1y2&&cel4)?GAME_stui16cGetTile(cui8ix1,cui8iy2,cui8ilayer4):UINT16(0x0000);
-		CAUTO					cui16cx1y2l5=(cex1y2&&cel5)?GAME_stui16cGetTile(cui8ix1,cui8iy2,cui8ilayer5):UINT16(0x0000);
+		CAUTO					cui16cx1y2l4=(cex1y2&&cel4)?stui16cGetTile(cui8ix1,cui8iy2,cui8ilayer4):UINT16(0x0000);
+		CAUTO					cui16cx1y2l5=(cex1y2&&cel5)?stui16cGetTile(cui8ix1,cui8iy2,cui8ilayer5):UINT16(0x0000);
 		constexpr AUTO			cex1y2_0a=OFWBOOL(FALSE);
 		constexpr AUTO			cex1y2_0b=OFWBOOL(FALSE);
 		constexpr AUTO			cex1y2_0c=OFWBOOL(FALSE);
@@ -1767,7 +2093,7 @@ private:
 		constexpr AUTO			cex1y2_1c=OFWBOOL(FALSE);
 		CAUTO					cex1y2_1d=OFWBOOL(cui16cx1y2l4);
 		constexpr AUTO			cex1y2_1e=OFWBOOL(FALSE);
-		CAUTO					cex1y2_1f=OFWBOOL((cui16cx1y2l4&&((cui16cx1y2l4&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD))||cui16cx1y2l5);
+		CAUTO					cex1y2_1f=OFWBOOL((cui16cx1y2l4&&((cui16cx1y2l4&stcui16cTilePartMask)!=stcui16cTilePartLD))||cui16cx1y2l5);
 		CAUTO					cex1y2_1h=OFWBOOL(cui16cx1y2l4);
 		constexpr AUTO			cex1y2_2a=OFWBOOL(FALSE);
 		constexpr AUTO			cex1y2_2b=OFWBOOL(FALSE);
@@ -1823,32 +2149,32 @@ private:
 		//	                          | * ** * **   //
 		//	                          |* ＼|* ＼|   //
 		//	                          *--*-*--*-*   //
-		CAUTO					cui16cx2y2l4=(cex2y2&&cel4)?GAME_stui16cGetTile(cui8ix2,cui8iy2,cui8ilayer4):UINT16(0x0000);
-		CAUTO					cui16cx2y2l5=(cex2y2&&cel5)?GAME_stui16cGetTile(cui8ix2,cui8iy2,cui8ilayer5):UINT16(0x0000);
+		CAUTO					cui16cx2y2l4=(cex2y2&&cel4)?stui16cGetTile(cui8ix2,cui8iy2,cui8ilayer4):UINT16(0x0000);
+		CAUTO					cui16cx2y2l5=(cex2y2&&cel5)?stui16cGetTile(cui8ix2,cui8iy2,cui8ilayer5):UINT16(0x0000);
 		CAUTO					cex2y2_0a=OFWBOOL(cui16cx2y2l4);
-		CAUTO					cex2y2_0b=OFWBOOL(cui16cx2y2l4&&((cui16cx2y2l4&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD));
+		CAUTO					cex2y2_0b=OFWBOOL(cui16cx2y2l4&&((cui16cx2y2l4&stcui16cTilePartMask)!=stcui16cTilePartLD));
 		CAUTO					cex2y2_0c=OFWBOOL(cui16cx2y2l4);
 		CAUTO					cex2y2_0d=OFWBOOL(cui16cx2y2l4);
 		CAUTO					cex2y2_0e=OFWBOOL(cui16cx2y2l5);
 		CAUTO					cex2y2_0f=OFWBOOL(cui16cx2y2l4);
-		CAUTO					cex2y2_0g=OFWBOOL((cui16cx2y2l4&&((cui16cx2y2l4&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD))||cui16cx2y2l5);
+		CAUTO					cex2y2_0g=OFWBOOL((cui16cx2y2l4&&((cui16cx2y2l4&stcui16cTilePartMask)!=stcui16cTilePartLD))||cui16cx2y2l5);
 		CAUTO					cex2y2_0h=OFWBOOL(cui16cx2y2l4);
 		CAUTO					cex2y2_1a=OFWBOOL(cui16cx2y2l4);
 		CAUTO					cex2y2_1b=OFWBOOL(cui16cx2y2l4);
 		CAUTO					cex2y2_1c=OFWBOOL(cui16cx2y2l4);
 		CAUTO					cex2y2_1d=OFWBOOL(cui16cx2y2l5);
 		CAUTO					cex2y2_1e=OFWBOOL(cui16cx2y2l5);
-		CAUTO					cex2y2_1f=OFWBOOL((cui16cx2y2l4&&((cui16cx2y2l4&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRD))||cui16cx2y2l5);
+		CAUTO					cex2y2_1f=OFWBOOL((cui16cx2y2l4&&((cui16cx2y2l4&stcui16cTilePartMask)!=stcui16cTilePartRD))||cui16cx2y2l5);
 		CAUTO					cex2y2_1h=OFWBOOL(cui16cx2y2l4);
 		CAUTO					cex2y2_2a=OFWBOOL(cui16cx2y2l5);
 		constexpr AUTO			cex2y2_2b=OFWBOOL(FALSE);
 		constexpr AUTO			cex2y2_2c=OFWBOOL(FALSE);
 		CAUTO					cex2y2_2d=OFWBOOL(cui16cx2y2l5);
 		constexpr AUTO			cex2y2_2e=OFWBOOL(FALSE);
-		CAUTO					cex2y2_2f=OFWBOOL(cui16cx2y2l5&&((cui16cx2y2l5&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD));
+		CAUTO					cex2y2_2f=OFWBOOL(cui16cx2y2l5&&((cui16cx2y2l5&stcui16cTilePartMask)!=stcui16cTilePartLD));
 		constexpr AUTO			cex2y2_2g=OFWBOOL(FALSE);
 		CAUTO					cex2y2_3a=OFWBOOL(cui16cx2y2l5);
-		CAUTO					cex2y2_3b=OFWBOOL(cui16cx2y2l5&&((cui16cx2y2l5&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartLD));
+		CAUTO					cex2y2_3b=OFWBOOL(cui16cx2y2l5&&((cui16cx2y2l5&stcui16cTilePartMask)!=stcui16cTilePartLD));
 		CAUTO					cex2y2_3c=OFWBOOL(cui16cx2y2l5);
 		CAUTO					cex2y2_3d=OFWBOOL(cui16cx2y2l5);
 		constexpr AUTO			cex2y2_3e=OFWBOOL(FALSE);
@@ -1894,7 +2220,7 @@ private:
 		//	                                    | * ** * ** //
 		//	                                    |* ＼|* ＼| //
 		//	                                    *--*-*--*-* //
-		CAUTO					cui16cx3y2l5=(cex3y2&&cel5)?GAME_stui16cGetTile(cui8ix3,cui8iy2,cui8ilayer5):UINT16(0x0000);
+		CAUTO					cui16cx3y2l5=(cex3y2&&cel5)?stui16cGetTile(cui8ix3,cui8iy2,cui8ilayer5):UINT16(0x0000);
 		CAUTO					cex3y2_0a=OFWBOOL(cui16cx3y2l5);
 		CAUTO					cex3y2_0b=OFWBOOL(cui16cx3y2l5);
 		CAUTO					cex3y2_0c=OFWBOOL(cui16cx3y2l5);
@@ -1915,7 +2241,7 @@ private:
 		CAUTO					cex3y2_2c=OFWBOOL(cui16cx3y2l5);
 		constexpr AUTO			cex3y2_2d=OFWBOOL(FALSE);
 		constexpr AUTO			cex3y2_2e=OFWBOOL(FALSE);
-		CAUTO					cex3y2_2f=OFWBOOL(cui16cx3y2l5&&((cui16cx3y2l5&GAME_stcui16cTilePartMask)!=GAME_stcui16cTilePartRD));
+		CAUTO					cex3y2_2f=OFWBOOL(cui16cx3y2l5&&((cui16cx3y2l5&stcui16cTilePartMask)!=stcui16cTilePartRD));
 		CAUTO					cex3y2_2g=OFWBOOL(cui16cx3y2l5);
 		constexpr AUTO			cex3y2_3a=OFWBOOL(FALSE);
 		constexpr AUTO			cex3y2_3b=OFWBOOL(FALSE);
@@ -2176,11 +2502,342 @@ private:
 };
 
 //
-//		user
+//		クラス:MENU
 //
 
-OFWBOOL					SELECT_eSelected;
-UINT8					SELECT_ui8iTile,SELECT_ui8iX,SELECT_ui8iY,SELECT_ui8iLayer;
+class MENU{
+public:
+
+	//
+	//		定数
+	//
+
+	class _IDTYPE{
+	public:
+		enum BODY:UINT8{
+			Disabled=0,
+			Normal,
+			NormalSelected,
+			Caution,
+			CautionSelected,
+			stcui8nThis
+		};
+	};
+	using					IDTYPE=_IDTYPE::BODY;
+	static constexpr AUTO	TYPE_stcui8nThis=UINT8(IDTYPE::stcui8nThis);
+	class _IDCOLOR{
+	public:
+		enum BODY:UINT8{
+			Face=0,
+			Edge,
+			Text,
+			stcui8nThis
+		};
+	};
+	using					IDCOLOR=_IDCOLOR::BODY;
+	static constexpr AUTO	COLOR_stcui8nThis=UINT8(IDCOLOR::stcui8nThis);
+	static constexpr UINT16	staacui16cColor[UINT8(IDTYPE::stcui8nThis)][UINT8(IDCOLOR::stcui8nThis)]={
+		//	Face	Edge	Text
+		{	0xf222,	0xf666,	0xf888},	//	IDTYPE::Disabled
+		{	0xf644,	0xffee,	0xffff},	//	IDTYPE::Normal
+		{	0xf200,	0xf644,	0xf866},	//	IDTYPE::NormalSelected
+		{	0xf446,	0xfeef,	0xffff},	//	IDTYPE::Caution
+		{	0xf002,	0xf446,	0xf668}		//	IDTYPE::CautionSelected
+	};
+	class _IDCOMMAND{
+	public:
+		enum BODY:UINT8{
+			None=0,
+			Retry,
+			LayoutDec,
+			LayoutInc,
+			NumberDec,
+			NumberInc,
+			DifficultyDec,
+			DifficultyInc
+		};
+	};
+	using					IDCOMMAND=_IDCOMMAND::BODY;
+	static constexpr UINT8	stcui8nScreenBit=4;
+	static constexpr AUTO	stcv2nArea=VECTOR2(
+		GRAPHIC::stcv2nScreen.i16nWidth()>>stcui8nScreenBit,
+		4
+	);
+	static constexpr AUTO	stcv2nOne=VECTOR2(8,1);
+	static constexpr AUTO	stcv2nOne_Screen=stcv2nOne<<stcui8nScreenBit;
+	static constexpr AUTO	stcv2iRetry=VECTOR2(32,1);
+	static constexpr AUTO	stcv2iLayout=VECTOR2(0,1);
+	static constexpr AUTO	stcv2iNumber=VECTOR2(8,1);
+	static constexpr AUTO	stcv2iDifficulty=VECTOR2(16,1);
+	static constexpr AUTO	stcv2iRest=VECTOR2(32,0);
+	static constexpr UINT8	stcui8iLayoutMaximum=GAME::stcui8nLayout-1;
+	static constexpr UINT16	stcui16iNumberMaximum=999;
+	static constexpr UINT8	stcui8nDifficultyMaximum=9;
+	static constexpr AUTO	SCREEN_stcv2nArea=stcv2nArea<<stcui8nScreenBit;
+	static constexpr AUTO	SCREEN_stcshpGame=GRAPHIC::SHAPE(
+		{
+			0,SCREEN_stcv2nArea.i16nHeight()
+		},{
+			GRAPHIC::stcv2nScreen.i16nWidth(),
+			GRAPHIC::stcv2nScreen.i16nHeight()-SCREEN_stcv2nArea.i16nHeight()
+		}
+	);
+
+	//
+	//		型
+	//
+
+	//	CANVAS_MENU
+	using					CANVAS_MENU=CANVAS_RGB_RAM<UINT16(stcv2nOne_Screen.i16nWidth()),UINT16(stcv2nOne_Screen.i16nHeight())>;
+	using					CCANVAS_MENU=const CANVAS_MENU;
+	using					PCANVAS_MENU=CANVAS_MENU*;
+	using					PCCANVAS_MENU=CCANVAS_MENU*;
+
+	//
+	//		定義本体:MENU
+	//
+
+private:
+	static inline UINT8		stui8iLayout;
+	static inline UINT16	stui16iNumber;
+	static inline UINT8		stui8nDifficulty;
+	static inline IDCOMMAND	COMMAND_staidCommand[stcv2nArea.i16nWidth()*stcv2nArea.i16nHeight()];
+	static inline CANVAS_MENU	OFF_stcvsRetry,OFF_stcvsRetrySelected;
+	static inline CANVAS_MENU	OFF_stcvsLayout,OFF_stcvsLayoutSelected;
+	static inline CANVAS_MENU	OFF_stcvsNumber,OFF_stcvsNumberSelected;
+	static inline CANVAS_MENU	OFF_stcvsDifficulty,OFF_stcvsDifficultySelected;
+	static inline CANVAS_MENU	OFF_stcvsRest;
+public:
+	static VOID				stNew(VOID)noexcept{
+		stui8iLayout=0;
+		stui16iNumber=0;
+		stui8nDifficulty=0;
+		for(AUTO& idcommand:COMMAND_staidCommand)idcommand=IDCOMMAND::None;
+		COMMAND_stSet(IDCOMMAND::Retry,stcv2iRetry);
+		COMMAND_stSet(IDCOMMAND::LayoutDec,stcv2iLayout,TRUE);
+		COMMAND_stSet(IDCOMMAND::NumberDec,stcv2iNumber,TRUE);
+		COMMAND_stSet(IDCOMMAND::DifficultyDec,stcv2iDifficulty,TRUE);
+		return;
+	}
+	static VOID				stDelete(VOID)noexcept{
+		return;
+	}
+	static IDCOMMAND		COMMAND_stidGetCommandbyScreenPosition(VECTOR2& v2iposition,CVECTOR2& cv2iposition_screen)noexcept{
+		v2iposition=cv2iposition_screen>>stcui8nScreenBit;
+		if(
+			CAUTO					cui8iposition=COMMAND_stui8iGetPosition(v2iposition);
+			cui8iposition<SIZEOF(COMMAND_staidCommand)
+		)if(
+			CAUTO					cidcommand=COMMAND_staidCommand[cui8iposition];
+			cidcommand!=IDCOMMAND::None
+		){
+			v2iposition.i16iX()&=~7;
+			return cidcommand;
+		}
+		return IDCOMMAND::None;
+	}
+	static VOID				COMMAND_stExecute(const IDCOMMAND cidcommand)noexcept{
+		GAME::MOUSE_stSetBusy(TRUE);
+		switch(cidcommand){
+		case IDCOMMAND::Retry:
+			SCREEN_stDrawOne(OFF_stcvsRetrySelected,stcv2iRetry);
+			GAME::SCREEN_stClear({
+				{
+					0,
+					SCREEN_stcv2nArea.i16nHeight()
+				},GRAPHIC::stcv2nScreen
+			});
+			GAME::SCREEN_stClear({stcv2iRest<<stcui8nScreenBit,stcv2nOne_Screen});
+			GAME::stInitialize(
+				stui8iLayout,			//	cui8ilayout
+				UINT32(0x01234567+(UINT32(stui16iNumber)<<16)+(UINT32(stui8iLayout)<<8)),	//	cui32cseed
+				stui8nDifficulty*8		//	cui8ndifficulty
+			);
+			SCREEN_stDrawOne_Retry();
+			SCREEN_stDrawOne_Rest();
+			break;
+		case IDCOMMAND::LayoutDec:
+			SCREEN_stDrawOne(OFF_stcvsLayoutSelected,stcv2iLayout);
+			if(0<stui8iLayout)--stui8iLayout;
+			SCREEN_stDrawOne_Layout();
+			break;
+		case IDCOMMAND::LayoutInc:
+			SCREEN_stDrawOne(OFF_stcvsLayoutSelected,stcv2iLayout);
+			if(stui8iLayout<stcui8iLayoutMaximum)++stui8iLayout;
+			SCREEN_stDrawOne_Layout();
+			break;
+		case IDCOMMAND::NumberDec:
+			SCREEN_stDrawOne(OFF_stcvsNumberSelected,stcv2iNumber);
+			if(0<stui16iNumber)--stui16iNumber;
+			SCREEN_stDrawOne_Number();
+			break;
+		case IDCOMMAND::NumberInc:
+			SCREEN_stDrawOne(OFF_stcvsNumberSelected,stcv2iNumber);
+			if(stui16iNumber<stcui16iNumberMaximum)++stui16iNumber;
+			SCREEN_stDrawOne_Number();
+			break;
+		case IDCOMMAND::DifficultyDec:
+			SCREEN_stDrawOne(OFF_stcvsDifficultySelected,stcv2iDifficulty);
+			if(0<stui8nDifficulty)--stui8nDifficulty;
+			SCREEN_stDrawOne_Difficulty();
+			break;
+		case IDCOMMAND::DifficultyInc:
+			SCREEN_stDrawOne(OFF_stcvsDifficultySelected,stcv2iDifficulty);
+			if(stui8nDifficulty<stcui8nDifficultyMaximum)++stui8nDifficulty;
+			SCREEN_stDrawOne_Difficulty();
+			break;
+		default:
+			break;
+		}
+		GAME::MOUSE_stSetBusy(FALSE);
+		return;
+	}
+	static VOID				SCREEN_stDraw(VOID)noexcept{
+		SCREEN_stDrawString("配置型",{stcv2iLayout.i16iX(),0},0xffff);
+		SCREEN_stDrawString("配置番号",{stcv2iNumber.i16iX(),0},0xffff);
+		SCREEN_stDrawString("難易度",{stcv2iDifficulty.i16iX(),0},0xffff);
+		SCREEN_stDrawOne_Retry(TRUE);
+		SCREEN_stDrawOne_Layout();
+		SCREEN_stDrawOne_Number();
+		SCREEN_stDrawOne_Difficulty();
+		SCREEN_stDrawOne_Rest();
+		return;
+	}
+	static VOID				SCREEN_stDrawOne_Rest(VOID)noexcept{
+		OFF_stDrawOne_Rest();
+		SCREEN_stDrawOne(OFF_stcvsRest,stcv2iRest);
+		return;
+	}
+private:
+	static constexpr UINT8	COMMAND_stui8iGetPosition(CVECTOR2& cv2iposition)noexcept{
+		return (cv2iposition.i16iY()<SIZEOF(COMMAND_staidCommand)/stcv2nArea.i16nWidth())?(
+			UINT8(cv2iposition.i16iY()*stcv2nArea.i16nWidth()+cv2iposition.i16iX())
+		):(
+			SIZEOF(COMMAND_staidCommand)
+		);
+	}
+	static VOID				COMMAND_stSet(const IDCOMMAND cidcommand,CVECTOR2& cv2iposition,COFWBOOL ceupdown=FALSE)noexcept{
+		CAUTO					cui8iposition=COMMAND_stui8iGetPosition(cv2iposition);
+		CAUTO					cidcommand_right=ceupdown?IDCOMMAND(UINT8(cidcommand)+1):cidcommand;
+
+		COMMAND_staidCommand[cui8iposition+0]=cidcommand;
+		COMMAND_staidCommand[cui8iposition+1]=cidcommand;
+		COMMAND_staidCommand[cui8iposition+2]=cidcommand;
+		COMMAND_staidCommand[cui8iposition+3]=cidcommand;
+		COMMAND_staidCommand[cui8iposition+4]=cidcommand_right;
+		COMMAND_staidCommand[cui8iposition+5]=cidcommand_right;
+		COMMAND_staidCommand[cui8iposition+6]=cidcommand_right;
+		COMMAND_staidCommand[cui8iposition+7]=cidcommand_right;
+		return;
+	}
+	static _INLINE_ VOID	SCREEN_stDrawOne(CCANVAS_MENU& ccvsthis,CVECTOR2& cv2iposition)noexcept{
+		GRAPHIC::stCopy(ccvsthis,cv2iposition<<stcui8nScreenBit);
+		return;
+	}
+	static VOID				SCREEN_stDrawString(const PCUSTR cpcustrtext,CVECTOR2& cv2iposition,CUINT16 cui16ccolor)noexcept{
+		CAUTO					ci16nlength_screen=INT16(COMMON::stui8nGetLength(cpcustrtext)<<3);
+		CAUTO					ci16ioffset=INT16((stcv2nOne_Screen.i16nWidth()-ci16nlength_screen)>>1);
+		CAUTO					cv2iposition_screen=cv2iposition<<stcui8nScreenBit;
+
+		GRAPHIC::stDrawString(cpcustrtext,cui16ccolor,{INT16(cv2iposition_screen.i16iX()+ci16ioffset),cv2iposition_screen.i16iY()});
+		return;
+	}
+	static VOID				SCREEN_stDrawOne_Retry(COFWBOOL cefirst=FALSE)noexcept{
+		OFF_stDrawOne_Retry(cefirst);
+		SCREEN_stDrawOne(OFF_stcvsRetry,stcv2iRetry);
+		return;
+	}
+	static VOID				SCREEN_stDrawOne_Layout(VOID)noexcept{
+		OFF_stDrawOne_Layout();
+		SCREEN_stDrawOne(OFF_stcvsLayout,stcv2iLayout);
+		return;
+	}
+	static VOID				SCREEN_stDrawOne_Number(VOID)noexcept{
+		OFF_stDrawOne_Number();
+		SCREEN_stDrawOne(OFF_stcvsNumber,stcv2iNumber);
+		return;
+	}
+	static VOID				SCREEN_stDrawOne_Difficulty(VOID)noexcept{
+		OFF_stDrawOne_Difficulty();
+		SCREEN_stDrawOne(OFF_stcvsDifficulty,stcv2iDifficulty);
+		return;
+	}
+	static VOID				OFF_stDrawOne(CANVAS_MENU& cvsthis,const IDTYPE cidtype,const PCUSTR cpcustrtext,COFWBOOL ceup,COFWBOOL cedown)noexcept{
+		CAUTO&					acui16ccolor=staacui16cColor[UINT8(cidtype)];
+
+		cvsthis.FillRect(acui16ccolor[UINT8(IDCOLOR::Edge)],{VECTOR2::stv2ImmediateZero(),stcv2nOne_Screen});
+		cvsthis.FillRect(acui16ccolor[UINT8(IDCOLOR::Face)],{VECTOR2(1,1),stcv2nOne_Screen+VECTOR2(-2,-2)});
+		OFF_stDrawString(cvsthis,cpcustrtext,acui16ccolor[UINT8(IDCOLOR::Text)]);
+		if(ceup)cvsthis.DrawString("＋",acui16ccolor[UINT8(IDCOLOR::Text)],{stcv2nOne_Screen.i16nWidth()-16,0});
+		if(cedown)cvsthis.DrawString("－",acui16ccolor[UINT8(IDCOLOR::Text)],VECTOR2::stv2ImmediateZero());
+		return;
+	}
+	static VOID				OFF_stDrawString(CANVAS_MENU& cvsthis,const PCUSTR cpcustrtext,CUINT16 cui16ccolor)noexcept{
+		CAUTO					ci16nlength_screen=INT16(COMMON::stui8nGetLength(cpcustrtext)<<3);
+		CAUTO					ci16ioffset=INT16((stcv2nOne_Screen.i16nWidth()-ci16nlength_screen)>>1);
+
+		cvsthis.DrawString(cpcustrtext,cui16ccolor,{ci16ioffset,0});
+		return;
+	}
+	static VOID				OFF_stDrawOne_Retry(COFWBOOL cefirst)noexcept{
+		if(cefirst){
+			OFF_stDrawOne(OFF_stcvsRetry,IDTYPE::Normal,"開始",FALSE,FALSE);
+			OFF_stDrawOne(OFF_stcvsRetrySelected,IDTYPE::NormalSelected,"開始",FALSE,FALSE);
+		}else{
+			OFF_stDrawOne(OFF_stcvsRetry,IDTYPE::Caution,"やり直し",FALSE,FALSE);
+			OFF_stDrawOne(OFF_stcvsRetrySelected,IDTYPE::CautionSelected,"やり直し",FALSE,FALSE);
+		}
+		return;
+	}
+	static VOID				OFF_stDrawOne_Layout(VOID)noexcept{
+		static constexpr PCUSTR	stapcustrname[GAME::stcui8nLayout]={
+			"龍",
+			"虎",
+			"サソリ",
+			"猿",
+			"蛇",
+			"豹"
+		};
+		CAUTO					ceup=OFWBOOL(stui8iLayout<stcui8iLayoutMaximum);
+		CAUTO					cedown=OFWBOOL(0<stui8iLayout);
+
+		OFF_stDrawOne(OFF_stcvsLayout,IDTYPE::Normal,stapcustrname[stui8iLayout],ceup,cedown);
+		OFF_stDrawOne(OFF_stcvsLayoutSelected,IDTYPE::NormalSelected,stapcustrname[stui8iLayout],ceup,cedown);
+		return;
+	}
+	static VOID				OFF_stDrawOne_Number(VOID)noexcept{
+		USTR					austrthis[4];
+		CAUTO					ceup=OFWBOOL(stui16iNumber<stcui16iNumberMaximum);
+		CAUTO					cedown=OFWBOOL(0<stui16iNumber);
+
+		COMMON::stWrite(austrthis,stui16iNumber);
+		OFF_stDrawOne(OFF_stcvsNumber,IDTYPE::Normal,austrthis,ceup,cedown);
+		OFF_stDrawOne(OFF_stcvsNumberSelected,IDTYPE::NormalSelected,austrthis,ceup,cedown);
+		return;
+	}
+	static VOID				OFF_stDrawOne_Difficulty(VOID)noexcept{
+		USTR					austrthis[2];
+		CAUTO					ceup=OFWBOOL(stui8nDifficulty<stcui8nDifficultyMaximum);
+		CAUTO					cedown=OFWBOOL(0<stui8nDifficulty);
+
+		COMMON::stWrite(austrthis,UINT16(stui8nDifficulty));
+		OFF_stDrawOne(OFF_stcvsDifficulty,IDTYPE::Normal,austrthis,ceup,cedown);
+		OFF_stDrawOne(OFF_stcvsDifficultySelected,IDTYPE::NormalSelected,austrthis,ceup,cedown);
+		return;
+	}
+	static VOID				OFF_stDrawOne_Rest(VOID)noexcept{
+		USTR					austrthis[]="残り牌:   ";
+
+		COMMON::stWrite(austrthis+7,UINT16(GAME::stui8nTileRest));
+		GAME::OFF_stDrawBack(OFF_stcvsRest,stcv2iRest<<stcui8nScreenBit);
+		OFF_stDrawString(OFF_stcvsRest,austrthis,0xffff);
+		return;
+	}
+};
+
+//
+//		user
+//
 
 VOID					MARK_Erase(VOID)noexcept{
 	GRAPHIC::SPRITE_stErase(1);
@@ -2191,134 +2848,208 @@ VOID					MARK_Erase(VOID)noexcept{
 }
 
 VOID					USER_New(VOID)noexcept{
-	USER::stNew();
-	USER::GAME_stArrange();
-#ifdef SHOWARRANGEPROGRESS
-#else
-	USER::SCREEN_stDraw();
-#endif
-	USER::MOUSE_stSetBusy(FALSE);
-	SELECT_eSelected=FALSE;
+	GAME::stNew();
+	MENU::stNew();
+	GAME::SCREEN_stClear();
+	MENU::SCREEN_stDraw();
+	GRAPHIC::stDrawString("上海",0xffff,{304,232});
+	GRAPHIC::stDrawString("配置、難易度を選択して「開始」してください。",0xffff,{144,264});
+	GRAPHIC::stDrawString("2026 Programmed by 整数71",0xffff,{220,280});
+	GAME::MOUSE_stSetBusy(FALSE);
 	return;
 }
 
 VOID					USER_Delete(VOID)noexcept{
-	USER::stDelete();
+	MENU::stDelete();
+	GAME::stDelete();
 	return;
 }
 
 VOID					USER_Main(VOID)noexcept{
-	CAUTO					cstatmouse=USER::MOUSE_ststatGetState();
+	CAUTO					cstatmouse=GAME::MOUSE_ststatGetState();
 	UINT8					ui8ix,ui8iy,ui8ilayer;
 
 	if(
-		CAUTO					cui16ctile=USER::GAME_stui16cGetTilebyScreenPosition(ui8ix,ui8iy,ui8ilayer,cstatmouse.v2iCursor);
-		cui16ctile
+		CAUTO					cui8itile=UINT8(GAME::stui16cGetTilebyScreenPosition(ui8ix,ui8iy,ui8ilayer,cstatmouse.v2iCursor)&0xff);
+		cui8itile
 	){
-		CAUTO					cui8ix=ui8ix,cui8iy=ui8iy,cui8ilayer=ui8ilayer;
-		CAUTO					ceselectable=USER::GAME_steIsSelectable(cui8ix,cui8iy,cui8ilayer);
+		if(GAME::steIsProgressive()){
+			CAUTO					cui8ix=ui8ix,cui8iy=ui8iy,cui8ilayer=ui8ilayer;
+			CAUTO					ceselectable=GAME::steIsSelectable(cui8ix,cui8iy,cui8ilayer);
 
-		if(cstatmouse.ui16cButtonSingle&OS::MOUSE_stcui8cMaskButtonLeft){
-			//	マウスボタン押下
-			if(ceselectable){
-				CAUTO					cui8itile=UINT8(USER::GAME_stui16cGetTile(cui8ix,cui8iy,cui8ilayer)&0xff);
+			//	カーソルは何らかの「牌」の上にある
+			if(cstatmouse.ui16cButtonSingle&OS::MOUSE_stcui8cMaskButtonLeft){
+				//	マウスボタン押下
+				if(ceselectable){
+					//	ゲット可能な牌を指している
+					if(GAME::SELECT_eSelected){
+						//	既に1つ選択している
+						if(GAME::stui8iGetTileGroup(cui8itile)==GAME::stui8iGetTileGroup(GAME::SELECT_ui8iTile)){
+							//	同一種の牌であった
+							GAME::MOUSE_stSetBusy(TRUE);
+							MARK_Erase();
+							if(cui8itile!=GAME::SELECT_ui8iTile){
+								//	かつ別牌であったので既存もろとも消し去る
+								GAME::stSelectTile(cui8ix,cui8iy,cui8ilayer,TRUE);
+								GAME::stWriteTile(GAME::SELECT_ui8iX,GAME::SELECT_ui8iY,GAME::SELECT_ui8iLayer,0x00,TRUE);
+								GAME::stWriteTile(cui8ix,cui8iy,cui8ilayer,0x00,TRUE);
+								GAME::stui8nTileRest-=2;
+								MENU::SCREEN_stDrawOne_Rest();
+								if(GAME::stui8nTileRest){
+									GAME::stCheckProgressive();
+									if(!GAME::steIsProgressive()){
+										constexpr AUTO			cv2nback=VECTOR2(160,120);
+										constexpr AUTO			cv2nfore=VECTOR2(14*8,16);
 
-				//	ゲット可能な牌を指している
-				if(SELECT_eSelected){
-					//	既に1つ選択している
-					if(
-						(SELECT_ui8iTile!=cui8itile)&&
-						(((SELECT_ui8iTile-1)&~3)==((cui8itile-1)&~3))
-					){
-						//	同じ牌であったので既存もろとも消し去る
-						USER::MOUSE_stSetBusy(TRUE);
-						MARK_Erase();
-						USER::GAME_stSelectTile(cui8ix,cui8iy,cui8ilayer,TRUE);
-						USER::GAME_stWriteTile(SELECT_ui8iX,SELECT_ui8iY,SELECT_ui8iLayer,0x00,TRUE);
-						USER::GAME_stWriteTile(cui8ix,cui8iy,cui8ilayer,0x00,TRUE);
-						SELECT_eSelected=FALSE;
-						USER::MOUSE_stSetBusy(FALSE);
-						return;
+										//	ゲームオーバー
+										GRAPHIC::stFillRect(
+											0xc000,{
+												MENU::SCREEN_stcshpGame.v2iPosition+(MENU::SCREEN_stcshpGame.v2nSize-cv2nback)>>1,
+												cv2nback
+											},
+											GRAPHIC::IDBLEND::BackNega_SourceAlpha
+										);
+										GRAPHIC::stDrawString(
+											"ゲームオーバー",0xffff,{
+												MENU::SCREEN_stcshpGame.v2iPosition+(MENU::SCREEN_stcshpGame.v2nSize-cv2nfore)>>1,
+											}
+										);
+									}
+								}else{
+									//	天晴
+#ifdef SHOWENDING
+									GRAPHIC::stCopy(
+										GAME::IMAGE_stccvsEnd,
+										MENU::SCREEN_stcshpGame.v2iPosition+((MENU::SCREEN_stcshpGame.v2nSize-GAME::IMAGE_stccvsEnd.stcv2nSize)>>1),
+										GRAPHIC::IDBLEND::BackNega_SourceAlpha
+									);
+#endif
+								}
+							}else{
+								//	同一牌であったのでフリップフロップ的に選択解除
+								GAME::stSelectTile(GAME::SELECT_ui8iX,GAME::SELECT_ui8iY,GAME::SELECT_ui8iLayer,FALSE);
+							}
+							GAME::SELECT_eSelected=FALSE;
+							GAME::MOUSE_stSetBusy(FALSE);
+							return;
+						}else{
+							//	違う牌であったので選択し直す
+							GAME::MOUSE_stSetBusy(TRUE);
+							MARK_Erase();
+							GAME::stSelectTile(GAME::SELECT_ui8iX,GAME::SELECT_ui8iY,GAME::SELECT_ui8iLayer,FALSE);
+							GAME::SELECT_ui8iTile=cui8itile;
+							GAME::SELECT_ui8iX=cui8ix;
+							GAME::SELECT_ui8iY=cui8iy;
+							GAME::SELECT_ui8iLayer=cui8ilayer;
+							GAME::stSelectTile(GAME::SELECT_ui8iX,GAME::SELECT_ui8iY,GAME::SELECT_ui8iLayer,TRUE);
+							GAME::MOUSE_stSetBusy(FALSE);
+							return;
+						}
 					}else{
-						//	違う牌であったので選択し直す
-						USER::MOUSE_stSetBusy(TRUE);
+						//	1つ目の選択
+						GAME::MOUSE_stSetBusy(TRUE);
 						MARK_Erase();
-						USER::GAME_stSelectTile(SELECT_ui8iX,SELECT_ui8iY,SELECT_ui8iLayer,FALSE);
-						SELECT_ui8iTile=cui8itile;
-						SELECT_ui8iX=cui8ix;
-						SELECT_ui8iY=cui8iy;
-						SELECT_ui8iLayer=cui8ilayer;
-						USER::GAME_stSelectTile(SELECT_ui8iX,SELECT_ui8iY,SELECT_ui8iLayer,TRUE);
-						USER::MOUSE_stSetBusy(FALSE);
+						GAME::SELECT_eSelected=TRUE;
+						GAME::SELECT_ui8iTile=cui8itile;
+						GAME::SELECT_ui8iX=cui8ix;
+						GAME::SELECT_ui8iY=cui8iy;
+						GAME::SELECT_ui8iLayer=cui8ilayer;
+						GAME::stSelectTile(GAME::SELECT_ui8iX,GAME::SELECT_ui8iY,GAME::SELECT_ui8iLayer,TRUE);
+						GAME::MOUSE_stSetBusy(FALSE);
 						return;
 					}
 				}else{
-					//	1つ目の選択
-					USER::MOUSE_stSetBusy(TRUE);
-					MARK_Erase();
-					SELECT_eSelected=TRUE;
-					SELECT_ui8iTile=cui8itile;
-					SELECT_ui8iX=cui8ix;
-					SELECT_ui8iY=cui8iy;
-					SELECT_ui8iLayer=cui8ilayer;
-					USER::GAME_stSelectTile(SELECT_ui8iX,SELECT_ui8iY,SELECT_ui8iLayer,TRUE);
-					USER::MOUSE_stSetBusy(FALSE);
-					return;
-				}
-			}else{
-				//	ゲット可能な牌ではない
-				if(SELECT_eSelected){
-					//	既に1つ目が選択されていたならキャンセル扱い
-					USER::MOUSE_stSetBusy(TRUE);
-					MARK_Erase();
-					SELECT_eSelected=FALSE;
-					USER::GAME_stSelectTile(SELECT_ui8iX,SELECT_ui8iY,SELECT_ui8iLayer,FALSE);
-					USER::MOUSE_stSetBusy(FALSE);
-					return;
+					//	ゲット可能な牌ではない
+					if(GAME::SELECT_eSelected){
+						//	既に1つ目が選択されていたならキャンセル扱い
+						GAME::MOUSE_stSetBusy(TRUE);
+						MARK_Erase();
+						GAME::SELECT_eSelected=FALSE;
+						GAME::stSelectTile(GAME::SELECT_ui8iX,GAME::SELECT_ui8iY,GAME::SELECT_ui8iLayer,FALSE);
+						GAME::MOUSE_stSetBusy(FALSE);
+						return;
+					}
 				}
 			}
-		}
-		//	マーク表示
-		{
-			CAUTO					cv2iposition=USER::SCREEN_stv2iGetPosition(ui8ix,ui8iy,ui8ilayer);
-			CAUTO					cv2ipositionRD=cv2iposition+VECTOR2(
-				USER::IMAGE_stcui8nUnitWidth*2-1,
-				USER::IMAGE_stcui8nUnitHeight*2-1
-			);
-			CAUTO					cv2isprite=cv2iposition;
-			CAUTO					cv2ispriteRD=VECTOR2(
-				cv2ipositionRD.i16iX()-7,
-				cv2ipositionRD.i16iY()-7
-			);
-			//	UINT8					cui8ipattern
-			//		選択可能な牌を指しているかどうかで、マーク形状を変えてやります。
-			CAUTO					cui8ipattern=ceselectable?UINT8(0x08):UINT8(0x09);
+			//	マーク表示
+			{
+				CAUTO					cv2iposition=GAME::SCREEN_stv2iGetPosition(ui8ix,ui8iy,ui8ilayer);
+				CAUTO					cv2ipositionRD=cv2iposition+VECTOR2(
+					GAME::IMAGE_stcui8nUnitWidth*2-1,
+					GAME::IMAGE_stcui8nUnitHeight*2-1
+				);
+				CAUTO					cv2isprite=cv2iposition;
+				CAUTO					cv2ispriteRD=VECTOR2(
+					cv2ipositionRD.i16iX()-7,
+					cv2ipositionRD.i16iY()-7
+				);
+				//	UINT8					cui8ipattern
+				//		選択可能な牌を指しているかどうかで、マーク形状を変えてやります。
+				CAUTO					cui8ipattern=ceselectable?UINT8(0x08):UINT8(0x09);
 
-			if(USER::GAME_stui16cGetTilebyScreenPosition(ui8ix,ui8iy,ui8ilayer,{
-				cv2iposition.i16iX(),	cv2iposition.i16iY()
-			})==cui16ctile)GRAPHIC::SPRITE_stWrite8(1,{
-				cv2iposition.i16iX(),	cv2iposition.i16iY()
-			},cui8ipattern,0x1,FALSE,FALSE);
-			else GRAPHIC::SPRITE_stErase(1);
-			if(USER::GAME_stui16cGetTilebyScreenPosition(ui8ix,ui8iy,ui8ilayer,{
-				cv2ipositionRD.i16iX(),	cv2iposition.i16iY()
-			})==cui16ctile)GRAPHIC::SPRITE_stWrite8(2,{
-				cv2ispriteRD.i16iX(),	cv2isprite.i16iY()
-			},cui8ipattern,0x1,TRUE,FALSE);
-			else GRAPHIC::SPRITE_stErase(2);
-			if(USER::GAME_stui16cGetTilebyScreenPosition(ui8ix,ui8iy,ui8ilayer,{
-				cv2iposition.i16iX(),	cv2ipositionRD.i16iY()
-			})==cui16ctile)GRAPHIC::SPRITE_stWrite8(3,{
-				cv2isprite.i16iX(),		cv2ispriteRD.i16iY()
-			},cui8ipattern,0x1,FALSE,TRUE);
-			else GRAPHIC::SPRITE_stErase(3);
-			if(USER::GAME_stui16cGetTilebyScreenPosition(ui8ix,ui8iy,ui8ilayer,{
-				cv2ipositionRD.i16iX(),	cv2ipositionRD.i16iY()
-			})==cui16ctile)GRAPHIC::SPRITE_stWrite8(4,{
-				cv2ispriteRD.i16iX(),	cv2ispriteRD.i16iY()
-			},cui8ipattern,0x1,TRUE,TRUE);
-			else GRAPHIC::SPRITE_stErase(4);
-			return;
+				if(GAME::stui16cGetTilebyScreenPosition(ui8ix,ui8iy,ui8ilayer,{
+					cv2iposition.i16iX(),	cv2iposition.i16iY()
+				})==cui8itile)GRAPHIC::SPRITE_stWrite8(1,{
+					cv2iposition.i16iX(),	cv2iposition.i16iY()
+				},cui8ipattern,0x1,FALSE,FALSE);
+				else GRAPHIC::SPRITE_stErase(1);
+				if(GAME::stui16cGetTilebyScreenPosition(ui8ix,ui8iy,ui8ilayer,{
+					cv2ipositionRD.i16iX(),	cv2iposition.i16iY()
+				})==cui8itile)GRAPHIC::SPRITE_stWrite8(2,{
+					cv2ispriteRD.i16iX(),	cv2isprite.i16iY()
+				},cui8ipattern,0x1,TRUE,FALSE);
+				else GRAPHIC::SPRITE_stErase(2);
+				if(GAME::stui16cGetTilebyScreenPosition(ui8ix,ui8iy,ui8ilayer,{
+					cv2iposition.i16iX(),	cv2ipositionRD.i16iY()
+				})==cui8itile)GRAPHIC::SPRITE_stWrite8(3,{
+					cv2isprite.i16iX(),		cv2ispriteRD.i16iY()
+				},cui8ipattern,0x1,FALSE,TRUE);
+				else GRAPHIC::SPRITE_stErase(3);
+				if(GAME::stui16cGetTilebyScreenPosition(ui8ix,ui8iy,ui8ilayer,{
+					cv2ipositionRD.i16iX(),	cv2ipositionRD.i16iY()
+				})==cui8itile)GRAPHIC::SPRITE_stWrite8(4,{
+					cv2ispriteRD.i16iX(),	cv2ispriteRD.i16iY()
+				},cui8ipattern,0x1,TRUE,TRUE);
+				else GRAPHIC::SPRITE_stErase(4);
+				return;
+			}
+		}
+	}else{
+		VECTOR2					v2icommand;
+
+		//	カーソルは「牌」の上にはない
+		if(
+			CAUTO					cidcommand=MENU::COMMAND_stidGetCommandbyScreenPosition(v2icommand,cstatmouse.v2iCursor);
+			cidcommand!=MENU::IDCOMMAND::None
+		){
+			//	カーソルはメニューの上にある
+			if(cstatmouse.ui16cButtonSingle&OS::MOUSE_stcui8cMaskButtonLeft){
+				//	マウスボタン押下
+				MENU::COMMAND_stExecute(cidcommand);
+			}else{
+				CAUTO					cv2iposition=v2icommand<<MENU::stcui8nScreenBit;
+				CAUTO					cv2ipositionRD=cv2iposition+MENU::stcv2nOne_Screen;
+				CAUTO					cv2isprite=cv2iposition;
+				CAUTO					cv2ispriteRD=VECTOR2(
+					cv2ipositionRD.i16iX()-8,
+					cv2ipositionRD.i16iY()-8
+				);
+				CAUTO					cui8ipattern=UINT8(0x08);
+
+				GRAPHIC::SPRITE_stWrite8(1,{
+					cv2iposition.i16iX(),	cv2iposition.i16iY()
+				},cui8ipattern,0x1,FALSE,FALSE);
+				GRAPHIC::SPRITE_stWrite8(2,{
+					cv2ispriteRD.i16iX(),	cv2isprite.i16iY()
+				},cui8ipattern,0x1,TRUE,FALSE);
+				GRAPHIC::SPRITE_stWrite8(3,{
+					cv2isprite.i16iX(),		cv2ispriteRD.i16iY()
+				},cui8ipattern,0x1,FALSE,TRUE);
+				GRAPHIC::SPRITE_stWrite8(4,{
+					cv2ispriteRD.i16iX(),	cv2ispriteRD.i16iY()
+				},cui8ipattern,0x1,TRUE,TRUE);
+				return;
+			}
 		}
 	}
 	MARK_Erase();

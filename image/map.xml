@@ -9,8 +9,9 @@
 		<M68K source="*M68K"/>
 		<VIDEO source="100.bin"/>
 		<SOUND source="200.bin"/>
-		<FONT source="020.bin"/>
 		<ATAN source="*ATAN"/>
 		<TRIG source="*TRIG"/>
+		<FONT bank="0x0400" source="020.bin"/>
+		<FONT bank="0x0500" source="021.bin"/>
 	</ROM_SUB>
 </MAP>

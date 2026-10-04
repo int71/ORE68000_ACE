@@ -7,8 +7,10 @@ $Include='/d/Sync/Package/Cross/ORE68000_ACE/m68k/common/include';
 $Object='sub.o';
 $Release='../../image';
 $C2OBJ="$MAKEBIN -m c2obj -I $Include";
-$FONT2BIN="$MAKEFONT -s 16 -f \"KHドット小伝馬町16 幾何学的カナ\"";
-$ROM_FONT="$Release/020.bin";
+$FONT2BIN1="$MAKEFONT -s 16 -d 1 -f \"KHドット小伝馬町16 幾何学的カナ\"";
+$FONT2BIN4="$MAKEFONT -s 16 -d 4 -f \"I71-平成明朝W3\"";
+$ROM_FONT1="$Release/020.bin";
+$ROM_FONT4="$Release/021.bin";
 $OFW_OFW_CPP="$Source/ofw/ofw.cpp";
 $OFW_OFW_OBJ="$Object/ofw_ofw.o";
 $OFW_STD_STD_CPP="$Source/ofw/std/std.cpp";
@@ -57,7 +59,8 @@ $SERIAL_CPP="$User/serial.cpp";
 $SERIAL_OBJ="$Object/serial.o";
 $VECTOR2_CPP="$User/vector2.cpp";
 $VECTOR2_OBJ="$Object/vector2.o";
-$FONT='/c/Windows/Fonts//c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
+$FONT1='/c/Windows/Fonts//c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
+$FONT4='/c/Windows/Fonts//c/Windows/Fonts/I71-平成明朝W1_0.ttc';
 
 {
 	'.phony'=>['all','clean'],
@@ -88,7 +91,8 @@ $FONT='/c/Windows/Fonts//c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
 			$PATTERN_OBJ,
 			$SERIAL_OBJ,
 			$VECTOR2_OBJ,
-			$ROM_FONT
+			$ROM_FONT1,
+			$ROM_FONT4
 		]
 	},
 	'clean'=>{
@@ -96,9 +100,13 @@ $FONT='/c/Windows/Fonts//c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
 			"rm -f \"$Object/\"*.o \"$Object/\"*/*.o \"$Release/\"*.bin"
 		]
 	},
-	$ROM_FONT=>{
-		depend=>[$FONT],
-		exec=>["$FONT2BIN -o \"$ROM_FONT\""]
+	$ROM_FONT1=>{
+		depend=>[$FONT1],
+		exec=>["$FONT2BIN1 -o \"$ROM_FONT1\""]
+	},
+	$ROM_FONT4=>{
+		depend=>[$FONT4],
+		exec=>["$FONT2BIN4 -o \"$ROM_FONT4\""]
 	},
 	$OFW_OFW_OBJ=>{
 		depend_c=>[

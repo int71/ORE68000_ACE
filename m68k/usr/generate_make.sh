@@ -2,22 +2,34 @@
 use strict;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'base.pl';
-my($CONST_fontname)='KHドット小伝馬町16 幾何学的カナ';
-my($CONST_fontfilename)='/c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
+my(
+	$CONST_fontname1,
+	$CONST_fontname4
+)=(
+	'KHドット小伝馬町16 幾何学的カナ',
+	'I71-平成明朝W3'
+);
+my(
+	$CONST_fontfilename1,
+	$CONST_fontfilename4
+)=(
+	'/c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf',
+	'/c/Windows/Fonts/I71-平成明朝W1_0.ttc'
+);
 new BASE::();
 
 sub main{
 	my($ref_array_argument,$ref_hash_option)=@_;
 	my($sdirectorybase)=BASE::STRING_RemoveRelative(BASE::GetCurrentDirectory().'/..');
 	my($img_main)=&USR_generate_make(
-		$sdirectorybase,'main','000','',0x7efc00,[
+		$sdirectorybase,'main','000','','',0x7efc00,[
 			'ofw/ofw',
 			'ofw/std/std',
 			'ore68000ace/memory'
 		]
 	);
 	my($img_sub)=&USR_generate_make(
-		$sdirectorybase,'sub','','020',0x3ffc00,[
+		$sdirectorybase,'sub','','020','021',0x3ffc00,[
 			'ofw/ofw',
 			'ofw/std/std',
 			'ore68000ace/memory',
@@ -60,7 +72,7 @@ END
 }
 
 sub USR_generate_make{
-	my($sdirectorybase,$suser,$sromprogram,$sromfont,$icodesize,$ref_array_add)=@_;
+	my($sdirectorybase,$suser,$sromprogram,$sromfont1,$sromfont4,$icodesize,$ref_array_add)=@_;
 	my($img_destination);
 	my(@array_sname);
 
@@ -75,7 +87,7 @@ sub USR_generate_make{
 \$MAKEBIN='../M68K_MAKEBIN.exe';
 END
 	);
-	if($sromfont ne ''){
+	if(($sromfont1 ne '')||($sromfont4 ne '')){
 		$img_destination->AddTEXT(<<END
 \$MAKEFONT='../M68K_MAKEFONT.exe';
 END
@@ -96,9 +108,15 @@ END
 END
 		);
 	}
-	if($sromfont ne ''){
+	if($sromfont1 ne ''){
 		$img_destination->AddTEXT(<<END
-\$FONT2BIN="\$MAKEFONT -s 16 -f \\\"$CONST_fontname\\\"";
+\$FONT2BIN1="\$MAKEFONT -s 16 -d 1 -f \\\"$CONST_fontname1\\\"";
+END
+		);
+	}
+	if($sromfont4 ne ''){
+		$img_destination->AddTEXT(<<END
+\$FONT2BIN4="\$MAKEFONT -s 16 -d 4 -f \\\"$CONST_fontname4\\\"";
 END
 		);
 	}
@@ -108,9 +126,15 @@ END
 END
 		);
 	}
-	if($sromfont ne ''){
+	if($sromfont1 ne ''){
 		$img_destination->AddTEXT(<<END
-\$ROM_FONT="\$Release/$sromfont.bin";
+\$ROM_FONT1="\$Release/$sromfont1.bin";
+END
+		);
+	}
+	if($sromfont4 ne ''){
+		$img_destination->AddTEXT(<<END
+\$ROM_FONT4="\$Release/$sromfont4.bin";
 END
 		);
 	}
@@ -170,9 +194,15 @@ END
 	#	定義本体
 	#
 
-	if($sromfont ne ''){
+	if($sromfont1 ne ''){
 		$img_destination->AddTEXT(<<END
-\$FONT='/c/Windows/Fonts/$CONST_fontfilename';
+\$FONT1='/c/Windows/Fonts/$CONST_fontfilename1';
+END
+		);
+	}
+	if($sromfont4 ne ''){
+		$img_destination->AddTEXT(<<END
+\$FONT4='/c/Windows/Fonts/$CONST_fontfilename4';
 END
 		);
 	}
@@ -190,10 +220,23 @@ END
 		my($iiname);
 
 		if($sromprogram ne ''){
-			if($sromfont ne ''){
+			if(($sromfont1 ne '')&&($sromfont4 ne '')){
 				$img_destination->AddTEXT(<<END
 			\$ROM_PROGRAM,
-			\$ROM_FONT
+			\$ROM_FONT1,
+			\$ROM_FONT4
+END
+				);
+			}elsif($sromfont1 ne ''){
+				$img_destination->AddTEXT(<<END
+			\$ROM_PROGRAM,
+			\$ROM_FONT1
+END
+				);
+			}elsif($sromfont4 ne ''){
+				$img_destination->AddTEXT(<<END
+			\$ROM_PROGRAM,
+			\$ROM_FONT4
 END
 				);
 			}else{
@@ -203,7 +246,7 @@ END
 				);
 			}
 		}else{
-			if($sromfont ne ''){
+			if(($sromfont1 ne '')||($sromfont4 ne '')){
 				for($iiname=0;$iiname<$inname;++$iiname){
 					my($sname)=$array_sname[$iiname];
 
@@ -212,10 +255,23 @@ END
 END
 					);
 				}
-				$img_destination->AddTEXT(<<END
-			\$ROM_FONT
+				if(($sromfont1 ne '')&&($sromfont4 ne '')){
+					$img_destination->AddTEXT(<<END
+			\$ROM_FONT1,
+			\$ROM_FONT4
 END
-				);
+					);
+				}elsif($sromfont1 ne ''){
+					$img_destination->AddTEXT(<<END
+			\$ROM_FONT1
+END
+					);
+				}else{
+					$img_destination->AddTEXT(<<END
+			\$ROM_FONT4
+END
+					);
+				}
 			}else{
 				for($iiname=0;$iiname<$inname;++$iiname){
 					my($sname)=$array_sname[$iiname];
@@ -277,11 +333,20 @@ END
 END
 			);
 		}
-		if($sromfont ne ''){
+		if($sromfont1 ne ''){
 			$img_destination->AddTEXT(<<END
-	\$ROM_FONT=>{
-		depend=>[\$FONT],
-		exec=>[\"\$FONT2BIN -o \\\"\$ROM_FONT\\\"\"]
+	\$ROM_FONT1=>{
+		depend=>[\$FONT1],
+		exec=>[\"\$FONT2BIN1 -o \\\"\$ROM_FONT1\\\"\"]
+	},
+END
+			);
+		}
+		if($sromfont4 ne ''){
+			$img_destination->AddTEXT(<<END
+	\$ROM_FONT4=>{
+		depend=>[\$FONT4],
+		exec=>[\"\$FONT2BIN4 -o \\\"\$ROM_FONT4\\\"\"]
 	},
 END
 			);

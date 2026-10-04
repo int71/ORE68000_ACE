@@ -73,7 +73,9 @@ VOID					USER_New(VOID)noexcept{
 	AUTO		cvsa=CANVAS_A_RAM<16,16>();
 
 	GRAPHIC::stNew(TRUE);
-	GRAPHIC::stCopy(ccvssource,VECTOR2::stv2ImmediateZero());
+	GRAPHIC::stFillRect(0x7f0f,{{0,0},{64,64}});
+	GRAPHIC::stDrawString("“Ô“c•º",0x8000,{16,16},GRAPHIC::IDBLEND::BackNega_SourceAlpha);
+//	GRAPHIC::stCopy(ccvssource,VECTOR2::stv2ImmediateZero());
 //	cvsrgb.Fill(0x0707);
 //	cvsa.Fill(0x3);
 //	for(UINT16 ui16icounter=0;ui16icounter<16;++ui16icounter){

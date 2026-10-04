@@ -104,12 +104,12 @@ namespace m68k::ore68000ace::driver{
 		static VOID				stSetCRT256x212P(VOID)noexcept;
 		static VOID				stSetCRT256x212I(VOID)noexcept;
 		static _INLINE_ VOID	stWrite(const IDREGISTERW cidregister,CUINT16 cui16value)noexcept{
-			DEVICE_stui16Delegate(DEVICE_stcui16dSelectOffset)=(UINT16(IDDEVICEMODE::RegisterW)<<8)|UINT16(cidregister);
-			DEVICE_stui16Delegate(DEVICE_stcui16dRegisterOffset)=cui16value;
+			DEVICE_stui16DelegateThis(DEVICE_stcui16dSelectOffset)=(UINT16(IDDEVICEMODE::RegisterW)<<8)|UINT16(cidregister);
+			DEVICE_stui16DelegateThis(DEVICE_stcui16dRegisterOffset)=cui16value;
 			return;
 		}
 		static _INLINE_ UINT16	stui16Read(const IDREGISTERR cidregister)noexcept{
-			DEVICE_stui16Delegate(DEVICE_stcui16dSelectOffset)=(UINT16(IDDEVICEMODE::RegisterR)<<8)|UINT16(cidregister);
+			DEVICE_stui16DelegateThis(DEVICE_stcui16dSelectOffset)=(UINT16(IDDEVICEMODE::RegisterR)<<8)|UINT16(cidregister);
 			return DEVICE_stcui16GetThis(DEVICE_stcui16dRegisterOffset);
 		}
 		constexpr UINT16		ui16cGetColor(CBYTE cbired,CBYTE cbigreen,CBYTE cbiblue)noexcept{
@@ -119,11 +119,11 @@ namespace m68k::ore68000ace::driver{
 			return DEVICE::stui16cGetColor(cdwvalue);
 		}
 		static _INLINE_ VOID	PALETTE_stSetWrite(CUINT8 cui8iaddress)noexcept{
-			DEVICE_stui16Delegate(DEVICE_stcui16dSelectOffset)=(UINT16(IDDEVICEMODE::Palette)<<8)|UINT16(cui8iaddress);
+			DEVICE_stui16DelegateThis(DEVICE_stcui16dSelectOffset)=(UINT16(IDDEVICEMODE::Palette)<<8)|UINT16(cui8iaddress);
 			return;
 		}
 		static _INLINE_ VOID	PALETTE_stWrite(CUINT16 cui16ccolor)noexcept{
-			DEVICE_stui16Delegate(DEVICE_stcui16dPaletteOffset)=cui16ccolor;
+			DEVICE_stui16DelegateThis(DEVICE_stcui16dPaletteOffset)=cui16ccolor;
 			return;
 		}
 		static VOID				PALETTE_stWrite(CUINT8 cui8iaddress,const PCUINT16 cpcui16ccolor,CUINT8 cui8nsize)noexcept;
@@ -138,7 +138,21 @@ namespace m68k::ore68000ace::driver{
 			return;
 		}
 	private:
-		static _INLINE_ _UNDISCARDABLE_ UINT16&	DEVICE_stui16Delegate(CUINT16 cui16iaddress)noexcept{
+		static _INLINE_ VOID	FONTROM_stWriteBank(CUINT16 cui16value)noexcept{
+			MEMORYS::DEVICE_stui16DelegateThis(DEVICE_FONTROM_stcui16dOffsetS+DEVICE_FONTROM_stcui16dBankOffset)=cui16value;
+			return;
+		}
+		static _INLINE_ VOID	FONTROM_stWriteData(CUINT16 cui16value)noexcept{
+			MEMORYS::DEVICE_stui16DelegateThis(DEVICE_FONTROM_stcui16dOffsetS+DEVICE_FONTROM_stcui16dDataOffset)=cui16value;
+			return;
+		}
+		static _INLINE_ _UNDISCARDABLE_ CUINT16&	FONTROM_stui16ReadBank(VOID)noexcept{
+			return MEMORYS::DEVICE_stcui16GetThis(DEVICE_FONTROM_stcui16dOffsetS+DEVICE_FONTROM_stcui16dBankOffset);
+		}
+		static _INLINE_ _UNDISCARDABLE_  CUINT16&	FONTROM_stui16ReadData(VOID)noexcept{
+			return MEMORYS::DEVICE_stcui16GetThis(DEVICE_FONTROM_stcui16dOffsetS+DEVICE_FONTROM_stcui16dDataOffset);
+		}
+		static _INLINE_ _UNDISCARDABLE_ UINT16&	DEVICE_stui16DelegateThis(CUINT16 cui16iaddress)noexcept{
 			return MEMORYS::DEVICE_stui16DelegateThis(DEVICE_VIDEO_stcui16dOffsetS+cui16iaddress);
 		}
 		static _INLINE_ _UNDISCARDABLE_ CUINT16&	DEVICE_stcui16GetThis(CUINT16 cui16iaddress)noexcept{
