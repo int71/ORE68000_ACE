@@ -355,8 +355,8 @@ namespace m68k::i71::sub{
 		//		テキスト画面に対し、「cui16ccolor」での塗りつぶしを実行します。
 		//		合成方法は「cidblend」に従います。
 		static VOID				stFillRect(CUINT16 cui16ccolor,CSHAPE& cshpshape,const IDBLEND cidblend=IDBLEND::Source)noexcept{
-			CANVAS_PART_UPPER::stFillRect(cui16ccolor,cshpshape,cidblend);
-			CANVAS_PART_LOWER::stFillRect(cui16ccolor,cshpshape,cidblend);
+			if(steIsInUpper(cshpshape))CANVAS_PART_UPPER::stFillRect(cui16ccolor,cshpshape,cidblend);
+			if(steIsInLower(cshpshape))CANVAS_PART_LOWER::stFillRect(cui16ccolor,cshpshape,cidblend);
 			return;
 		}
 		//	VOID					stFillAlpha(CUINT16 cui16ccolor,const CANVAS_A_& ccvssourcea,CVECTOR2& cv2iposition,const IDBLEND cidblend)
@@ -365,8 +365,10 @@ namespace m68k::i71::sub{
 		//		アルファ値は、画像「ccvssourcea」と「cui16ccolor」内のアルファ値を乗じたものが使用されます。
 		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
 		static VOID				stFillAlpha(CUINT16 cui16ccolor,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
-			CANVAS_PART_UPPER::stFillAlpha(cui16ccolor,ccvssourcea,cv2iposition,cidblend);
-			CANVAS_PART_LOWER::stFillAlpha(cui16ccolor,ccvssourcea,cv2iposition,cidblend);
+			CAUTO					cshpshape=SHAPE({cv2iposition,{INT16(SCLASS_cui16nWidth),INT16(SCLASS_cui16nHeight)}});
+
+			if(steIsInUpper(cshpshape))CANVAS_PART_UPPER::stFillAlpha(cui16ccolor,ccvssourcea,cv2iposition,cidblend);
+			if(steIsInLower(cshpshape))CANVAS_PART_LOWER::stFillAlpha(cui16ccolor,ccvssourcea,cv2iposition,cidblend);
 			return;
 		}
 		//	VOID					stFillAlphaRect(CUINT16 cui16ccolor,const CANVAS_A_& ccvssourcea,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend)
@@ -375,8 +377,10 @@ namespace m68k::i71::sub{
 		//		アルファ値は、画像「ccvssourcea」と「cui16ccolor」内のアルファ値を乗じたものが使用されます。
 		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
 		static VOID				stFillAlphaRect(CUINT16 cui16ccolor,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
-			CANVAS_PART_UPPER::stFillAlphaRect(cui16ccolor,ccvssourcea,cshpsource,cv2iposition,cidblend);
-			CANVAS_PART_LOWER::stFillAlphaRect(cui16ccolor,ccvssourcea,cshpsource,cv2iposition,cidblend);
+			CAUTO					cshpshape=SHAPE({cv2iposition,cshpsource.v2nSize});
+
+			if(steIsInUpper(cshpshape))CANVAS_PART_UPPER::stFillAlphaRect(cui16ccolor,ccvssourcea,cshpsource,cv2iposition,cidblend);
+			if(steIsInLower(cshpshape))CANVAS_PART_LOWER::stFillAlphaRect(cui16ccolor,ccvssourcea,cshpsource,cv2iposition,cidblend);
 			return;
 		}
 		//	VOID					stCopy(const CANVAS_RGB_& ccvssource,CVECTOR2& cv2iposition,const IDBLEND cidblend)
@@ -384,8 +388,10 @@ namespace m68k::i71::sub{
 		//		合成方法は「cidblend」に従います。
 		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
 		static VOID				stCopy(const CANVAS_RGB_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
-			CANVAS_PART_UPPER::stCopy(ccvssource,cv2iposition,cidblend);
-			CANVAS_PART_LOWER::stCopy(ccvssource,cv2iposition,cidblend);
+			CAUTO					cshpshape=SHAPE({cv2iposition,{INT16(SCLASS_cui16nWidth),INT16(SCLASS_cui16nHeight)}});
+
+			if(steIsInUpper(cshpshape))CANVAS_PART_UPPER::stCopy(ccvssource,cv2iposition,cidblend);
+			if(steIsInLower(cshpshape))CANVAS_PART_LOWER::stCopy(ccvssource,cv2iposition,cidblend);
 			return;
 		}
 		//	VOID					stCopy(const CANVAS_RGBA_& ccvssource,CVECTOR2& cv2iposition,const IDBLEND cidblend)
@@ -393,6 +399,8 @@ namespace m68k::i71::sub{
 		//		合成方法は「cidblend」に従います。
 		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
 		static VOID				stCopy(const CANVAS_RGBA_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
+			CAUTO					cshpshape=SHAPE({cv2iposition,{INT16(SCLASS_cui16nWidth),INT16(SCLASS_cui16nHeight)}});
+
 			CANVAS_PART_UPPER::stCopy(ccvssource,cv2iposition,cidblend);
 			CANVAS_PART_LOWER::stCopy(ccvssource,cv2iposition,cidblend);
 			return;
@@ -402,8 +410,10 @@ namespace m68k::i71::sub{
 		//		合成方法は「cidblend」に従います。
 		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
 		static VOID				stCopyRect(const CANVAS_RGB_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
-			CANVAS_PART_UPPER::stCopyRect(ccvssource,cshpsource,cv2iposition,cidblend);
-			CANVAS_PART_LOWER::stCopyRect(ccvssource,cshpsource,cv2iposition,cidblend);
+			CAUTO					cshpshape=SHAPE({cv2iposition,cshpsource.v2nSize});
+
+			if(steIsInUpper(cshpshape))CANVAS_PART_UPPER::stCopyRect(ccvssource,cshpsource,cv2iposition,cidblend);
+			if(steIsInLower(cshpshape))CANVAS_PART_LOWER::stCopyRect(ccvssource,cshpsource,cv2iposition,cidblend);
 			return;
 		}
 		//	VOID					stCopyRect(const CANVAS_RGBA_& ccvssource,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend)
@@ -411,8 +421,10 @@ namespace m68k::i71::sub{
 		//		合成方法は「cidblend」に従います。
 		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
 		static VOID				stCopyRect(const CANVAS_RGBA_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
-			CANVAS_PART_UPPER::stCopyRect(ccvssource,cshpsource,cv2iposition,cidblend);
-			CANVAS_PART_LOWER::stCopyRect(ccvssource,cshpsource,cv2iposition,cidblend);
+			CAUTO					cshpshape=SHAPE({cv2iposition,cshpsource.v2nSize});
+
+			if(steIsInUpper(cshpshape))CANVAS_PART_UPPER::stCopyRect(ccvssource,cshpsource,cv2iposition,cidblend);
+			if(steIsInLower(cshpshape))CANVAS_PART_LOWER::stCopyRect(ccvssource,cshpsource,cv2iposition,cidblend);
 			return;
 		}
 		//	VOID					stCopyAlpha(const CANVAS_RGB_& ccvssource,const CANVAS_A_& ccvssourcea,CVECTOR2& cv2iposition,const IDBLEND cidblend)
@@ -422,8 +434,10 @@ namespace m68k::i71::sub{
 		//		アルファ値は画像「ccvssourcea」の値がそのまま使用され、「ccvssource」がアルファ値を持っていても使用されません。
 		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
 		static VOID				stCopyAlpha(const CANVAS_RGB_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
-			CANVAS_PART_UPPER::stCopyAlpha(ccvssource,ccvssourcea,cv2iposition,cidblend);
-			CANVAS_PART_LOWER::stCopyAlpha(ccvssource,ccvssourcea,cv2iposition,cidblend);
+			CAUTO					cshpshape=SHAPE({cv2iposition,{INT16(SCLASS_cui16nWidth),INT16(SCLASS_cui16nHeight)}});
+
+			if(steIsInUpper(cshpshape))CANVAS_PART_UPPER::stCopyAlpha(ccvssource,ccvssourcea,cv2iposition,cidblend);
+			if(steIsInLower(cshpshape))CANVAS_PART_LOWER::stCopyAlpha(ccvssource,ccvssourcea,cv2iposition,cidblend);
 			return;
 		}
 		//	VOID					stCopyAlpha(const CANVAS_RGBA_& ccvssource,const CANVAS_A_& ccvssourcea,CVECTOR2& cv2iposition,const IDBLEND cidblend)
@@ -433,8 +447,10 @@ namespace m68k::i71::sub{
 		//		アルファ値は画像「ccvssourcea」の値がそのまま使用され、「ccvssource」がアルファ値を持っていても使用されません。
 		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
 		static VOID				stCopyAlpha(const CANVAS_RGBA_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
-			CANVAS_PART_UPPER::stCopyAlpha(ccvssource,ccvssourcea,cv2iposition,cidblend);
-			CANVAS_PART_LOWER::stCopyAlpha(ccvssource,ccvssourcea,cv2iposition,cidblend);
+			CAUTO					cshpshape=SHAPE({cv2iposition,{INT16(SCLASS_cui16nWidth),INT16(SCLASS_cui16nHeight)}});
+
+			if(steIsInUpper(cshpshape))CANVAS_PART_UPPER::stCopyAlpha(ccvssource,ccvssourcea,cv2iposition,cidblend);
+			if(steIsInLower(cshpshape))CANVAS_PART_LOWER::stCopyAlpha(ccvssource,ccvssourcea,cv2iposition,cidblend);
 			return;
 		}
 		//	VOID					stCopyAlphaRect(const CANVAS_RGB_& ccvssource,const CANVAS_A_& ccvssourcea,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend)
@@ -444,8 +460,10 @@ namespace m68k::i71::sub{
 		//		アルファ値は画像「ccvssourcea」の値がそのまま使用され、「ccvssource」がアルファ値を持っていても使用されません。
 		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
 		static VOID				stCopyAlphaRect(const CANVAS_RGB_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
-			CANVAS_PART_UPPER::stCopyAlphaRect(ccvssource,ccvssourcea,cshpsource,cv2iposition,cidblend);
-			CANVAS_PART_LOWER::stCopyAlphaRect(ccvssource,ccvssourcea,cshpsource,cv2iposition,cidblend);
+			CAUTO					cshpshape=SHAPE({cv2iposition,cshpsource.v2nSize});
+
+			if(steIsInUpper(cshpshape))CANVAS_PART_UPPER::stCopyAlphaRect(ccvssource,ccvssourcea,cshpsource,cv2iposition,cidblend);
+			if(steIsInLower(cshpshape))CANVAS_PART_LOWER::stCopyAlphaRect(ccvssource,ccvssourcea,cshpsource,cv2iposition,cidblend);
 			return;
 		}
 		//	VOID					stCopyAlphaRect(const CANVAS_RGBA_& ccvssource,const CANVAS_A_& ccvssourcea,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend)
@@ -455,8 +473,10 @@ namespace m68k::i71::sub{
 		//		アルファ値は画像「ccvssourcea」の値がそのまま使用され、「ccvssource」がアルファ値を持っていても使用されません。
 		template<CUINT16 SCLASS_cui16nWidth,CUINT16 SCLASS_cui16nHeight>
 		static VOID				stCopyAlphaRect(const CANVAS_RGBA_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssource,const CANVAS_A_<SCLASS_cui16nWidth,SCLASS_cui16nHeight>& ccvssourcea,CSHAPE& cshpsource,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::Source)noexcept{
-			CANVAS_PART_UPPER::stCopyAlphaRect(ccvssource,ccvssourcea,cshpsource,cv2iposition,cidblend);
-			CANVAS_PART_LOWER::stCopyAlphaRect(ccvssource,ccvssourcea,cshpsource,cv2iposition,cidblend);
+			CAUTO					cshpshape=SHAPE({cv2iposition,cshpsource.v2nSize});
+
+			if(steIsInUpper(cshpshape))CANVAS_PART_UPPER::stCopyAlphaRect(ccvssource,ccvssourcea,cshpsource,cv2iposition,cidblend);
+			if(steIsInLower(cshpshape))CANVAS_PART_LOWER::stCopyAlphaRect(ccvssource,ccvssourcea,cshpsource,cv2iposition,cidblend);
 			return;
 		}
 		//	VOID					stDrawString(const PCUSTR cpcustrsource,CUINT16 cui16ccolor,CVECTOR2& cv2iposition,const IDBLEND cidblend)
@@ -464,8 +484,10 @@ namespace m68k::i71::sub{
 		//		合成方法は「cidblend」を使用しますが、文字イメージはアルファ値であるため、
 		//		「*_SourceAlpha」を指定しないと単なる塗りつぶしとなります。
 		static VOID				stDrawString(const PCUSTR cpcustrsource,CUINT16 cui16ccolor,CVECTOR2& cv2iposition,const IDBLEND cidblend=IDBLEND::BackNega_SourceAlpha)noexcept{
-			CANVAS_PART_UPPER::stDrawString(cpcustrsource,cui16ccolor,cv2iposition,cidblend);
-			CANVAS_PART_LOWER::stDrawString(cpcustrsource,cui16ccolor,cv2iposition,cidblend);
+			CAUTO					cshpshape=SHAPE({cv2iposition,{INT16(16),INT16(16)}});
+
+			if(steIsInUpper(cshpshape))CANVAS_PART_UPPER::stDrawString(cpcustrsource,cui16ccolor,cv2iposition,cidblend);
+			if(steIsInLower(cshpshape))CANVAS_PART_LOWER::stDrawString(cpcustrsource,cui16ccolor,cv2iposition,cidblend);
 			return;
 		}
 		static _INLINE_ VOID	PALETTE_stSetWrite(CUINT8 cui8iaddress)noexcept{
@@ -553,6 +575,23 @@ namespace m68k::i71::sub{
 		}
 		static _INLINE_ _UNDISCARDABLE_  CUINT16&	FONTROM_stui16ReadData(VOID)noexcept{
 			return ore68000ace::MEMORYS::DEVICE_stcui16GetThis(ore68000ace::DEVICE_FONTROM_stcui16dOffsetS+ore68000ace::DEVICE_FONTROM_stcui16dDataOffset);
+		}
+	private:
+		static constexpr OFWBOOL	steIsInUpper(CSHAPE& cshpshape)noexcept{
+			if(cshpshape.v2iPosition.i16iY()<0)return OFWBOOL(
+				0<cshpshape.v2iPosition.i16iY()+cshpshape.v2nSize.i16nHeight()
+			);
+			else return OFWBOOL(
+				cshpshape.v2iPosition.i16iY()<256
+			);
+		}
+		static constexpr OFWBOOL	steIsInLower(CSHAPE& cshpshape)noexcept{
+			if(cshpshape.v2iPosition.i16iY()<256)return OFWBOOL(
+				256<cshpshape.v2iPosition.i16iY()+cshpshape.v2nSize.i16nHeight()
+			);
+			else return OFWBOOL(
+				cshpshape.v2iPosition.i16iY()<480
+			);
 		}
 	};
 }
