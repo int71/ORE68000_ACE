@@ -182,7 +182,7 @@ public:
 		UINT8					ui8nShow(CUINT8 cui8isprite)const noexcept{
 			switch(idType){
 			case IDTYPE::Up:
-				FAMILYBASIC::SPRITE_stWrite8(cui8isprite,(v2iPosition>>FIXEDL_stcui8nBit)-VECTOR2(4,4),221,3);
+				FAMILYBASIC::SPRITE_stWrite8(cui8isprite,(v2iPosition>>FIXEDL_stcui8nBit)-VECTOR2(4,4),222,3);
 				return 1;
 			default:
 				break;
@@ -242,8 +242,8 @@ public:
 		enum class IDTYPE:UINT8{
 			None,					//	Åuê∂Ç´ÇƒÅvÇ‹ÇπÇÒÅB
 			Crushed,				//	ìñÇΩÇËîªíËÇ‡âΩÇ‡ñ≥Ç¢ÅAîöî≠ÉpÉ^Å[ÉìÇ≈Ç∑ÅB
-			NormalStraight,					//	ê^â∫Ç…àÍíºê¸Ç…à⁄ìÆÇ∑ÇÈìGÇ≈Ç∑ÅB
-			NormalFollower,					//	â∫Ç©ÇÁèoåªÇ∑ÇÈÅuÉ]ÅõÅ[ÅvìIÇ»ìGÇ≈Ç∑ÅB
+			NormalStraight,			//	ê^â∫Ç…àÍíºê¸Ç…à⁄ìÆÇ∑ÇÈìGÇ≈Ç∑ÅB
+			NormalFollower,			//	â∫Ç©ÇÁèoåªÇ∑ÇÈÅuÉ]ÅõÅ[ÅvìIÇ»ìGÇ≈Ç∑ÅB
 			Bullet					//	ìGíeÇ≈Ç∑ÅB
 		};
 		//	VECTOR2					stcv2iiMinimum
@@ -384,7 +384,7 @@ public:
 				switch((ui16iPattern>>2)&3){
 				case 0:
 					//	Å|
-					FAMILYBASIC::SPRITE_stWrite8(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),210,3,FALSE,FALSE,2);
+					FAMILYBASIC::SPRITE_stWrite8(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),209,3,FALSE,FALSE,2);
 					break;
 				case 1:
 					//	Å_
@@ -392,7 +392,7 @@ public:
 					break;
 				case 2:
 					//	Åb
-					FAMILYBASIC::SPRITE_stWrite8(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),214,3,FALSE,FALSE,2);
+					FAMILYBASIC::SPRITE_stWrite8(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),213,3,FALSE,FALSE,2);
 					break;
 				case 3:
 					//	Å^

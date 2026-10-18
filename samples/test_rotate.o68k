@@ -1,0 +1,55 @@
+/****************************************************************************
+**																			**
+**																			**
+**									m68k									**
+**																			**
+**	'test_color4096.o68k'							2026 written by int71	**
+ ****************************************************************************/
+
+//
+//		include
+//
+
+#include				<sub/familybasic.hpp>
+
+//
+//		macro
+//
+
+#define __O68K_ROTATE
+
+//
+//		using
+//
+
+using namespace m68k::i71::sub;
+
+//
+//		user
+//
+
+VECTOR2					v2iPosition={120,98};
+
+VOID					USER_New(VOID)noexcept{
+	FAMILYBASIC::stNew(FAMILYBASIC::IDRESOLUTION::n320x240_R);
+	FAMILYBASIC::PALETTE_stWriteSet(1,1);
+	FAMILYBASIC::BG0_stPrint_R({2,3},"TEST:ROTATE",0);
+	return;
+}
+
+VOID					USER_Delete(VOID)noexcept{
+	FAMILYBASIC::stDelete();
+	return;
+}
+
+VOID					USER_Main(VOID)noexcept{
+	using					IDBUTTON=FAMILYBASIC::IDBUTTON;
+	CAUTO					cui8cjoystick=FAMILYBASIC::CONTROLLER_stui8cRead(0);
+
+	FAMILYBASIC::SPRITE_stWrite16_R(0,v2iPosition,172,0);
+	if(cui8cjoystick&(1<<IDBUTTON::Right))++v2iPosition.i16iX();
+	if(cui8cjoystick&(1<<IDBUTTON::Left))--v2iPosition.i16iX();
+	if(cui8cjoystick&(1<<IDBUTTON::Down))++v2iPosition.i16iY();
+	if(cui8cjoystick&(1<<IDBUTTON::Up))--v2iPosition.i16iY();
+	return;
+}

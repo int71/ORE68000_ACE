@@ -3,7 +3,7 @@
 **																			**
 **									I71										**
 **																			**
-**	'sub/familybasic.cpp'							2025 written by int71	**
+**	'sub/familybasic.cpp'							2026 written by int71	**
  ****************************************************************************/
 
 //
@@ -21,41 +21,89 @@
 using namespace m68k::i71::sub;
 
 //
+//		class:FAMILYBASIC::ST::SHARER
+//
+
+//	public
+
+VOID					FAMILYBASIC::ST::SHARER::Delete(VOID)noexcept{
+	return;
+}
+
+//
+//		class:FAMILYBASIC::ST
+//
+
+//	public
+
+VOID					FAMILYBASIC::ST::Delete(VOID)noexcept{
+	shrThis.Delete();
+	return;
+}
+
+//
 //		class:FAMILYBASIC
 //
 
 //	public
 
 VOID					FAMILYBASIC::stNew(
-	COFWBOOL				ceshow,
-	COFWBOOL				cewritepattern,
-	const IDRESOLUTION		cidresolution
+	const IDRESOLUTION		cidresolution,
+	COFWBOOL				ceshow
 )noexcept{
-	stShow(FALSE);
-	switch(cidresolution){
-	case IDRESOLUTION::n256x212:
-		VIDEO_DRIVER::stSetCRT256x212P();
-		break;
-	case IDRESOLUTION::n320x240:
-		VIDEO_DRIVER::stSetCRT320x240P();
-		break;
-	case IDRESOLUTION::n640x480:
-		VIDEO_DRIVER::stSetCRT640x480P();
-		break;
-	}
-	if(cewritepattern){
-		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_SPRITE_stcui16iAddress,PATTERN::IDPATTERN::SPRITE_SYSTEM);
-		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG0_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
-		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG1_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
-		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG2_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
-		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG3_stcui16iAddress,PATTERN::IDPATTERN::BG_SYSTEM);
+	constexpr AUTO			cfp_setpattern=[](const PATTERN::IDPATTERN cidpatternsprite,const PATTERN::IDPATTERN cidpatternbg){
+		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_SPRITE_stcui16iAddress,cidpatternsprite);
+		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG0_stcui16iAddress,cidpatternbg);
+		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG1_stcui16iAddress,cidpatternbg);
+		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG2_stcui16iAddress,cidpatternbg);
+		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG3_stcui16iAddress,cidpatternbg);
 		BG0_stFillAttribute({0,0},{128,128},0x8020);
 		BG1_stFillAttribute({0,0},{128,128},0x8020);
 		BG2_stFillAttribute({0,0},{128,128},0x8020);
 		BG3_stFillAttribute({0,0},{128,128},0x8020);
 		PALETTE_stWriteBack(0x3f);
 		PALETTE_stWriteSet(0,1);
+		return;
+	};
+	AUTO&					shrthis=st.shrThis;
+
+	stShow(FALSE);
+	switch(cidresolution){
+	case IDRESOLUTION::n256x212:
+		VIDEO_DRIVER::stSetCRT256x212P();
+		shrthis.v2inScreen={256,212};
+		cfp_setpattern(PATTERN::IDPATTERN::SPRITE_SYSTEM,PATTERN::IDPATTERN::BG_SYSTEM);
+		break;
+	case IDRESOLUTION::n320x240:
+		VIDEO_DRIVER::stSetCRT320x240P();
+		shrthis.v2inScreen={320,240};
+		cfp_setpattern(PATTERN::IDPATTERN::SPRITE_SYSTEM,PATTERN::IDPATTERN::BG_SYSTEM);
+		break;
+	case IDRESOLUTION::n640x480:
+		VIDEO_DRIVER::stSetCRT640x480P();
+		shrthis.v2inScreen={640,480};
+		cfp_setpattern(PATTERN::IDPATTERN::SPRITE_SYSTEM,PATTERN::IDPATTERN::BG_SYSTEM);
+		break;
+	case IDRESOLUTION::n256x212_R:
+		VIDEO_DRIVER::stSetCRT256x212P();
+		shrthis.v2inScreen={212,256};
+		cfp_setpattern(PATTERN::IDPATTERN::SPRITE_SYSTEM_R,PATTERN::IDPATTERN::BG_SYSTEM_R);
+		break;
+	case IDRESOLUTION::n320x240_R:
+		VIDEO_DRIVER::stSetCRT320x240P();
+		shrthis.v2inScreen={240,320};
+		cfp_setpattern(PATTERN::IDPATTERN::SPRITE_SYSTEM_R,PATTERN::IDPATTERN::BG_SYSTEM_R);
+		break;
+	case IDRESOLUTION::n640x480_R:
+		VIDEO_DRIVER::stSetCRT640x480P();
+		shrthis.v2inScreen={480,640};
+		cfp_setpattern(PATTERN::IDPATTERN::SPRITE_SYSTEM_R,PATTERN::IDPATTERN::BG_SYSTEM_R);
+		break;
 	}
+	st.v2inScreen_M8=shrthis.v2inScreen-VECTOR2(8,8);
+	st.v2inScreen_M16=shrthis.v2inScreen-VECTOR2(16,16);
+	shrthis.v2inBG=shrthis.v2inScreen>>3;
+	st.v2inBG_M1=shrthis.v2inBG-VECTOR2(1,1);
 	st.SPRITE_ui16dOffsetX=0;
 	st.SPRITE_ui16dOffsetY=0;
 	{
@@ -100,6 +148,7 @@ VOID					FAMILYBASIC::stNew(
 }
 
 VOID					FAMILYBASIC::stDelete(VOID)noexcept{
+	st.Delete();
 	return;
 }
 
@@ -345,10 +394,11 @@ VOID					FAMILYBASIC::BG_stFillAttribute(
 	CVECTOR2&				cv2nsize,
 	CUINT16					cui16cattribute
 )noexcept{
-	AUTO					pui16destination=
+	AUTO					pui16destination=(
 		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
 		(cv2iposition.i16iY()<<7)+
-		cv2iposition.i16iX();
+		cv2iposition.i16iX()
+	);
 	AUTO					pui16destination_line_end=pui16destination+cv2nsize.i16nWidth();
 
 	for(
@@ -369,17 +419,43 @@ VOID					FAMILYBASIC::BG_stWriteAttribute(
 	const PCUINT16			cpcui16cattribute,
 	CUINT16					cui16nattribute
 )noexcept{
-	AUTO					pui16destination=
+	AUTO					pui16destination=(
 		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
 		(cv2iposition.i16iY()<<7)+
-		cv2iposition.i16iX();
-	CAUTO					cpui16attribute_end=
+		cv2iposition.i16iX()
+	);
+	CAUTO					cpui16attribute_end=(
 		pui16destination+
-		cui16nattribute;
+		cui16nattribute
+	);
 
 	for(AUTO pcui16cattribute=cpcui16cattribute;pui16destination<cpui16attribute_end;++pui16destination){
 		*pui16destination=*pcui16cattribute;
 		++pcui16cattribute;
+	}
+	return;
+}
+
+VOID					FAMILYBASIC::BG_stWriteAttribute_R(
+	CUINT32					cui32doffset,
+	CVECTOR2&				cv2iposition,
+	const PCUINT16			cpcui16cattribute,
+	CUINT16					cui16nattribute
+)noexcept{
+	CAUTO					cv2iposition_real=BG_stv2iMakePosition_R(cv2iposition);
+	AUTO					pui16destination=(
+		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
+		(cv2iposition_real.i16iY()<<7)+
+		cv2iposition_real.i16iX()
+	);
+	CAUTO					cpui16attribute_end=(
+		pui16destination+
+		cui16nattribute
+	);
+
+	for(AUTO pcui16cattribute=cpcui16cattribute;pui16destination<cpui16attribute_end;++pui16destination){
+		*pui16destination=*pcui16cattribute;
+		pcui16cattribute-=128;
 	}
 	return;
 }
@@ -391,10 +467,11 @@ VOID					FAMILYBASIC::BG_stPrint(
 	CUINT8					cui8ibgpalette
 )noexcept{
 	CAUTO					cui16cbase=UINT16(UINT16(cui8ibgpalette+8)<<12);
-	AUTO					pui16destination_base=
+	AUTO					pui16destination_base=(
 		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
 		(cv2iposition.i16iY()<<7)+
-		cv2iposition.i16iX();
+		cv2iposition.i16iX()
+	);
 	AUTO					pui16destination=pui16destination_base;
 
 	for(AUTO pcustrsource=cpcustrstring;*pcustrsource;++pcustrsource){
@@ -409,16 +486,44 @@ VOID					FAMILYBASIC::BG_stPrint(
 	return;
 }
 
+VOID					FAMILYBASIC::BG_stPrint_R(
+	CUINT32					cui32doffset,
+	CVECTOR2&				cv2iposition,
+	const PCUSTR			cpcustrstring,
+	CUINT8					cui8ibgpalette
+)noexcept{
+	CAUTO					cv2iposition_real=BG_stv2iMakePosition_R(cv2iposition);
+	CAUTO					cui16cbase=UINT16(UINT16(cui8ibgpalette+8)<<12);
+	AUTO					pui16destination_base=(
+		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
+		(cv2iposition_real.i16iY()<<7)+
+		cv2iposition_real.i16iX()
+	);
+	AUTO					pui16destination=pui16destination_base;
+
+	for(AUTO pcustrsource=cpcustrstring;*pcustrsource;++pcustrsource){
+		if(*pcustrsource!='\n'){
+			*pui16destination=cui16cbase|UINT16(UINT8(*pcustrsource));
+			pui16destination-=128;
+		}else{
+			--pui16destination_base;
+			pui16destination=pui16destination_base;
+		}
+	}
+	return;
+}
+
 VOID					FAMILYBASIC::BG_stCopyAttribute(
 	CUINT32					cui32doffset,
 	CVECTOR2&				cv2iposition,
 	CVECTOR2&				cv2nsize,
 	const PCUINT16			cpcui16cattribute
 )noexcept{
-	AUTO					pui16destination=
+	AUTO					pui16destination=(
 		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
 		(cv2iposition.i16iY()<<7)+
-		cv2iposition.i16iX();
+		cv2iposition.i16iX()
+	);
 	AUTO					pui16destination_line_end=pui16destination+cv2nsize.i16nWidth();
 	AUTO					pcui16cattribute=cpcui16cattribute;
 
@@ -431,5 +536,29 @@ VOID					FAMILYBASIC::BG_stCopyAttribute(
 		pui16destination_line<pui16destination_line_end;
 		++pui16destination_line,++pcui16cattribute
 	)*pui16destination_line=*pcui16cattribute;
+	return;
+}
+
+VOID					FAMILYBASIC::BG_stCopyAttribute_R(
+	CUINT32					cui32doffset,
+	CVECTOR2&				cv2iposition,
+	CVECTOR2&				cv2nsize,
+	const PCUINT16			cpcui16cattribute
+)noexcept{
+	CAUTO					cv2iposition_real=BG_stv2iMakePosition_R(cv2iposition);
+	CAUTO					cv2nsize_real=stv2nMakeSize_R(cv2nsize);
+	CAUTO					ci16doffsety=INT16(1-cv2nsize_real.i16nHeight());
+
+	BG_stCopyAttribute(
+		cui32doffset,			//	cui32doffset
+		{
+			cv2iposition_real.i16iX(),
+			INT16(cv2iposition_real.i16iY()+ci16doffsety)
+		},						//	cv2iposition
+		cv2nsize_real,			//	cv2nsize
+		(
+			cpcui16cattribute+(ci16doffsety<<7)
+		)						//	cpcui16cattribute
+	);
 	return;
 }

@@ -1346,9 +1346,11 @@ public:
 							(0<v2dVelocity.i16iX())?i16iGetPositionXR_Upper(stci16nNeighbor_Upper):i16iGetPositionXL_Upper(stci16nNeighbor_Upper),
 							ci16iyd8_upper
 						});
-						eAir?
-							(!MAP_steIsMovable(map_cui8cforwardd8)):
-							(!MAP_steIsSpace(map_cui8cforwardd8))
+						eAir?(
+							!MAP_steIsMovable(map_cui8cforwardd8)
+						):(
+							!MAP_steIsSpace(map_cui8cforwardd8)
+						)
 					){
 						//	INT16					ci16ncollisionwidth_upper
 						//		基本は判定幅ドット数(の半分)ですが、
@@ -1362,9 +1364,11 @@ public:
 							CAUTO
 								map_cui8crd8=MAP_stui8cReadPattern({i16iGetPositionXR_Upper(ci16ncollisionwidth_upper),ci16iyd8_upper}),
 								map_cui8cld8=MAP_stui8cReadPattern({i16iGetPositionXL_Upper(ci16ncollisionwidth_upper),ci16iyd8_upper});
-							eAir?
-								(!MAP_steIsMovable(map_cui8crd8))||(!MAP_steIsMovable(map_cui8cld8)):
+							eAir?(
+								(!MAP_steIsMovable(map_cui8crd8))||(!MAP_steIsMovable(map_cui8cld8))
+							):(
 								(!MAP_steIsSpace(map_cui8crd8))||(!MAP_steIsSpace(map_cui8cld8))
+							)
 						){
 							//	本来の「足元」に「足場」があったので、通常通りの判定で良い。
 							//	つまりこの分岐では何もすること無し。
@@ -2857,10 +2861,10 @@ static GAME				stgameThis;
 //
 
 VOID					USER_New(VOID)noexcept{
-	FAMILYBASIC::stNew(FALSE);
+	FAMILYBASIC::stNew();
 	FAMILYBASIC::SPRITE_stSetSize(FAMILYBASIC::IDSIZE::n1024);
-	FAMILYBASIC::BG1_stSetSize(FAMILYBASIC::IDSIZE::n512);
-	FAMILYBASIC::BG2_stSetSize(FAMILYBASIC::IDSIZE::n512);
+	FAMILYBASIC::BG1_stSetSize(FAMILYBASIC::IDSIZE::n1024);
+	FAMILYBASIC::BG2_stSetSize(FAMILYBASIC::IDSIZE::n1024);
 	FAMILYBASIC::PALETTE_stWriteSet2(0,2,1,0);
 	FAMILYBASIC::BG0_stPrint({0,0},"LESSON 11:MAP(4)",0);
 	FAMILYBASIC::BG0_stPrint({0,1},"SCORE",0);

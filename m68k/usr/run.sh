@@ -6,7 +6,7 @@ new BASE::();
 
 sub main{
 	if(system('./build.sh')==0){
-		system("'/d/User/C/User/ORE68000ACE/x64/Release/ORE68000 ACE.exe' image&");
+		system("'/d/Sync/Package/Cross/ORE68000_ACE/ORE68000 ACE.exe'&");
 	}
 	return 0;
 }

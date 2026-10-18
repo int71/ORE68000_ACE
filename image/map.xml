@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <MAP>
+	<ROTATE value="None"/>
 	<ROM_MAIN>
 		<M68K source="000.bin"/>
 		<ATAN source="*ATAN"/>

@@ -94,5 +94,6 @@ VOID					USER_Main(VOID)noexcept{
 	static UINT16			stui16iposition=0;
 
 	++stui16iposition;
+	GRAPHIC::stFillRect(0x7f0f,{{INT16(stui16iposition),4},{1,1}});
 	return;
 }

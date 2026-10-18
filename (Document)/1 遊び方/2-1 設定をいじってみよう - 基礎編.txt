@@ -32,6 +32,11 @@
               →「2-3 設定をいじってみよう - サウンド編」参照の事
             <AudioMode value="Cooperative"/>
               →「2-3 設定をいじってみよう - サウンド編」参照の事
+            <CPUClockMultiply value="1."/>
+              「1.」以外の数値を設定すると、クロックに倍率がかかります。
+              デバッグ利便性向上のための機能ですが、「ORE68000 ACE」の
+              「MC68000」エミュレーションは効率が高くないため、実用上「2.」辺り
+              が上限値となります。
             <GraphicMode value="Switchable"/>
               →「2-2 設定をいじってみよう - ビデオ編」参照の事
             <GraphicSPUSync value="VideoClock"/>

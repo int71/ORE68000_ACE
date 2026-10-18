@@ -42,7 +42,9 @@ namespace m68k::i71::common{
 		public:
 			enum BODY:UINT16{
 				SPRITE_SYSTEM,
-				BG_SYSTEM
+				SPRITE_SYSTEM_R,
+				BG_SYSTEM,
+				BG_SYSTEM_R
 			};
 		};
 		using					IDPATTERN=_IDPATTERN::BODY;
@@ -68,7 +70,9 @@ namespace m68k::i71::common{
 			//
 
 			static constexpr UINT16	SPRITE_SYSTEM_stcui16nSize=						0x0100;
+			static constexpr UINT16	SPRITE_SYSTEM_R_stcui16nSize=					0x0100;
 			static constexpr UINT16	BG_SYSTEM_stcui16nSize=							0x0100;
+			static constexpr UINT16	BG_SYSTEM_R_stcui16nSize=						0x0100;
 		};
 
 		//
@@ -85,15 +89,23 @@ namespace m68k::i71::common{
 			static constexpr UINT32	stcui32iBaseAddressS=							stcui32iAddressS+0x000000;
 			static constexpr UINT32	SPRITE_SYSTEM_stcui32iAddressS=					stcui32iBaseAddressS+0x000000;
 			static constexpr UINT32	SPRITE_SYSTEM_stcui32nSize=						UINT32(PATTERNCHR::SPRITE_SYSTEM_stcui16nSize)<<5;
-			static constexpr UINT32	BG_SYSTEM_stcui32iAddressS=						stcui32iBaseAddressS+0x002000;
+			static constexpr UINT32	SPRITE_SYSTEM_R_stcui32iAddressS=				stcui32iBaseAddressS+0x002000;
+			static constexpr UINT32	SPRITE_SYSTEM_R_stcui32nSize=					UINT32(PATTERNCHR::SPRITE_SYSTEM_R_stcui16nSize)<<5;
+			static constexpr UINT32	BG_SYSTEM_stcui32iAddressS=						stcui32iBaseAddressS+0x004000;
 			static constexpr UINT32	BG_SYSTEM_stcui32nSize=							UINT32(PATTERNCHR::BG_SYSTEM_stcui16nSize)<<5;
+			static constexpr UINT32	BG_SYSTEM_R_stcui32iAddressS=					stcui32iBaseAddressS+0x006000;
+			static constexpr UINT32	BG_SYSTEM_R_stcui32nSize=						UINT32(PATTERNCHR::BG_SYSTEM_R_stcui16nSize)<<5;
 			static constexpr UINT32	stacui32iAddressS[]={
 				SPRITE_SYSTEM_stcui32iAddressS,
-				BG_SYSTEM_stcui32iAddressS
+				SPRITE_SYSTEM_R_stcui32iAddressS,
+				BG_SYSTEM_stcui32iAddressS,
+				BG_SYSTEM_R_stcui32iAddressS
 			};
 			static constexpr UINT32	stacui32nSize[]={
 				SPRITE_SYSTEM_stcui32nSize,
-				BG_SYSTEM_stcui32nSize
+				SPRITE_SYSTEM_R_stcui32nSize,
+				BG_SYSTEM_stcui32nSize,
+				BG_SYSTEM_R_stcui32nSize
 			};
 		};
 	};
