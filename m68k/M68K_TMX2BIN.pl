@@ -10,7 +10,7 @@ use strict;
 use integer;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'base.pl';
-my($sVersion,$sDate)=('1.55','2026/09/03');
+my($sVersion,$sDate)=('1.57','2026/10/23');
 my($CLASS_sStage)='STAGE';
 my($CLASS_STAGE_sArea)='AREA';
 my($CLASS_STAGE_sBGM)='BGM_PLAY';
@@ -93,7 +93,7 @@ sub main{
 		}
 	}
 	{
-		my($img_destination,$img_destination_c)=&USR_stTMX2BIN($source,\%switch);
+		my($img_destination,$img_destination_c,$nwidth,$nheight)=&USR_stTMX2BIN($source,\%switch);
 
 		if(defined $$option{'d'}){
 			if(defined $img_destination_c){
@@ -111,8 +111,8 @@ sub main{
 				my($idata);
 
 				$img_destination->SetCurrent(0);
-				BASE::Print(sprintf("0x%04x",$img_destination->GetWORD_B()));
-				for($idata=1;$idata<$ndata;++$idata){
+				BASE::Print(sprintf("%d,%d",$nwidth,$nheight));
+				for($idata=0;$idata<$ndata;++$idata){
 					BASE::Print(sprintf(",0x%04x",$img_destination->GetWORD_B()));
 				}
 				BASE::Print("\n");
@@ -152,7 +152,7 @@ $BASE::Self (入力).tmx [-v] [-h] [-o (出力).bin] [-c (Cソース).cpp] [-j (
 -f: 当該「ステージ固有フラグ」をONにします。カンマ区切りで列挙でき、現状下記を指定できます。
     RistrictedMissile:ミサイルが地形で這わなくなります。
 -d: ファイルでなく標準出力に出力します。現状「Cソースファイル」のみの出力です。
--dx: 「(出力).bin」データの内容「のみ」を1行のC配列形式「0xnn[,...]」で表示します。
+-dx: 「(出力).bin」データの内容「のみ」を1行のC配列形式「横幅,縦幅,0xnn[,...]」で表示します。
 
 <「(入力).tmx」について>
 ・マップサイズ
@@ -220,7 +220,7 @@ END
 
 sub USR_stTMX2BIN{
 	my($source,$ref_switch)=@_;
-	my(@array_ref_array_attribute,$nwidth);
+	my(@array_ref_array_attribute,$nwidth,$nheight);
 	my(@array_ref_event);
 	my($cpalettebase)=$$ref_switch{'Palette'};
 	my($ref_palettespecific)=$$ref_switch{'PaletteSpecific'};
@@ -332,7 +332,7 @@ sub USR_stTMX2BIN{
 						last;
 					}else{
 						if(/\<object\s+id\=\"(\d+)"\s+name\=\"(\S+)\"\s+type\=\"(\S+)\"\s+gid\=\"(\d+)\"\s+x\=\"(\-?\d+)\"\s+y\=\"(\-?\d+)\"\s+width\=\"(\d+)\"\s+height\=\"(\d+)\"/){
-							my($id,$name,$class,$gid,$ix,$iy,$nwidth,$nheight)=($1,$2,$3,$4,$5,$6,$7,$8);
+							my($id,$name,$class,$gid,$ix,$iy,$nwidth_local,$nheight_local)=($1,$2,$3,$4,$5,$6,$7,$8);
 
 							$name=&USR_RemoveComment($name);
 							$class=&USR_RemoveComment($class);
@@ -347,8 +347,8 @@ sub USR_stTMX2BIN{
 									'GID'=>$gid,
 									'X'=>$ix,
 									'Y'=>$iy,
-									'Width'=>$nwidth,
-									'Height'=>$nheight,
+									'Width'=>$nwidth_local,
+									'Height'=>$nheight_local,
 									'Argument'=>[]
 								};
 								$ref_event=$array_ref_event[$nevent];
@@ -356,7 +356,7 @@ sub USR_stTMX2BIN{
 								undef $ref_event;
 							}
 						}elsif(/\<object\s+id\=\"(\d+)"\s+name\=\"(\S+)\"\s+type\=\"(\S+)\"\s+x\=\"(\-?\d+)\"\s+y\=\"(\-?\d+)\"\s+width\=\"(\d+)\"\s+height\=\"(\d+)\"/){
-							my($id,$name,$class,$ix,$iy,$nwidth,$nheight)=($1,$2,$3,$4,$5,$6,$7);
+							my($id,$name,$class,$ix,$iy,$nwidth_local,$nheight_local)=($1,$2,$3,$4,$5,$6,$7);
 
 							$name=&USR_RemoveComment($name);
 							$class=&USR_RemoveComment($class);
@@ -371,8 +371,8 @@ sub USR_stTMX2BIN{
 									'GID'=>'',
 									'X'=>$ix,
 									'Y'=>$iy,
-									'Width'=>$nwidth,
-									'Height'=>$nheight,
+									'Width'=>$nwidth_local,
+									'Height'=>$nheight_local,
 									'Argument'=>[]
 								};
 								$ref_event=$array_ref_event[$nevent];
@@ -456,31 +456,28 @@ sub USR_stTMX2BIN{
 	{
 		my($img_destination,$img_destination_c);
 
-		{
-			my($nheight)=scalar(@array_ref_array_attribute);
+		$nheight=scalar(@array_ref_array_attribute);
+		#	マップデータまとめ
+		$img_destination=new BASE_IMAGE::();
+		if($$ref_switch{'Transpose'}==0){
+			my($iy);
 
-			#	マップデータまとめ
-			$img_destination=new BASE_IMAGE::();
-			if($$ref_switch{'Transpose'}==0){
-				my($iy);
-
-				for($iy=0;$iy<$nheight;++$iy){
-					my($ref_array_attribute)=$array_ref_array_attribute[$iy];
-					my($ix);
-
-					for($ix=0;$ix<$nwidth;++$ix){
-						$img_destination->SetWORD_B($$ref_array_attribute[$ix]);
-					}
-				}
-			}else{
+			for($iy=0;$iy<$nheight;++$iy){
+				my($ref_array_attribute)=$array_ref_array_attribute[$iy];
 				my($ix);
 
 				for($ix=0;$ix<$nwidth;++$ix){
-					my($iy);
+					$img_destination->SetWORD_B($$ref_array_attribute[$ix]);
+				}
+			}
+		}else{
+			my($ix);
 
-					for($iy=0;$iy<$nheight;++$iy){
-						$img_destination->SetWORD_B($array_ref_array_attribute[$iy][$ix]);
-					}
+			for($ix=0;$ix<$nwidth;++$ix){
+				my($iy);
+
+				for($iy=0;$iy<$nheight;++$iy){
+					$img_destination->SetWORD_B($array_ref_array_attribute[$iy][$ix]);
 				}
 			}
 		}
@@ -1007,7 +1004,7 @@ END
 				}
 			}
 		}
-		return $img_destination,$img_destination_c;
+		return $img_destination,$img_destination_c,$nwidth,$nheight;
 	}
 }
 

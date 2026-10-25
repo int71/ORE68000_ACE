@@ -54,22 +54,22 @@ public:
 	static constexpr INT16	stci16cDiscardMask=stci16iOne-1;
 	//	UINT8					CONTROLLER_stcui8cRight
 	//		コントローラ「右移動操作」入力ビットを示すマスク値です。
-	static constexpr AUTO	CONTROLLER_stcui8cRight=FAMILYBASIC::stcui8cMaskButtonRight;
+	static constexpr AUTO	CONTROLLER_stcui8cRight=FAMILYBASIC::JOYSTICK_stcui8cMaskButtonRight;
 	//	UINT8					CONTROLLER_stcui8cLeft
 	//		コントローラ「左移動操作」入力ビットを示すマスク値です。
-	static constexpr AUTO	CONTROLLER_stcui8cLeft=FAMILYBASIC::stcui8cMaskButtonLeft;
+	static constexpr AUTO	CONTROLLER_stcui8cLeft=FAMILYBASIC::JOYSTICK_stcui8cMaskButtonLeft;
 	//	UINT8					CONTROLLER_stcui8cDown
 	//		コントローラ「下移動操作」入力ビットを示すマスク値です。
-	static constexpr AUTO	CONTROLLER_stcui8cDown=FAMILYBASIC::stcui8cMaskButtonDown;
+	static constexpr AUTO	CONTROLLER_stcui8cDown=FAMILYBASIC::JOYSTICK_stcui8cMaskButtonDown;
 	//	UINT8					CONTROLLER_stcui8cUp
 	//		コントローラ「上移動操作」入力ビットを示すマスク値です。
-	static constexpr AUTO	CONTROLLER_stcui8cUp=FAMILYBASIC::stcui8cMaskButtonUp;
+	static constexpr AUTO	CONTROLLER_stcui8cUp=FAMILYBASIC::JOYSTICK_stcui8cMaskButtonUp;
 	//	UINT8					CONTROLLER_stcui8cJump
 	//		コントローラ「ジャンプ操作」入力ビットを示すマスク値です。
-	static constexpr AUTO	CONTROLLER_stcui8cJump=FAMILYBASIC::stcui8cMaskButtonA;
+	static constexpr AUTO	CONTROLLER_stcui8cJump=FAMILYBASIC::JOYSTICK_stcui8cMaskButtonA;
 	//	UINT8					CONTROLLER_stcui8cDash
 	//		コントローラ「ダッシュ操作」入力ビットを示すマスク値です。
-	static constexpr AUTO	CONTROLLER_stcui8cDash=FAMILYBASIC::stcui8cMaskButtonB;
+	static constexpr AUTO	CONTROLLER_stcui8cDash=FAMILYBASIC::JOYSTICK_stcui8cMaskButtonB;
 	//	VECTOR2					MAP_stcv2nSizeBit
 	//		マップデータのサイズ(キャラクタ単位)ビット幅です。
 	static constexpr VECTOR2	MAP_stcv2nSizeBit={7,7};
@@ -95,11 +95,11 @@ public:
 	//	UINT8					MAP_stcui8cLadder
 	//		ファミリーベーシック的(8ビット幅での)ハシゴキャラクタコードです。
 	static constexpr UINT8	MAP_stcui8cLadder=0xd2;
-	//	UINT16					MAP_stacui16cAttribute[]
+	//	CANVASBG_ROM			MAP_stccvsBG
 	//		マップデータです。
 	//		8ドット四方のBGキャラクタが、
-	//		1キャラクタ当たり16ビットで「MAP_stcv2nSize」サイズの大きさで敷き詰められています。
-	static constexpr UINT16	MAP_stacui16cAttribute[]=__O68K_TMX2BIN("lesson11_MAP.tmx");
+	//		1キャラクタ当たり16ビットで「MAP_stcv2nMap」サイズの大きさで敷き詰められています。
+	static constexpr AUTO	MAP_stccvsBG=__O68K_CANVASBG_ROM("(Resource)/lesson11_MAP.tmx");
 	//	VECTOR2					BG_stcv2nSizeBit
 	//		背景データのサイズ(キャラクタ単位)ビット幅です。
 	static constexpr VECTOR2	BG_stcv2nSizeBit={6,6};
@@ -116,11 +116,11 @@ public:
 		BG_stcv2nSize.i16nWidth()-1,
 		BG_stcv2nSize.i16nHeight()-1
 	};
-	//	UINT16					BG_stacui16cAttribute[]
+	//	CANVASBG_ROM			BG_stccvsBG
 	//		背景データです。
 	//		8ドット四方のBGキャラクタが、
 	//		1キャラクタ当たり16ビットで「BG_stcv2nSize」サイズの大きさで敷き詰められています。
-	static constexpr UINT16	BG_stacui16cAttribute[]=__O68K_TMX2BIN("lesson11_BG.tmx");
+	static constexpr AUTO	BG_stccvsBG=__O68K_CANVASBG_ROM("(Resource)/lesson11_BG.tmx");
 	//	UINT8					ENEMY_stcui8nInstanceMaximum
 	//		「敵最大数」です。
 	static constexpr UINT8	ENEMY_stcui8nInstanceMaximum=64;
@@ -2648,8 +2648,8 @@ public:
 		SHELLCREEPER::stStart(&ENEMY_aenmyThis[3],VECTOR2((32<<3),(89<<3))<<FIXEDL_stcui8nBit,CHARACTER_::IDDIRECTION::Right);
 		//	「背景」初期化
 		SCROLL_SetPosition();
-		FAMILYBASIC::BG1_stCopyAttribute({0,0},MAP_stcv2nSize,MAP_stacui16cAttribute);
-		FAMILYBASIC::BG2_stCopyAttribute({0,0},BG_stcv2nSize,BG_stacui16cAttribute);
+		FAMILYBASIC::BG1_stCopy(MAP_stccvsBG,{0,0});
+		FAMILYBASIC::BG2_stCopy(BG_stccvsBG,{0,0});
 		//	点数系初期化
 		FAMILYBASIC::BG0_stPrint({11,12},"          ",0);
 		ShowScore();
@@ -2697,7 +2697,7 @@ public:
 		CONTROLLER_Update();
 		Show();
 		//	リスタート判定
-		if(CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::IDBUTTON::A))idMode=IDMODE::Start;
+		if(CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::JOYSTICK_IDBUTTON::A))idMode=IDMODE::Start;
 		return;
 	}
 private:

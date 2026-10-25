@@ -7,6 +7,7 @@ new BASE::();
 sub main{
 	my($out);
 
+	BASE::SetCurrentDirectory($BASE::PathBase);
 	$out=`./MAKEVIDEOROM.pl "(Resource)/VIDEO" -o ../../image/100.bin -c common/rom_video.hpp -j I71`;
 	if($out ne ''){
 		BASE::Pause($out);

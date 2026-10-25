@@ -154,184 +154,211 @@ VOID					VIDEO::stOff(VOID)noexcept{
 	return;
 }
 
-VOID					VIDEO::stSetCRT640x480P(VOID)noexcept{
+VOID					VIDEO::stSetCRT640x480P(
+	CUINT16					cui16nwidthmask,
+	CUINT16					cui16nheightmask
+)noexcept{
 	stWrite(IDREGISTERW::CRTHBlank,UINT16(
 		(/*CLK*/1<<0xf)|
 		(/*CLK分周*/3<<0xd)|
-		(/*水平帰線区間*/160<<0x2)|
+		(/*水平帰線区間*/(160+cui16nwidthmask)<<0x2)|
 		(/*.5*/0<<0x1)|
 		(/*.25*/0<<0x0)
 	));
 	stWrite(IDREGISTERW::CRTHVisible,UINT16(
-		(/*水平表示区間*/640<<0x2)
+		(/*水平表示区間*/(640-cui16nwidthmask)<<0x2)
 	));
 	stWrite(IDREGISTERW::CRTVBlank,UINT16(
 		(/*EO*/0<<0xf)|
 		(/*IL*/0<<0xe)|
 		(/*VL 2X*/0<<0xd)|
-		(/*垂直帰線区間*/45<<0x2)|
+		(/*垂直帰線区間*/(45+cui16nheightmask)<<0x2)|
 		(/*.5*/0<<0x1)|
 		(/*.25*/0<<0x0)
 	));
 	stWrite(IDREGISTERW::CRTVVisible,UINT16(
 		(/*RST*/1<<0xf)|
-		(/*垂直表示区間*/480<<0x2)
+		(/*垂直表示区間*/(480-cui16nheightmask)<<0x2)
 	));
 	return;
 }
 
-VOID					VIDEO::stSetCRT320x240P(VOID)noexcept{
+VOID					VIDEO::stSetCRT320x240P(
+	CUINT16					cui16nwidthmask,
+	CUINT16					cui16nheightmask
+)noexcept{
 	stWrite(IDREGISTERW::CRTHBlank,UINT16(
 		(/*CLK*/1<<0xf)|
 		(/*CLK分周*/1<<0xd)|
-		(/*水平帰線区間*/80<<0x2)|
+		(/*水平帰線区間*/(80+cui16nwidthmask)<<0x2)|
 		(/*.5*/0<<0x1)|
 		(/*.25*/0<<0x0)
 	));
 	stWrite(IDREGISTERW::CRTHVisible,UINT16(
-		(/*水平表示区間*/320<<0x2)
+		(/*水平表示区間*/(320-cui16nwidthmask)<<0x2)
 	));
 	stWrite(IDREGISTERW::CRTVBlank,UINT16(
-		(/*EO*/1<<0xf)|
+		(/*EO*/0<<0xf)|
 		(/*IL*/0<<0xe)|
-		(/*VL 2X*/1<<0xd)|
-		(/*垂直帰線区間*/45<<0x2)|
+		(/*VL 2X*/0<<0xd)|
+		(/*垂直帰線区間*/(23+cui16nheightmask)<<0x2)|
 		(/*.5*/0<<0x1)|
 		(/*.25*/0<<0x0)
 	));
 	stWrite(IDREGISTERW::CRTVVisible,UINT16(
 		(/*RST*/1<<0xf)|
-		(/*垂直表示区間*/480<<0x2)
+		(/*垂直表示区間*/(240-cui16nheightmask)<<0x2)
 	));
 	return;
 }
 
-VOID					VIDEO::stSetCRT320x240I(VOID)noexcept{
+VOID					VIDEO::stSetCRT320x240I(
+	CUINT16					cui16nwidthmask,
+	CUINT16					cui16nheightmask
+)noexcept{
+	CAUTO					cui16nheightmask2=UINT16(cui16nheightmask<<1);
+
 	stWrite(IDREGISTERW::CRTHBlank,UINT16(
 		(/*CLK*/1<<0xf)|
 		(/*CLK分周*/1<<0xd)|
-		(/*水平帰線区間*/80<<0x2)|
+		(/*水平帰線区間*/(80+cui16nwidthmask)<<0x2)|
 		(/*.5*/0<<0x1)|
 		(/*.25*/0<<0x0)
 	));
 	stWrite(IDREGISTERW::CRTHVisible,UINT16(
-		(/*水平表示区間*/320<<0x2)
+		(/*水平表示区間*/(320-cui16nwidthmask)<<0x2)
 	));
 	stWrite(IDREGISTERW::CRTVBlank,UINT16(
 		(/*EO*/1<<0xf)|
 		(/*IL*/1<<0xe)|
 		(/*VL 2X*/1<<0xd)|
-		(/*垂直帰線区間*/45<<0x2)|
+		(/*垂直帰線区間*/(45+cui16nheightmask2)<<0x2)|
 		(/*.5*/0<<0x1)|
 		(/*.25*/0<<0x0)
 	));
 	stWrite(IDREGISTERW::CRTVVisible,UINT16(
 		(/*RST*/1<<0xf)|
-		(/*垂直表示区間*/480<<0x2)
+		(/*垂直表示区間*/(480-cui16nheightmask2)<<0x2)
 	));
 	return;
 }
 
-VOID					VIDEO::stSetCRT256x192P(VOID)noexcept{
+VOID					VIDEO::stSetCRT256x192P(
+	CUINT16					cui16nwidthmask,
+	CUINT16					cui16nheightmask
+)noexcept{
 	stWrite(IDREGISTERW::CRTHBlank,UINT16(
 		(/*CLK*/0<<0xf)|
 		(/*CLK分周*/1<<0xd)|
-		(/*水平帰線区間*/85<<0x2)|
+		(/*水平帰線区間*/(85+cui16nwidthmask)<<0x2)|
 		(/*.5*/0<<0x1)|
 		(/*.25*/1<<0x0)
 	));
 	stWrite(IDREGISTERW::CRTHVisible,UINT16(
-		(/*水平表示区間*/256<<0x2)
+		(/*水平表示区間*/(256-cui16nwidthmask)<<0x2)
 	));
 	stWrite(IDREGISTERW::CRTVBlank,UINT16(
-		(/*EO*/1<<0xf)|
+		(/*EO*/0<<0xf)|
 		(/*IL*/0<<0xe)|
-		(/*VL 2X*/1<<0xd)|
-		(/*垂直帰線区間*/141<<0x2)|
+		(/*VL 2X*/0<<0xd)|
+		(/*垂直帰線区間*/(71+cui16nheightmask)<<0x2)|
 		(/*.5*/0<<0x1)|
 		(/*.25*/0<<0x0)
 	));
 	stWrite(IDREGISTERW::CRTVVisible,UINT16(
 		(/*RST*/1<<0xf)|
-		(/*垂直表示区間*/384<<0x2)
+		(/*垂直表示区間*/(192-cui16nheightmask)<<0x2)
 	));
 	return;
 }
 
-VOID					VIDEO::stSetCRT256x192I(VOID)noexcept{
+VOID					VIDEO::stSetCRT256x192I(
+	CUINT16					cui16nwidthmask,
+	CUINT16					cui16nheightmask
+)noexcept{
+	CAUTO					cui16nheightmask2=UINT16(cui16nheightmask<<1);
+
 	stWrite(IDREGISTERW::CRTHBlank,UINT16(
 		(/*CLK*/0<<0xf)|
 		(/*CLK分周*/1<<0xd)|
-		(/*水平帰線区間*/85<<0x2)|
+		(/*水平帰線区間*/(85+cui16nwidthmask)<<0x2)|
 		(/*.5*/0<<0x1)|
 		(/*.25*/1<<0x0)
 	));
 	stWrite(IDREGISTERW::CRTHVisible,UINT16(
-		(/*水平表示区間*/256<<0x2)
+		(/*水平表示区間*/(256-cui16nwidthmask)<<0x2)
 	));
 	stWrite(IDREGISTERW::CRTVBlank,UINT16(
 		(/*EO*/1<<0xf)|
 		(/*IL*/1<<0xe)|
 		(/*VL 2X*/1<<0xd)|
-		(/*垂直帰線区間*/141<<0x2)|
+		(/*垂直帰線区間*/(141+cui16nheightmask2)<<0x2)|
 		(/*.5*/0<<0x1)|
 		(/*.25*/0<<0x0)
 	));
 	stWrite(IDREGISTERW::CRTVVisible,UINT16(
 		(/*RST*/1<<0xf)|
-		(/*垂直表示区間*/384<<0x2)
+		(/*垂直表示区間*/(384-cui16nheightmask2)<<0x2)
 	));
 	return;
 }
 
-VOID					VIDEO::stSetCRT256x212P(VOID)noexcept{
+VOID					VIDEO::stSetCRT256x212P(
+	CUINT16					cui16nwidthmask,
+	CUINT16					cui16nheightmask
+)noexcept{
 	stWrite(IDREGISTERW::CRTHBlank,UINT16(
 		(/*CLK*/0<<0xf)|
 		(/*CLK分周*/1<<0xd)|
-		(/*水平帰線区間*/85<<0x2)|
+		(/*水平帰線区間*/(85+cui16nwidthmask)<<0x2)|
 		(/*.5*/0<<0x1)|
 		(/*.25*/1<<0x0)
 	));
 	stWrite(IDREGISTERW::CRTHVisible,UINT16(
-		(/*水平表示区間*/256<<0x2)
+		(/*水平表示区間*/(256-cui16nwidthmask)<<0x2)
 	));
 	stWrite(IDREGISTERW::CRTVBlank,UINT16(
-		(/*EO*/1<<0xf)|
+		(/*EO*/0<<0xf)|
 		(/*IL*/0<<0xe)|
-		(/*VL 2X*/1<<0xd)|
-		(/*垂直帰線区間*/101<<0x2)|
+		(/*VL 2X*/0<<0xd)|
+		(/*垂直帰線区間*/(51+cui16nheightmask)<<0x2)|
 		(/*.5*/0<<0x1)|
 		(/*.25*/0<<0x0)
 	));
 	stWrite(IDREGISTERW::CRTVVisible,UINT16(
 		(/*RST*/1<<0xf)|
-		(/*垂直表示区間*/424<<0x2)
+		(/*垂直表示区間*/(212-cui16nheightmask)<<0x2)
 	));
 	return;
 }
 
-VOID					VIDEO::stSetCRT256x212I(VOID)noexcept{
+VOID					VIDEO::stSetCRT256x212I(
+	CUINT16					cui16nwidthmask,
+	CUINT16					cui16nheightmask
+)noexcept{
+	CAUTO					cui16nheightmask2=UINT16(cui16nheightmask<<1);
+
 	stWrite(IDREGISTERW::CRTHBlank,UINT16(
 		(/*CLK*/0<<0xf)|
 		(/*CLK分周*/1<<0xd)|
-		(/*水平帰線区間*/85<<0x2)|
+		(/*水平帰線区間*/(85+cui16nwidthmask)<<0x2)|
 		(/*.5*/0<<0x1)|
 		(/*.25*/1<<0x0)
 	));
 	stWrite(IDREGISTERW::CRTHVisible,UINT16(
-		(/*水平表示区間*/256<<0x2)
+		(/*水平表示区間*/(256-cui16nwidthmask)<<0x2)
 	));
 	stWrite(IDREGISTERW::CRTVBlank,UINT16(
 		(/*EO*/1<<0xf)|
 		(/*IL*/1<<0xe)|
 		(/*VL 2X*/1<<0xd)|
-		(/*垂直帰線区間*/101<<0x2)|
+		(/*垂直帰線区間*/(101+cui16nheightmask2)<<0x2)|
 		(/*.5*/0<<0x1)|
 		(/*.25*/0<<0x0)
 	));
 	stWrite(IDREGISTERW::CRTVVisible,UINT16(
 		(/*RST*/1<<0xf)|
-		(/*垂直表示区間*/424<<0x2)
+		(/*垂直表示区間*/(424-cui16nheightmask2)<<0x2)
 	));
 	return;
 }

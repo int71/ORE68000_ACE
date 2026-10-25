@@ -515,10 +515,12 @@ public:
 		for(CAUTO& cenmycurrent:ENEMY_aenmyThis)cenmycurrent.Show();
 		//	ニタニタ移動
 		{
+			using					IDBUTTON=FAMILYBASIC::JOYSTICK_IDBUTTON;
+
 			//	コントローラ操作
-			if(CONTROLLER_ui8cCurrent&(1<<FAMILYBASIC::IDBUTTON::Right))PLAYER_v2dVelocity.i16iX()=PLAYER_stci16nXSpeed;
-			else if(CONTROLLER_ui8cCurrent&(1<<FAMILYBASIC::IDBUTTON::Left))PLAYER_v2dVelocity.i16iX()=-PLAYER_stci16nXSpeed;
-			if((CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::IDBUTTON::A))&&(PLAYER_i16dAccelY==0)){
+			if(CONTROLLER_ui8cCurrent&(1<<IDBUTTON::Right))PLAYER_v2dVelocity.i16iX()=PLAYER_stci16nXSpeed;
+			else if(CONTROLLER_ui8cCurrent&(1<<IDBUTTON::Left))PLAYER_v2dVelocity.i16iX()=-PLAYER_stci16nXSpeed;
+			if((CONTROLLER_ui8cSingle&(1<<IDBUTTON::A))&&(PLAYER_i16dAccelY==0)){
 				PLAYER_v2dVelocity.i16iY()=INT16(-12)<<FIXEDL_stcui8nBit;
 				PLAYER_i16dAccelY=28;
 				//	ジャンプ音
@@ -593,7 +595,7 @@ public:
 		FAMILYBASIC::SPRITE_stWrite16(0,(PLAYER_v2iPosition>>FIXEDL_stcui8nBit)-VECTOR2(8,8),((PLAYER_ui16iPattern>>2)&4)+88,2);
 		for(CAUTO& cenmycurrent:ENEMY_aenmyThis)cenmycurrent.Show();
 		//	リスタート判定
-		if(CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::IDBUTTON::A))idMode=IDMODE::Start;
+		if(CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::JOYSTICK_IDBUTTON::A))idMode=IDMODE::Start;
 		return;
 	}
 private:

@@ -70,11 +70,11 @@ public:
 	//	UINT8					MAP_stcui8cLadder
 	//		ファミリーベーシック的(8ビット幅での)ハシゴキャラクタコードです。
 	static constexpr UINT8	MAP_stcui8cLadder=0xd2;
-	//	UINT16					stacui16cMap[]
+	//	CANVASBG_ROM			MAP_stccvsBG
 	//		マップデータです。
 	//		8ドット四方のBGキャラクタが、
 	//		1キャラクタ当たり16ビットで「stcv2nMap」サイズの大きさで敷き詰められています。
-	static constexpr UINT16	stacui16cMap[]=__O68K_TMX2BIN("lesson08.tmx");
+	static constexpr AUTO	MAP_stccvsBG=__O68K_CANVASBG_ROM("(Resource)/lesson08.tmx");
 	//	static constexpr UINT8	stacui8cBGM
 	//		「ゲーム中BGM」の演奏データです。毎度おなじみドドッチドドッチ。
 	static constexpr UINT8	BGM_stacui8cMain[]=__O68K_SEQUENCE(R"(
@@ -569,9 +569,9 @@ public:
 		//	VOID					Move(const PGAME cpgameowner)
 		//		移動処理です。
 		VOID					Move(const PGAME cpgameowner)noexcept{
-			CAUTO					controller_cui8crl=UINT8(cpgameowner->CONTROLLER_ui8cCurrent&(FAMILYBASIC::stcui8cMaskButtonRight|FAMILYBASIC::stcui8cMaskButtonLeft));
-			CAUTO					controller_cui8cdu=UINT8(cpgameowner->CONTROLLER_ui8cCurrent&(FAMILYBASIC::stcui8cMaskButtonDown|FAMILYBASIC::stcui8cMaskButtonUp));
-			CAUTO					controller_cejump=OFWBOOL((cpgameowner->CONTROLLER_ui8cSingle&FAMILYBASIC::stcui8cMaskButtonA)!=0);
+			CAUTO					controller_cui8crl=UINT8(cpgameowner->CONTROLLER_ui8cCurrent&(FAMILYBASIC::JOYSTICK_stcui8cMaskButtonRight|FAMILYBASIC::JOYSTICK_stcui8cMaskButtonLeft));
+			CAUTO					controller_cui8cdu=UINT8(cpgameowner->CONTROLLER_ui8cCurrent&(FAMILYBASIC::JOYSTICK_stcui8cMaskButtonDown|FAMILYBASIC::JOYSTICK_stcui8cMaskButtonUp));
+			CAUTO					controller_cejump=OFWBOOL((cpgameowner->CONTROLLER_ui8cSingle&FAMILYBASIC::JOYSTICK_stcui8cMaskButtonA)!=0);
 			CAUTO					cv2icm_upper=v2iPosition_Upper+VECTOR2(+0,+0);
 			CAUTO					cv2icu_upper=v2iPosition_Upper+VECTOR2(+0,-7);
 			CAUTO					map_cui8ccm=cpgameowner->MAP_ui8cRead(cv2icm_upper);
@@ -596,22 +596,22 @@ public:
 					//	[条件3+1]ハシゴ昇降中、または──
 					(idMode==IDMODE::OnLadder)||
 					//	[条件3+2]下入力あり、または──
-					(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonDown)||
+					(controller_cui8cdu==FAMILYBASIC::JOYSTICK_stcui8cMaskButtonDown)||
 					//	[条件3+3]上入力あり
-					(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonUp)
+					(controller_cui8cdu==FAMILYBASIC::JOYSTICK_stcui8cMaskButtonUp)
 				)
 			){
 				//	ハシゴに重なっている
 				//	斜め方向入力は上下入力を優先
 				if(!(
-					(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonDown)?Move_eLadderY(cpgameowner,FALSE):(
-						(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonUp)?Move_eLadderY(cpgameowner,TRUE):FALSE
+					(controller_cui8cdu==FAMILYBASIC::JOYSTICK_stcui8cMaskButtonDown)?Move_eLadderY(cpgameowner,FALSE):(
+						(controller_cui8cdu==FAMILYBASIC::JOYSTICK_stcui8cMaskButtonUp)?Move_eLadderY(cpgameowner,TRUE):FALSE
 					)
 				)){
 					//	ハシゴ昇降しなかった(出来なかった)
-					if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonRight){
+					if(controller_cui8crl==FAMILYBASIC::JOYSTICK_stcui8cMaskButtonRight){
 						Move_LadderX(cpgameowner,IDDIRECTION::Right);
-					}else if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonLeft){
+					}else if(controller_cui8crl==FAMILYBASIC::JOYSTICK_stcui8cMaskButtonLeft){
 						Move_LadderX(cpgameowner,IDDIRECTION::Left);
 					}else if(idMode==IDMODE::OnLadder){
 						//	ハシゴ昇降途中でのニュートラル入力なので停止
@@ -639,11 +639,11 @@ public:
 				//	ハシゴ重なり以外の状態での移動
 				if(idMode!=IDMODE::Jumping){
 					//	通常状態(足元の状況によっては落下するかもしれない)
-					if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonRight){
+					if(controller_cui8crl==FAMILYBASIC::JOYSTICK_stcui8cMaskButtonRight){
 						Move_Walking(cpgameowner,IDDIRECTION::Right);
-					}else if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonLeft){
+					}else if(controller_cui8crl==FAMILYBASIC::JOYSTICK_stcui8cMaskButtonLeft){
 						Move_Walking(cpgameowner,IDDIRECTION::Left);
-					}else if(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonDown){
+					}else if(controller_cui8cdu==FAMILYBASIC::JOYSTICK_stcui8cMaskButtonDown){
 						//	下方向の入力がある(「何か」を降りようとしている)
 						switch(idDirection){
 						case IDDIRECTION::Right:
@@ -669,7 +669,7 @@ public:
 							}
 							break;
 						}
-					}else if(controller_cui8cdu==FAMILYBASIC::stcui8cMaskButtonUp){
+					}else if(controller_cui8cdu==FAMILYBASIC::JOYSTICK_stcui8cMaskButtonUp){
 						//	上方向の入力がある(「何か」を昇ろうとしている)
 						switch(idDirection){
 						case IDDIRECTION::Right:
@@ -701,9 +701,9 @@ public:
 					}
 				}else{
 					//	ジャンプ中
-					if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonRight){
+					if(controller_cui8crl==FAMILYBASIC::JOYSTICK_stcui8cMaskButtonRight){
 						Move_Jumping(cpgameowner,IDDIRECTION::Right);
-					}else if(controller_cui8crl==FAMILYBASIC::stcui8cMaskButtonLeft){
+					}else if(controller_cui8crl==FAMILYBASIC::JOYSTICK_stcui8cMaskButtonLeft){
 						Move_Jumping(cpgameowner,IDDIRECTION::Left);
 					}else{
 						Move_Jumping(cpgameowner);
@@ -818,7 +818,7 @@ public:
 		//		地上で「ciddirection」方向に歩き加速します。
 		//		壁にぶつかれば静止し、足元に何も無ければ落下します。
 		VOID					Move_Walking(const PGAME cpgameowner,const IDDIRECTION ciddirection)noexcept{
-			CAUTO					controller_cedash=OFWBOOL((cpgameowner->CONTROLLER_ui8cCurrent&FAMILYBASIC::stcui8cMaskButtonB)!=0);
+			CAUTO					controller_cedash=OFWBOOL((cpgameowner->CONTROLLER_ui8cCurrent&FAMILYBASIC::JOYSTICK_stcui8cMaskButtonB)!=0);
 
 			switch(ciddirection){
 			case IDDIRECTION::Right:
@@ -1061,7 +1061,7 @@ public:
 		//	VOID					Move_Jumping(const PGAME cpgameowner,const IDDIRECTION ciddirection)
 		//		左右方向の入力があるジャンプ移動です。
 		VOID					Move_Jumping(const PGAME cpgameowner,const IDDIRECTION ciddirection)noexcept{
-			CAUTO					controller_cedash=OFWBOOL((cpgameowner->CONTROLLER_ui8cCurrent&FAMILYBASIC::stcui8cMaskButtonB)!=0);
+			CAUTO					controller_cedash=OFWBOOL((cpgameowner->CONTROLLER_ui8cCurrent&FAMILYBASIC::JOYSTICK_stcui8cMaskButtonB)!=0);
 
 			switch(ciddirection){
 			case IDDIRECTION::Right:
@@ -1091,7 +1091,7 @@ public:
 		//	VOID					Move_Jumping_Body(const PGAME cpgameowner)
 		//		ジャンプ移動の共通処理です。
 		VOID					Move_Jumping_Body(const PGAME cpgameowner)noexcept{
-			CAUTO					controller_cejump=OFWBOOL((cpgameowner->CONTROLLER_ui8cCurrent&FAMILYBASIC::stcui8cMaskButtonA)!=0);
+			CAUTO					controller_cejump=OFWBOOL((cpgameowner->CONTROLLER_ui8cCurrent&FAMILYBASIC::JOYSTICK_stcui8cMaskButtonA)!=0);
 
 			if((0<ui8nJumpKeeping)&&controller_cejump){
 				--ui8nJumpKeeping;
@@ -1321,7 +1321,7 @@ public:
 		FAMILYBASIC::SPRITE_stSetSize(FAMILYBASIC::IDSIZE::n1024);
 		FAMILYBASIC::BG1_stSetSize(FAMILYBASIC::IDSIZE::n1024);
 		SCROLL_v2iPosition=VECTOR2(0,1024-212)<<FIXEDL_stcui8nBit;
-		FAMILYBASIC::BG1_stCopyAttribute({0,0},stcv2nMap,stacui16cMap);
+		FAMILYBASIC::BG1_stCopy(MAP_stccvsBG,{0,0});
 		//	点数系初期化
 		FAMILYBASIC::BG0_stPrint({11,12},"          ",0);
 		ShowScore();
@@ -1364,7 +1364,7 @@ public:
 		CONTROLLER_Update();
 		Show();
 		//	リスタート判定
-		if(CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::IDBUTTON::A))idMode=IDMODE::Start;
+		if(CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::JOYSTICK_IDBUTTON::A))idMode=IDMODE::Start;
 		return;
 	}
 private:

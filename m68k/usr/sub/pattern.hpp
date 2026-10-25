@@ -5,8 +5,8 @@
 **																			**
 **	'sub/pattern.hpp'								2025 written by int71	**
  ****************************************************************************/
-#ifndef OREDIUS68K_SUB_SERVICE_PATTERN
-#define OREDIUS68K_SUB_SERVICE_PATTERN
+#ifndef I71_SUB_PATTERN
+#define I71_SUB_PATTERN
 
 //
 //		include

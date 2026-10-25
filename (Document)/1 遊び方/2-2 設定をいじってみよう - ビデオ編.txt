@@ -159,7 +159,12 @@
                     「CHECK_GPU10.exe」、もしくは「CHECK_GPU11.exe」で確認できま
                     す。
                 <DisplayState value="SwitchableWindowed"/>
-                  ウィンドウ状態かフルスクリーン状態かを保持します。
+                  SwitchableWindowed:
+                    ウィンドウ状態です。
+                  SwitchableFullScreen:
+                    フルスクリーン状態です。
+                  FixedFullScreen:
+                    「GraphicMode」に「FullScreen」系を設定した際の固定値です。
                 <FullScreenDisplay value="0"/>
                   フルスクリーン表示対象のディスプレイ番号を保持します。
                 <FullScreenDisplayLock value="FALSE"/>

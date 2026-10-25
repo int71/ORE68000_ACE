@@ -37,7 +37,7 @@ VOID					USER_Delete(VOID)noexcept{
 }
 
 VOID					USER_Main(VOID)noexcept{
-	using					IDBUTTON=FAMILYBASIC::IDBUTTON;
+	using					IDBUTTON=FAMILYBASIC::JOYSTICK_IDBUTTON;
 	CAUTO					cui8cjoystick=FAMILYBASIC::CONTROLLER_stui8cRead(0);
 
 	FAMILYBASIC::SPRITE_stWriteAttribute(0,v2iPosition.i16iX(),v2iPosition.i16iY(),0x0000|172,0x5d00);

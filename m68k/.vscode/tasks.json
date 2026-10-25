@@ -5,8 +5,12 @@
     "tasks": [
         {
             "label": "make",
-            "type": "shell",
-            "command": "usr/build.sh",
+            "type": "process",
+            "command": "/Sync/Package/Utility/MSYS2/msys2_shell.cmd",
+            "args": [
+                "-c",
+                "/d/Sync/Package/Cross/ORE68000_ACE/m68k/usr/build.sh"
+            ],
             "problemMatcher": [],
             "group": {
                 "kind": "build",
@@ -15,8 +19,12 @@
         },
         {
             "label": "make clean",
-            "type": "shell",
-            "command": "usr/clean.sh",
+            "type": "process",
+            "command": "/Sync/Package/Utility/MSYS2/msys2_shell.cmd",
+            "args": [
+                "-c",
+                "/d/Sync/Package/Cross/ORE68000_ACE/m68k/usr/clean.sh"
+            ],
             "problemMatcher": [],
             "group": {
                 "kind": "build",
@@ -25,8 +33,12 @@
         },
         {
             "label": "run test",
-            "type": "shell",
-            "command": "usr/run.sh",
+            "type": "process",
+            "command": "/Sync/Package/Utility/MSYS2/msys2_shell.cmd",
+            "args": [
+                "-c",
+                "/d/Sync/Package/Cross/ORE68000_ACE/m68k/usr/run.sh"
+            ],
             "problemMatcher": [],
             "group": {
                 "kind": "test",

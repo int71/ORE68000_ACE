@@ -87,7 +87,7 @@ VOID					USER_Delete(VOID)noexcept{
 }
 
 VOID					USER_Main(VOID)noexcept{
-	using					IDBUTTON=FAMILYBASIC::IDBUTTON;
+	using					IDBUTTON=FAMILYBASIC::JOYSTICK_IDBUTTON;
 	AUTO&					cldrthis=OS::COLLIDERRAM_stcldrDelegate();
 	USTR					aaustrbit[cui8nEnemySet][17];
 

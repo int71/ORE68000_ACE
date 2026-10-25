@@ -1,5 +1,5 @@
 #!/usr/local/ofw/bin/ofwmake
-$MAKEBIN='../M68K_MAKEBIN.exe';
+$MAKEBIN='../M68K_MAKEBIN.exe -g /d/Sync/Package/Cross/m68k/gnu/bin';
 $MAKEFONT='../M68K_MAKEFONT.exe';
 $User='sub';
 $Source='/d/Sync/Package/Cross/ORE68000_ACE/m68k/common/src';
@@ -39,6 +39,8 @@ $BASE_CPP="$User/base.cpp";
 $BASE_OBJ="$Object/base.o";
 $BOOT_CPP="$User/boot.cpp";
 $BOOT_OBJ="$Object/boot.o";
+$CANVASBG_CPP="$User/canvasbg.cpp";
+$CANVASBG_OBJ="$Object/canvasbg.o";
 $CANVAS__CPP="$User/canvas_.cpp";
 $CANVAS__OBJ="$Object/canvas_.o";
 $CANVAS_SIZED_CPP="$User/canvas_sized.cpp";
@@ -59,8 +61,8 @@ $SERIAL_CPP="$User/serial.cpp";
 $SERIAL_OBJ="$Object/serial.o";
 $VECTOR2_CPP="$User/vector2.cpp";
 $VECTOR2_OBJ="$Object/vector2.o";
-$FONT1='/c/Windows/Fonts//c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
-$FONT4='/c/Windows/Fonts//c/Windows/Fonts/I71-平成明朝W1_0.ttc';
+$FONT1='/c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf';
+$FONT4='/c/Windows/Fonts/I71-平成明朝W3.ttc';
 
 {
 	'.phony'=>['all','clean'],
@@ -81,6 +83,7 @@ $FONT4='/c/Windows/Fonts//c/Windows/Fonts/I71-平成明朝W1_0.ttc';
 			$COMMON_VECTOR2__OBJ,
 			$BASE_OBJ,
 			$BOOT_OBJ,
+			$CANVASBG_OBJ,
 			$CANVAS__OBJ,
 			$CANVAS_SIZED_OBJ,
 			$COLLIDER_OBJ,
@@ -191,6 +194,12 @@ $FONT4='/c/Windows/Fonts//c/Windows/Fonts/I71-平成明朝W1_0.ttc';
 			$BOOT_CPP
 		],
 		exec=>["$C2OBJ \"$BOOT_CPP\" -o \"$BOOT_OBJ\""]
+	},
+	$CANVASBG_OBJ=>{
+		depend_c=>[
+			$CANVASBG_CPP
+		],
+		exec=>["$C2OBJ \"$CANVASBG_CPP\" -o \"$CANVASBG_OBJ\""]
 	},
 	$CANVAS__OBJ=>{
 		depend_c=>[

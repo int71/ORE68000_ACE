@@ -11,7 +11,6 @@
 //
 
 #include				"../common/map.hpp"
-#include				"pattern.hpp"
 #include				"familybasic.hpp"
 
 //
@@ -21,23 +20,12 @@
 using namespace m68k::i71::sub;
 
 //
-//		class:FAMILYBASIC::ST::SHARER
-//
-
-//	public
-
-VOID					FAMILYBASIC::ST::SHARER::Delete(VOID)noexcept{
-	return;
-}
-
-//
 //		class:FAMILYBASIC::ST
 //
 
 //	public
 
 VOID					FAMILYBASIC::ST::Delete(VOID)noexcept{
-	shrThis.Delete();
 	return;
 }
 
@@ -49,101 +37,12 @@ VOID					FAMILYBASIC::ST::Delete(VOID)noexcept{
 
 VOID					FAMILYBASIC::stNew(
 	const IDRESOLUTION		cidresolution,
+	CVECTOR2& 				cv2nresolutionoverride,
 	COFWBOOL				ceshow
 )noexcept{
-	constexpr AUTO			cfp_setpattern=[](const PATTERN::IDPATTERN cidpatternsprite,const PATTERN::IDPATTERN cidpatternbg){
-		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_SPRITE_stcui16iAddress,cidpatternsprite);
-		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG0_stcui16iAddress,cidpatternbg);
-		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG1_stcui16iAddress,cidpatternbg);
-		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG2_stcui16iAddress,cidpatternbg);
-		PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG3_stcui16iAddress,cidpatternbg);
-		BG0_stFillAttribute({0,0},{128,128},0x8020);
-		BG1_stFillAttribute({0,0},{128,128},0x8020);
-		BG2_stFillAttribute({0,0},{128,128},0x8020);
-		BG3_stFillAttribute({0,0},{128,128},0x8020);
-		PALETTE_stWriteBack(0x3f);
-		PALETTE_stWriteSet(0,1);
-		return;
-	};
-	AUTO&					shrthis=st.shrThis;
-
-	stShow(FALSE);
-	switch(cidresolution){
-	case IDRESOLUTION::n256x212:
-		VIDEO_DRIVER::stSetCRT256x212P();
-		shrthis.v2inScreen={256,212};
-		cfp_setpattern(PATTERN::IDPATTERN::SPRITE_SYSTEM,PATTERN::IDPATTERN::BG_SYSTEM);
-		break;
-	case IDRESOLUTION::n320x240:
-		VIDEO_DRIVER::stSetCRT320x240P();
-		shrthis.v2inScreen={320,240};
-		cfp_setpattern(PATTERN::IDPATTERN::SPRITE_SYSTEM,PATTERN::IDPATTERN::BG_SYSTEM);
-		break;
-	case IDRESOLUTION::n640x480:
-		VIDEO_DRIVER::stSetCRT640x480P();
-		shrthis.v2inScreen={640,480};
-		cfp_setpattern(PATTERN::IDPATTERN::SPRITE_SYSTEM,PATTERN::IDPATTERN::BG_SYSTEM);
-		break;
-	case IDRESOLUTION::n256x212_R:
-		VIDEO_DRIVER::stSetCRT256x212P();
-		shrthis.v2inScreen={212,256};
-		cfp_setpattern(PATTERN::IDPATTERN::SPRITE_SYSTEM_R,PATTERN::IDPATTERN::BG_SYSTEM_R);
-		break;
-	case IDRESOLUTION::n320x240_R:
-		VIDEO_DRIVER::stSetCRT320x240P();
-		shrthis.v2inScreen={240,320};
-		cfp_setpattern(PATTERN::IDPATTERN::SPRITE_SYSTEM_R,PATTERN::IDPATTERN::BG_SYSTEM_R);
-		break;
-	case IDRESOLUTION::n640x480_R:
-		VIDEO_DRIVER::stSetCRT640x480P();
-		shrthis.v2inScreen={480,640};
-		cfp_setpattern(PATTERN::IDPATTERN::SPRITE_SYSTEM_R,PATTERN::IDPATTERN::BG_SYSTEM_R);
-		break;
-	}
-	st.v2inScreen_M8=shrthis.v2inScreen-VECTOR2(8,8);
-	st.v2inScreen_M16=shrthis.v2inScreen-VECTOR2(16,16);
-	shrthis.v2inBG=shrthis.v2inScreen>>3;
-	st.v2inBG_M1=shrthis.v2inBG-VECTOR2(1,1);
-	st.SPRITE_ui16dOffsetX=0;
-	st.SPRITE_ui16dOffsetY=0;
-	{
-		CAUTO					cidsize=(cidresolution==IDRESOLUTION::n256x212)?(
-			IDSIZE::n256
-		):(
-			(cidresolution==IDRESOLUTION::n320x240)?(
-				IDSIZE::n512
-			):(
-				IDSIZE::n1024
-			)
-		);
-
-		SPRITE_stSetSize(cidsize);
-		st.BG0_ui16dOffsetX=0;
-		st.BG0_ui16dOffsetY=0;
-		BG0_stSetSize(cidsize);
-		st.BG1_ui16dOffsetX=0;
-		st.BG1_ui16dOffsetY=0;
-		BG1_stSetSize(cidsize);
-		st.BG2_ui16dOffsetX=0;
-		st.BG2_ui16dOffsetY=0;
-		BG2_stSetSize(cidsize);
-		st.BG3_ui16dOffsetX=0;
-		st.BG3_ui16dOffsetY=0;
-		BG3_stSetSize(cidsize);
-	}
-	OS::BGM_stSetMask(
-		SOUND_DRIVER::stcui16cChannelMaskPCM0|
-		SOUND_DRIVER::stcui16cChannelMaskPCM1|
-		SOUND_DRIVER::stcui16cChannelMaskPCM2
-	);
-	OS::SE0_stSetMask(
-		SOUND_DRIVER::stcui16cChannelMaskPCM3
-	);
-	OS::SE1_stSetMask(
-		SOUND_DRIVER::stcui16cChannelMaskPCM4|
-		SOUND_DRIVER::stcui16cChannelMaskFM7
-	);
-	if(ceshow)stShow(TRUE);
+	stNew_SetResolution(cidresolution,cv2nresolutionoverride);
+	stNew_SetPattern(PATTERN::IDPATTERN::SPRITE_SYSTEM,PATTERN::IDPATTERN::BG_SYSTEM);
+	stNew_Common(cidresolution,ceshow);
 	return;
 }
 
@@ -225,8 +124,8 @@ VOID					FAMILYBASIC::PALETTE_stWriteSet(
 	CAUTO&					acsetbg=PALETTE_staacSetBG[(cui8isetbg<2)?cui8isetbg:0];
 
 	for(UINT8 ui8ipalette=0;ui8ipalette<4;++ui8ipalette){
-		PALETTE_stWrite(ui8ipalette+ 0,acsetsprite[ui8ipalette]);
-		PALETTE_stWrite(ui8ipalette+ 8,acsetbg[ui8ipalette]);
+		PALETTE_stWrite(PALETTE_stui8iBase_Sprite+	ui8ipalette,acsetsprite[ui8ipalette]);
+		PALETTE_stWrite(PALETTE_stui8iBase_BG+		ui8ipalette,acsetbg[ui8ipalette]);
 	}
 	return;
 }
@@ -243,10 +142,10 @@ VOID					FAMILYBASIC::PALETTE_stWriteSet2(
 	CAUTO&					acsetbg1=PALETTE_staacSetBG[(cui8isetbg1<2)?cui8isetbg1:0];
 
 	for(UINT8 ui8ipalette=0;ui8ipalette<4;++ui8ipalette){
-		PALETTE_stWrite(ui8ipalette+ 0,acsetsprite0[ui8ipalette]);
-		PALETTE_stWrite(ui8ipalette+ 4,acsetsprite1[ui8ipalette]);
-		PALETTE_stWrite(ui8ipalette+ 8,acsetbg0[ui8ipalette]);
-		PALETTE_stWrite(ui8ipalette+12,acsetbg1[ui8ipalette]);
+		PALETTE_stWrite(PALETTE_stui8iBase_Sprite+	ui8ipalette+0,acsetsprite0[ui8ipalette]);
+		PALETTE_stWrite(PALETTE_stui8iBase_Sprite+	ui8ipalette+4,acsetsprite1[ui8ipalette]);
+		PALETTE_stWrite(PALETTE_stui8iBase_BG+		ui8ipalette+0,acsetbg0[ui8ipalette]);
+		PALETTE_stWrite(PALETTE_stui8iBase_BG+		ui8ipalette+4,acsetbg1[ui8ipalette]);
 	}
 	return;
 }
@@ -264,8 +163,12 @@ VOID					FAMILYBASIC::SPRITE_stSetSize(
 	const IDSIZE			cidsizex,
 	const IDSIZE			cidsizey
 )noexcept{
-	st.SPRITE_ui16cCirculationX=stacui16cCirculation[UINT8(cidsizex)];
-	st.SPRITE_ui16cCirculationY=stacui16cCirculation[UINT8(cidsizey)];
+	CAUTO					cui8ix=UINT8(cidsizex),cui8iy=UINT8(cidsizey);
+
+	st.SPRITE_ui16cCirculationX=stacui16cCirculation[cui8ix];
+	st.SPRITE_ui16cCirculationY=stacui16cCirculation[cui8iy];
+	st.SPRITE_v2nSize={staci16nSize[cui8ix],staci16nSize[cui8iy]};
+	st.SPRITE_v2cMask=st.SPRITE_v2nSize-VECTOR2(1,1);
 	SPRITE_stApplyOffset();
 	return;
 }
@@ -283,8 +186,14 @@ VOID					FAMILYBASIC::BG0_stSetSize(
 	const IDSIZE			cidsizex,
 	const IDSIZE			cidsizey
 )noexcept{
-	st.BG0_ui16cCirculationX=stacui16cCirculation[UINT8(cidsizex)];
-	st.BG0_ui16cCirculationY=stacui16cCirculation[UINT8(cidsizey)];
+	CAUTO					cui8ix=UINT8(cidsizex),cui8iy=UINT8(cidsizey);
+
+	st.BG0_ui16cCirculationX=stacui16cCirculation[cui8ix];
+	st.BG0_ui16cCirculationY=stacui16cCirculation[cui8iy];
+	st.BG0_v2nSize={staci16nSize[cui8ix],staci16nSize[cui8iy]};
+	st.BG0_v2cMask=st.BG0_v2nSize-VECTOR2(1,1);
+	st.BG0_v2nSize8=st.BG0_v2nSize>>3;
+	st.BG0_v2cMask8=st.BG0_v2nSize8-VECTOR2(1,1);
 	BG0_stApplyOffset();
 	return;
 }
@@ -302,8 +211,14 @@ VOID					FAMILYBASIC::BG1_stSetSize(
 	const IDSIZE			cidsizex,
 	const IDSIZE			cidsizey
 )noexcept{
-	st.BG1_ui16cCirculationX=stacui16cCirculation[UINT8(cidsizex)];
-	st.BG1_ui16cCirculationY=stacui16cCirculation[UINT8(cidsizey)];
+	CAUTO					cui8ix=UINT8(cidsizex),cui8iy=UINT8(cidsizey);
+
+	st.BG1_ui16cCirculationX=stacui16cCirculation[cui8ix];
+	st.BG1_ui16cCirculationY=stacui16cCirculation[cui8iy];
+	st.BG1_v2nSize={staci16nSize[cui8ix],staci16nSize[cui8iy]};
+	st.BG1_v2cMask=st.BG1_v2nSize-VECTOR2(1,1);
+	st.BG1_v2nSize8=st.BG1_v2nSize>>3;
+	st.BG1_v2cMask8=st.BG1_v2nSize8-VECTOR2(1,1);
 	BG1_stApplyOffset();
 	return;
 }
@@ -321,8 +236,14 @@ VOID					FAMILYBASIC::BG2_stSetSize(
 	const IDSIZE			cidsizex,
 	const IDSIZE			cidsizey
 )noexcept{
-	st.BG2_ui16cCirculationX=stacui16cCirculation[UINT8(cidsizex)];
-	st.BG2_ui16cCirculationY=stacui16cCirculation[UINT8(cidsizey)];
+	CAUTO					cui8ix=UINT8(cidsizex),cui8iy=UINT8(cidsizey);
+
+	st.BG2_ui16cCirculationX=stacui16cCirculation[cui8ix];
+	st.BG2_ui16cCirculationY=stacui16cCirculation[cui8iy];
+	st.BG2_v2nSize={staci16nSize[cui8ix],staci16nSize[cui8iy]};
+	st.BG2_v2cMask=st.BG2_v2nSize-VECTOR2(1,1);
+	st.BG2_v2nSize8=st.BG2_v2nSize>>3;
+	st.BG2_v2cMask8=st.BG2_v2nSize8-VECTOR2(1,1);
 	BG2_stApplyOffset();
 	return;
 }
@@ -340,13 +261,115 @@ VOID					FAMILYBASIC::BG3_stSetSize(
 	const IDSIZE			cidsizex,
 	const IDSIZE			cidsizey
 )noexcept{
-	st.BG3_ui16cCirculationX=stacui16cCirculation[UINT8(cidsizex)];
-	st.BG3_ui16cCirculationY=stacui16cCirculation[UINT8(cidsizey)];
+	CAUTO					cui8ix=UINT8(cidsizex),cui8iy=UINT8(cidsizey);
+
+	st.BG3_ui16cCirculationX=stacui16cCirculation[cui8ix];
+	st.BG3_ui16cCirculationY=stacui16cCirculation[cui8iy];
+	st.BG3_v2nSize={staci16nSize[cui8ix],staci16nSize[cui8iy]};
+	st.BG3_v2cMask=st.BG3_v2nSize-VECTOR2(1,1);
+	st.BG3_v2nSize8=st.BG3_v2nSize>>3;
+	st.BG3_v2cMask8=st.BG3_v2nSize8-VECTOR2(1,1);
 	BG3_stApplyOffset();
 	return;
 }
 
-//	private
+//	protected
+
+VOID					FAMILYBASIC::stNew_SetResolution(
+	const IDRESOLUTION		cidresolution,
+	CVECTOR2&				cv2nresolutionoverride
+)noexcept{
+	stShow(FALSE);
+	switch(cidresolution){
+	case IDRESOLUTION::n256x212:
+		if(cv2nresolutionoverride==VECTOR2::stv2ImmediateZero())VIDEO_DRIVER::stSetCRT256x212P();
+		else VIDEO_DRIVER::stSetCRT256x212P(
+			256-cv2nresolutionoverride.i16nWidth(),
+			212-cv2nresolutionoverride.i16nHeight()
+		);
+		break;
+	case IDRESOLUTION::n320x240:
+		if(cv2nresolutionoverride==VECTOR2::stv2ImmediateZero())VIDEO_DRIVER::stSetCRT320x240P();
+		else VIDEO_DRIVER::stSetCRT320x240P(
+			320-cv2nresolutionoverride.i16nWidth(),
+			240-cv2nresolutionoverride.i16nHeight()
+		);
+		break;
+	case IDRESOLUTION::n640x480:
+		if(cv2nresolutionoverride==VECTOR2::stv2ImmediateZero())VIDEO_DRIVER::stSetCRT640x480P();
+		else VIDEO_DRIVER::stSetCRT640x480P(
+			640-cv2nresolutionoverride.i16nWidth(),
+			480-cv2nresolutionoverride.i16nHeight()
+		);
+		break;
+	}
+	return;
+}
+
+VOID					FAMILYBASIC::stNew_SetPattern(
+	const PATTERN::IDPATTERN	cidpatternsprite,
+	const PATTERN::IDPATTERN	cidpatternbg
+)noexcept{
+	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_SPRITE_stcui16iAddress,cidpatternsprite);
+	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG0_stcui16iAddress,cidpatternbg);
+	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG1_stcui16iAddress,cidpatternbg);
+	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG2_stcui16iAddress,cidpatternbg);
+	PATTERN::stWrite(MAP::VRAM::PATTERNCHR_BG3_stcui16iAddress,cidpatternbg);
+	BG0_stFillAttribute({0,0},{128,128},0x8020);
+	BG1_stFillAttribute({0,0},{128,128},0x8020);
+	BG2_stFillAttribute({0,0},{128,128},0x8020);
+	BG3_stFillAttribute({0,0},{128,128},0x8020);
+	PALETTE_stWriteBack(0x3f);
+	PALETTE_stWriteSet(0,1);
+	return;
+}
+
+VOID					FAMILYBASIC::stNew_Common(
+	const IDRESOLUTION		cidresolution,
+	COFWBOOL				ceshow
+)noexcept{
+	st.SPRITE_ui16dOffsetX=0;
+	st.SPRITE_ui16dOffsetY=0;
+	{
+		CAUTO					cidsize=(cidresolution==IDRESOLUTION::n256x212)?(
+			IDSIZE::n256
+		):(
+			(cidresolution==IDRESOLUTION::n320x240)?(
+				IDSIZE::n512
+			):(
+				IDSIZE::n1024
+			)
+		);
+
+		SPRITE_stSetSize(cidsize);
+		st.BG0_ui16dOffsetX=0;
+		st.BG0_ui16dOffsetY=0;
+		BG0_stSetSize(cidsize);
+		st.BG1_ui16dOffsetX=0;
+		st.BG1_ui16dOffsetY=0;
+		BG1_stSetSize(cidsize);
+		st.BG2_ui16dOffsetX=0;
+		st.BG2_ui16dOffsetY=0;
+		BG2_stSetSize(cidsize);
+		st.BG3_ui16dOffsetX=0;
+		st.BG3_ui16dOffsetY=0;
+		BG3_stSetSize(cidsize);
+	}
+	OS::BGM_stSetMask(
+		SOUND_DRIVER::stcui16cChannelMaskPCM0|
+		SOUND_DRIVER::stcui16cChannelMaskPCM1|
+		SOUND_DRIVER::stcui16cChannelMaskPCM2
+	);
+	OS::SE0_stSetMask(
+		SOUND_DRIVER::stcui16cChannelMaskPCM3
+	);
+	OS::SE1_stSetMask(
+		SOUND_DRIVER::stcui16cChannelMaskPCM4|
+		SOUND_DRIVER::stcui16cChannelMaskFM7
+	);
+	if(ceshow)stShow(TRUE);
+	return;
+}
 
 VOID					FAMILYBASIC::SPRITE_stApplyOffset(VOID)noexcept{
 	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
@@ -394,69 +417,22 @@ VOID					FAMILYBASIC::BG_stFillAttribute(
 	CVECTOR2&				cv2nsize,
 	CUINT16					cui16cattribute
 )noexcept{
-	AUTO					pui16destination=(
+	AUTO					pui16cdestination=(
 		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
 		(cv2iposition.i16iY()<<7)+
 		cv2iposition.i16iX()
 	);
-	AUTO					pui16destination_line_end=pui16destination+cv2nsize.i16nWidth();
+	AUTO					pui16cdestination_line_end=pui16cdestination+cv2nsize.i16nWidth();
 
 	for(
-		CAUTO					cpui16destination_end=pui16destination+(cv2nsize.i16nHeight()<<7);
-		pui16destination<cpui16destination_end;
-		pui16destination+=128,pui16destination_line_end+=128
+		CAUTO					cpui16cdestination_end=pui16cdestination+(cv2nsize.i16nHeight()<<7);
+		pui16cdestination<cpui16cdestination_end;
+		pui16cdestination+=128,pui16cdestination_line_end+=128
 	)for(
-		AUTO					pui16destination_line=pui16destination;
-		pui16destination_line<pui16destination_line_end;
-		++pui16destination_line
-	)*pui16destination_line=cui16cattribute;
-	return;
-}
-
-VOID					FAMILYBASIC::BG_stWriteAttribute(
-	CUINT32					cui32doffset,
-	CVECTOR2&				cv2iposition,
-	const PCUINT16			cpcui16cattribute,
-	CUINT16					cui16nattribute
-)noexcept{
-	AUTO					pui16destination=(
-		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
-		(cv2iposition.i16iY()<<7)+
-		cv2iposition.i16iX()
-	);
-	CAUTO					cpui16attribute_end=(
-		pui16destination+
-		cui16nattribute
-	);
-
-	for(AUTO pcui16cattribute=cpcui16cattribute;pui16destination<cpui16attribute_end;++pui16destination){
-		*pui16destination=*pcui16cattribute;
-		++pcui16cattribute;
-	}
-	return;
-}
-
-VOID					FAMILYBASIC::BG_stWriteAttribute_R(
-	CUINT32					cui32doffset,
-	CVECTOR2&				cv2iposition,
-	const PCUINT16			cpcui16cattribute,
-	CUINT16					cui16nattribute
-)noexcept{
-	CAUTO					cv2iposition_real=BG_stv2iMakePosition_R(cv2iposition);
-	AUTO					pui16destination=(
-		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
-		(cv2iposition_real.i16iY()<<7)+
-		cv2iposition_real.i16iX()
-	);
-	CAUTO					cpui16attribute_end=(
-		pui16destination+
-		cui16nattribute
-	);
-
-	for(AUTO pcui16cattribute=cpcui16cattribute;pui16destination<cpui16attribute_end;++pui16destination){
-		*pui16destination=*pcui16cattribute;
-		pcui16cattribute-=128;
-	}
+		AUTO					pui16cdestination_line=pui16cdestination;
+		pui16cdestination_line<pui16cdestination_line_end;
+		++pui16cdestination_line
+	)*pui16cdestination_line=cui16cattribute;
 	return;
 }
 
@@ -467,98 +443,103 @@ VOID					FAMILYBASIC::BG_stPrint(
 	CUINT8					cui8ibgpalette
 )noexcept{
 	CAUTO					cui16cbase=UINT16(UINT16(cui8ibgpalette+8)<<12);
-	AUTO					pui16destination_base=(
+	AUTO					pui16cdestination_base=(
 		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
 		(cv2iposition.i16iY()<<7)+
 		cv2iposition.i16iX()
 	);
-	AUTO					pui16destination=pui16destination_base;
+	AUTO					pui16cdestination=pui16cdestination_base;
 
 	for(AUTO pcustrsource=cpcustrstring;*pcustrsource;++pcustrsource){
 		if(*pcustrsource!='\n'){
-			*pui16destination=cui16cbase|UINT16(UINT8(*pcustrsource));
-			++pui16destination;
+			*pui16cdestination=cui16cbase|UINT16(UINT8(*pcustrsource));
+			++pui16cdestination;
 		}else{
-			pui16destination_base+=128;
-			pui16destination=pui16destination_base;
+			pui16cdestination_base+=128;
+			pui16cdestination=pui16cdestination_base;
 		}
 	}
 	return;
 }
 
-VOID					FAMILYBASIC::BG_stPrint_R(
+VOID					FAMILYBASIC::BG_stPrint_R_Body(
 	CUINT32					cui32doffset,
 	CVECTOR2&				cv2iposition,
 	const PCUSTR			cpcustrstring,
-	CUINT8					cui8ibgpalette
+	CUINT8					cui8ibgpalette,
+	CVECTOR2&				cv2ntrim
 )noexcept{
-	CAUTO					cv2iposition_real=BG_stv2iMakePosition_R(cv2iposition);
 	CAUTO					cui16cbase=UINT16(UINT16(cui8ibgpalette+8)<<12);
-	AUTO					pui16destination_base=(
-		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
-		(cv2iposition_real.i16iY()<<7)+
-		cv2iposition_real.i16iX()
-	);
-	AUTO					pui16destination=pui16destination_base;
+	CAUTO					cui16cmask=UINT16((cv2ntrim.i16nHeight()<<8)-1);
+	AUTO					ui16idestination_base=UINT16((cv2iposition.i16iY()<<8)+(cv2iposition.i16iX()<<1));
+	CAUTO					cpui8cdestination_base=PUINT8(&MEMORY::VRAM_stui16DelegateThis(cui32doffset));
+	AUTO					ui16idestination=ui16idestination_base;
 
 	for(AUTO pcustrsource=cpcustrstring;*pcustrsource;++pcustrsource){
 		if(*pcustrsource!='\n'){
-			*pui16destination=cui16cbase|UINT16(UINT8(*pcustrsource));
-			pui16destination-=128;
+			*PUINT16(cpui8cdestination_base+ui16idestination)=cui16cbase|UINT16(UINT8(*pcustrsource));
+			ui16idestination=(ui16idestination-256)&cui16cmask;
 		}else{
-			--pui16destination_base;
-			pui16destination=pui16destination_base;
+			--ui16idestination_base;
+			ui16idestination=ui16idestination_base;
 		}
 	}
 	return;
 }
 
-VOID					FAMILYBASIC::BG_stCopyAttribute(
+VOID					FAMILYBASIC::BG_stCopyRect_Body(
 	CUINT32					cui32doffset,
-	CVECTOR2&				cv2iposition,
-	CVECTOR2&				cv2nsize,
-	const PCUINT16			cpcui16cattribute
+	const PCUINT16			cpcui16csource,
+	CUINT16					cui16nsourcepitch,
+	CVECTOR2&				cv2nsource
 )noexcept{
-	AUTO					pui16destination=(
-		&MEMORY::VRAM_stui16DelegateThis(cui32doffset)+
-		(cv2iposition.i16iY()<<7)+
-		cv2iposition.i16iX()
-	);
-	AUTO					pui16destination_line_end=pui16destination+cv2nsize.i16nWidth();
-	AUTO					pcui16cattribute=cpcui16cattribute;
+	CAUTO					cui16ddestinationoffsetend=UINT16(cv2nsource.i16nHeight()<<8);
+	CAUTO					cui16ndestinationh=UINT16(cv2nsource.i16nWidth()<<1);
+	constexpr AUTO			cui16ndestinationpitch=UINT16(256);
+	CAUTO					cui16ndestinationnext=UINT16(cui16ndestinationpitch-cui16ndestinationh);
+	CAUTO					cui16nsourcenext=UINT16(cui16nsourcepitch-cui16ndestinationh);
+	AUTO					pui8cdestination=PUINT8(&MEMORY::VRAM_stui16DelegateThis(cui32doffset));
+	AUTO					pcui8csource=PCUINT8(cpcui16csource);
 
 	for(
-		CAUTO					cpui16destination_end=pui16destination+(cv2nsize.i16nHeight()<<7);
-		pui16destination<cpui16destination_end;
-		pui16destination+=128,pui16destination_line_end+=128
-	)for(
-		AUTO					pui16destination_line=pui16destination;
-		pui16destination_line<pui16destination_line_end;
-		++pui16destination_line,++pcui16cattribute
-	)*pui16destination_line=*pcui16cattribute;
+		CAUTO					cpui8cdestination_end=pui8cdestination+cui16ddestinationoffsetend;
+		pui8cdestination<cpui8cdestination_end;
+		pui8cdestination+=cui16ndestinationnext,pcui8csource+=cui16nsourcenext
+	){
+		for(
+			CAUTO					cpui8cdestinationhline_end=pui8cdestination+cui16ndestinationh;
+			pui8cdestination<cpui8cdestinationhline_end;
+			pui8cdestination+=SIZEOF(UINT16),pcui8csource+=SIZEOF(UINT16)
+		)*PUINT16(pui8cdestination)=*PCUINT16(pcui8csource);
+	}
 	return;
 }
 
-VOID					FAMILYBASIC::BG_stCopyAttribute_R(
+VOID					FAMILYBASIC::BG_stCopyRect_R_Body(
 	CUINT32					cui32doffset,
-	CVECTOR2&				cv2iposition,
-	CVECTOR2&				cv2nsize,
-	const PCUINT16			cpcui16cattribute
+	const PCUINT16			cpcui16csource,
+	CUINT16					cui16nsourcepitch,
+	CVECTOR2&				cv2nsource
 )noexcept{
-	CAUTO					cv2iposition_real=BG_stv2iMakePosition_R(cv2iposition);
-	CAUTO					cv2nsize_real=stv2nMakeSize_R(cv2nsize);
-	CAUTO					ci16doffsety=INT16(1-cv2nsize_real.i16nHeight());
+	CAUTO					cui16ddestinationoffsetend=UINT16(cv2nsource.i16nHeight()<<1);
+	CAUTO					cui16ndestinationh=UINT16(cv2nsource.i16nWidth()<<1);
+	CAUTO					cui16ndestinationv=UINT16(cv2nsource.i16nWidth()<<8);
+	constexpr AUTO			cui16ndestinationpitch=UINT16(256);
+	CAUTO					cui16ndestinationnext=UINT16(SIZEOF(UINT16)+cui16ndestinationv);
+	CAUTO					cui16nsourcenext=UINT16(cui16nsourcepitch-cui16ndestinationh);
+	AUTO					pui8cdestination=PUINT8(&MEMORY::VRAM_stui16DelegateThis(cui32doffset));
+	AUTO					pcui8csource=PCUINT8(cpcui16csource);
 
-	BG_stCopyAttribute(
-		cui32doffset,			//	cui32doffset
-		{
-			cv2iposition_real.i16iX(),
-			INT16(cv2iposition_real.i16iY()+ci16doffsety)
-		},						//	cv2iposition
-		cv2nsize_real,			//	cv2nsize
-		(
-			cpcui16cattribute+(ci16doffsety<<7)
-		)						//	cpcui16cattribute
-	);
+	for(
+		CAUTO					cpui8cdestination_end=pui8cdestination+cui16ddestinationoffsetend;
+		pui8cdestination<cpui8cdestination_end;
+		pui8cdestination+=cui16ndestinationnext,pcui8csource+=cui16nsourcenext
+	){
+		for(
+			CAUTO					cpui8cdestinationvline_end=pui8cdestination-cui16ndestinationv;
+			cpui8cdestinationvline_end<pui8cdestination;
+			pui8cdestination-=cui16ndestinationpitch,pcui8csource+=SIZEOF(UINT16)
+		)*PUINT16(pui8cdestination)=*PCUINT16(pcui8csource);
+	}
 	return;
 }

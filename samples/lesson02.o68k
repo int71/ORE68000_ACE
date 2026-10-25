@@ -49,7 +49,7 @@ VOID					USER_Delete(VOID)noexcept{
 
 VOID					USER_Main(VOID)noexcept{
 	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
-	using					IDBUTTON=FAMILYBASIC::IDBUTTON;
+	using					IDBUTTON=FAMILYBASIC::JOYSTICK_IDBUTTON;
 	//	7	0	1
 	//		|
 	//	6---+---2

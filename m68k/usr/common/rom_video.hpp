@@ -3,7 +3,7 @@
 **																			**
 **									I71										**
 **																			**
-**	'common/rom_video.hpp'							2025 written by int71	**
+**	'common/rom_video.hpp'							2026 written by int71	**
  ****************************************************************************/
 #ifndef I71_COMMON_ROM_VIDEO
 #define I71_COMMON_ROM_VIDEO
@@ -12,7 +12,7 @@
 //		include
 //
 
-#include				"map.hpp"
+#include				"map.hpp"	// IWYU pragma: keep
 
 //
 //		namespace:m68k::i71::common

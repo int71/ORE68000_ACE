@@ -5,10 +5,11 @@
     "tasks": [
         {
             "label": "run test",
-            "type": "shell",
-            "command": "./run.sh",
+            "type": "process",
+            "command": "/Sync/Package/Utility/MSYS2/msys2_shell.cmd",
             "args": [
-            	"samples/${fileBasename}"
+                "-c",
+                "/d/Sync/Package/Cross/ORE68000_ACE/samples/run.sh samples/${fileBasename}"
             ],
             "problemMatcher": [],
             "group": {

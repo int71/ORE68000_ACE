@@ -13,8 +13,8 @@ my(
 	$CONST_fontfilename1,
 	$CONST_fontfilename4
 )=(
-	'/c/Windows/Fonts/KH-Dot-Kodenmachou-16-Ki.ttf',
-	'/c/Windows/Fonts/I71-平成明朝W1_0.ttc'
+	'KH-Dot-Kodenmachou-16-Ki.ttf',
+	'I71-平成明朝W3.ttc'
 );
 new BASE::();
 
@@ -84,7 +84,7 @@ sub USR_generate_make{
 
 	$img_destination->AddTEXT(<<END
 #!/usr/local/ofw/bin/ofwmake
-\$MAKEBIN='../M68K_MAKEBIN.exe';
+\$MAKEBIN='../M68K_MAKEBIN.exe -g /d/Sync/Package/Cross/m68k/gnu/bin';
 END
 	);
 	if(($sromfont1 ne '')||($sromfont4 ne '')){

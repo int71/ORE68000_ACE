@@ -96,13 +96,13 @@ namespace m68k::ore68000ace::driver{
 		static VOID				stNew(VOID)noexcept;
 		static VOID				stDelete(VOID)noexcept;
 		static VOID				stOff(VOID)noexcept;
-		static VOID				stSetCRT640x480P(VOID)noexcept;
-		static VOID				stSetCRT320x240P(VOID)noexcept;
-		static VOID				stSetCRT320x240I(VOID)noexcept;
-		static VOID				stSetCRT256x192P(VOID)noexcept;
-		static VOID				stSetCRT256x192I(VOID)noexcept;
-		static VOID				stSetCRT256x212P(VOID)noexcept;
-		static VOID				stSetCRT256x212I(VOID)noexcept;
+		static VOID				stSetCRT640x480P(CUINT16 cui16nwidthmask=0,CUINT16 cui16nheightmask=0)noexcept;
+		static VOID				stSetCRT320x240P(CUINT16 cui16nwidthmask=0,CUINT16 cui16nheightmask=0)noexcept;
+		static VOID				stSetCRT320x240I(CUINT16 cui16nwidthmask=0,CUINT16 cui16nheightmask=0)noexcept;
+		static VOID				stSetCRT256x192P(CUINT16 cui16nwidthmask=0,CUINT16 cui16nheightmask=0)noexcept;
+		static VOID				stSetCRT256x192I(CUINT16 cui16nwidthmask=0,CUINT16 cui16nheightmask=0)noexcept;
+		static VOID				stSetCRT256x212P(CUINT16 cui16nwidthmask=0,CUINT16 cui16nheightmask=0)noexcept;
+		static VOID				stSetCRT256x212I(CUINT16 cui16nwidthmask=0,CUINT16 cui16nheightmask=0)noexcept;
 		static _INLINE_ VOID	stWrite(const IDREGISTERW cidregister,CUINT16 cui16value)noexcept{
 			DEVICE_stui16DelegateThis(DEVICE_stcui16dSelectOffset)=(UINT16(IDDEVICEMODE::RegisterW)<<8)|UINT16(cidregister);
 			DEVICE_stui16DelegateThis(DEVICE_stcui16dRegisterOffset)=cui16value;

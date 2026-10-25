@@ -18,15 +18,15 @@
 //		macro
 //
 
-#define __O68K_CANVAS_RGB_ROM(cpcustrfilename,...)	[](VOID)noexcept{\
-	static constexpr UINT16	stacui16csource[]={0x0000,0x0000,0x0000,0x0000,0x0000};\
+#define __O68K_CANVAS_RGB_ROM(cpcustrfilename,...)	[](VOID)constexpr noexcept{\
+	static constexpr UINT8	stacui8csource[]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};\
 \
-	return CANVAS_RGB_ROM<0x0002,0x0001>(stacui16csource);\
+	return CANVAS_RGB_ROM<{2,1}>(stacui8csource);\
 }()
-#define __O68K_CANVAS_RGBA_ROM(cpcustrfilename,...)	[](VOID)noexcept{\
-	static constexpr UINT16	stacui16csource[]={0x0000,0x0000,0x0000,0x0000,0x0000,0x0000};\
+#define __O68K_CANVAS_RGBA_ROM(cpcustrfilename,...)	[](VOID)constexpr noexcept{\
+	static constexpr UINT8	stacui8csource[]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};\
 \
-	return CANVAS_RGBA_ROM<0x0002,0x0001>(stacui16csource);\
+	return CANVAS_RGBA_ROM<{2,1}>(stacui8csource);\
 }()
 
 //
@@ -45,37 +45,37 @@ namespace m68k::i71::sub{
 	using					PCANVAS_=CANVAS_*;
 	using					PCCANVAS_=CCANVAS_*;
 	//	CANVAS_SIZED_
-	template<CUINT16 cui16nWidth,CUINT16 cui16nHeight>
+	template<CVECTOR2 cv2nSize>
 	class CANVAS_SIZED_;
 	//	CANVAS_RGB_
-	template<CUINT16 cui16nWidth,CUINT16 cui16nHeight>
+	template<CVECTOR2 cv2nSize>
 	class CANVAS_RGB_;
 	//	CANVAS_RGBA_
-	template<CUINT16 cui16nWidth,CUINT16 cui16nHeight>
+	template<CVECTOR2 cv2nSize>
 	class CANVAS_RGBA_;
 	//	CANVAS_A_
-	template<CUINT16 cui16nWidth,CUINT16 cui16nHeight>
+	template<CVECTOR2 cv2nSize>
 	class CANVAS_A_;
 	//	CANVAS_RGB_ROM
-	template<CUINT16 cui16nWidth,CUINT16 cui16nHeight>
+	template<CVECTOR2 cv2nSize>
 	class CANVAS_RGB_ROM;
 	//	CANVAS_RGBA_ROM
-	template<CUINT16 cui16nWidth,CUINT16 cui16nHeight>
+	template<CVECTOR2 cv2nSize>
 	class CANVAS_RGBA_ROM;
 	//	CANVAS_A_ROM
-	template<CUINT16 cui16nWidth,CUINT16 cui16nHeight>
+	template<CVECTOR2 cv2nSize>
 	class CANVAS_A_ROM;
 	//	CANVAS_RGB_RAM
-	template<CUINT16 cui16nWidth,CUINT16 cui16nHeight>
+	template<CVECTOR2 cv2nSize>
 	class CANVAS_RGB_RAM;
 	//	CANVAS_RGBA_RAM
-	template<CUINT16 cui16nWidth,CUINT16 cui16nHeight>
+	template<CVECTOR2 cv2nSize>
 	class CANVAS_RGBA_RAM;
 	//	CANVAS_A_RAM
-	template<CUINT16 cui16nWidth,CUINT16 cui16nHeight>
+	template<CVECTOR2 cv2nSize>
 	class CANVAS_A_RAM;
 	//	CANVAS_CHAR
-	using					CANVAS_CHAR=CANVAS_A_ROM<16,16>;
+	using					CANVAS_CHAR=CANVAS_A_ROM<{16,16}>;
 	using					CCANVAS_CHAR=const CANVAS_CHAR;
 	using					PCANVAS_CHAR=CANVAS_CHAR*;
 	using					PCCANVAS_CHAR=CCANVAS_CHAR*;
@@ -671,7 +671,7 @@ namespace m68k::i71::sub{
 		//
 
 	private:
-		static inline UINT16	staui16cCharImage[64];
+		static inline UINT8		staui8cCharImage[128];
 		static CANVAS_CHAR		stcvsChar;
 	protected:
 		PCUINT8					pcui8cThis;

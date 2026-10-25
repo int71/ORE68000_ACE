@@ -1,5 +1,5 @@
 #!/usr/local/ofw/bin/ofwmake
-$MAKEBIN='../M68K_MAKEBIN.exe';
+$MAKEBIN='../M68K_MAKEBIN.exe -g /d/Sync/Package/Cross/m68k/gnu/bin';
 $User='main';
 $Source='/d/Sync/Package/Cross/ORE68000_ACE/m68k/common/src';
 $Include='/d/Sync/Package/Cross/ORE68000_ACE/m68k/common/include';

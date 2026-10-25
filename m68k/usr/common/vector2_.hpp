@@ -36,7 +36,7 @@ namespace m68k::i71::common{
 	//
 
 	class VECTOR2_{
-	protected:
+	public:					//	テンプレート引数に出来るようにするための措置
 		INT16					i16Value0_Body;
 		INT16					i16Value1_Body;
 	public:

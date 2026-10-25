@@ -651,7 +651,7 @@ public:
 	//		1/60毎の実行で丁度良くなるよう、
 	//		「登場人物全てを満遍なくちょっとずつ動かす事」がポイントです。
 	VOID					Normal(VOID)noexcept{
-		using					IDBUTTON=FAMILYBASIC::IDBUTTON;
+		using					IDBUTTON=FAMILYBASIC::JOYSTICK_IDBUTTON;
 
 		CONTROLLER_Update();
 		//	表示(垂直帰線期間中に完了できるよう冒頭に持ってくる)
@@ -756,7 +756,7 @@ public:
 		CONTROLLER_Update();
 		Show();
 		//	リスタート判定
-		if(CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::IDBUTTON::A))idMode=IDMODE::Start;
+		if(CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::JOYSTICK_IDBUTTON::A))idMode=IDMODE::Start;
 		return;
 	}
 private:

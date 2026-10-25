@@ -1006,7 +1006,7 @@ public:
 			PLAYER_v2iPosition=PLAYER_v2iPosition.v2GetMinimum(PLAYER_stcv2iiMaximum);
 			PLAYER_v2iPosition_Upper=PLAYER_v2iPosition>>FIXEDL_stcui8nBit;
 			//	「ショット」発射操作はソフトウェア連射で
-			if(CONTROLLER_ui8cGetRapid()&FAMILYBASIC::stcui8cMaskButtonB)switch(PLAYER_idShot){
+			if(CONTROLLER_ui8cGetRapid()&FAMILYBASIC::JOYSTICK_stcui8cMaskButtonB)switch(PLAYER_idShot){
 			case IDSHOT::UpSingle:
 				{
 					CAUTO					ceshot0=SHOT_steStart(SHOT_ashotThis0,SHOT::IDTYPE::Up,PLAYER_v2iPosition);
@@ -1107,7 +1107,7 @@ public:
 		CONTROLLER_Update();
 		Show();
 		//	リスタート判定
-		if(CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::IDBUTTON::A))idMode=IDMODE::Start;
+		if(CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::JOYSTICK_IDBUTTON::A))idMode=IDMODE::Start;
 		return;
 	}
 private:

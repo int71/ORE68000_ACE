@@ -41,15 +41,16 @@ VOID					USER_Delete(VOID)noexcept{
 }
 
 VOID					USER_Main(VOID)noexcept{
+	using					IDBUTTON=FAMILYBASIC::JOYSTICK_IDBUTTON;
 	static constexpr USTR	stacustron[]="\xfe";
 	static constexpr USTR	stacustroff[]="\xff";
 	CAUTO					cui8ccurrent=FAMILYBASIC::CONTROLLER_stui8cRead(0);
 
-	FAMILYBASIC::BG1_stPrint({5,4},((cui8ccurrent&(1<<FAMILYBASIC::IDBUTTON::Up))!=0)?stacustron:stacustroff,0);
-	FAMILYBASIC::BG1_stPrint({4,5},((cui8ccurrent&(1<<FAMILYBASIC::IDBUTTON::Left))!=0)?stacustron:stacustroff,0);
-	FAMILYBASIC::BG1_stPrint({6,5},((cui8ccurrent&(1<<FAMILYBASIC::IDBUTTON::Right))!=0)?stacustron:stacustroff,0);
-	FAMILYBASIC::BG1_stPrint({12,5},((cui8ccurrent&(1<<FAMILYBASIC::IDBUTTON::B))!=0)?stacustron:stacustroff,0);
-	FAMILYBASIC::BG1_stPrint({14,5},((cui8ccurrent&(1<<FAMILYBASIC::IDBUTTON::A))!=0)?stacustron:stacustroff,0);
-	FAMILYBASIC::BG1_stPrint({5,6},((cui8ccurrent&(1<<FAMILYBASIC::IDBUTTON::Down))!=0)?stacustron:stacustroff,0);
+	FAMILYBASIC::BG1_stPrint({5,4},((cui8ccurrent&(1<<IDBUTTON::Up))!=0)?stacustron:stacustroff,0);
+	FAMILYBASIC::BG1_stPrint({4,5},((cui8ccurrent&(1<<IDBUTTON::Left))!=0)?stacustron:stacustroff,0);
+	FAMILYBASIC::BG1_stPrint({6,5},((cui8ccurrent&(1<<IDBUTTON::Right))!=0)?stacustron:stacustroff,0);
+	FAMILYBASIC::BG1_stPrint({12,5},((cui8ccurrent&(1<<IDBUTTON::B))!=0)?stacustron:stacustroff,0);
+	FAMILYBASIC::BG1_stPrint({14,5},((cui8ccurrent&(1<<IDBUTTON::A))!=0)?stacustron:stacustroff,0);
+	FAMILYBASIC::BG1_stPrint({5,6},((cui8ccurrent&(1<<IDBUTTON::Down))!=0)?stacustron:stacustroff,0);
 	return;
 }

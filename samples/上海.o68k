@@ -173,12 +173,12 @@ public:
 	//		横32、縦48ドット単位で並べています。
 	//		「-cm 0」は減色方法指示で、「0」は「単純切り捨て」です。
 	//		「1」の誤差拡散はちょっとノイジーだったんで。
-	static inline CAUTO		IMAGE_stccvsTile=__O68K_CANVAS_RGBA_ROM("(Resource)/上海 - 牌.png","-cm 0");
+	static constexpr AUTO	IMAGE_stccvsTile=__O68K_CANVAS_RGBA_ROM("(Resource)/上海 - 牌.png","-cm 0");
 #ifdef SHOWENDING
-	static inline CAUTO		IMAGE_stccvsEnd=__O68K_CANVAS_RGBA_ROM("(Resource)/上海 - 天晴.png");
+	static constexpr AUTO	IMAGE_stccvsEnd=__O68K_CANVAS_RGBA_ROM("(Resource)/上海 - 天晴.png");
 #endif
 #ifdef SHOWBACKBITMAP
-	static inline CAUTO		IMAGE_stccvsBack=__O68K_CANVAS_RGB_ROM("(Resource)/上海 - 床面.png");
+	static constexpr AUTO	IMAGE_stccvsBack=__O68K_CANVAS_RGB_ROM("(Resource)/上海 - 床面.png");
 #else
 	static constexpr UINT16	stcui16cColorBack=0x141;
 #endif
@@ -237,7 +237,7 @@ private:
 	//		非表示状態処理するためのバッファです。
 	//		牌の大きさは32x48ドットですが、
 	//		「半分ずらし」があるので処理単位は16x24ドットにしています。
-	static inline AUTO		OFF_stcvsOne=CANVAS_RGB_RAM<UINT16(IMAGE_stcui8nUnitWidth),UINT16(IMAGE_stcui8nUnitHeight)>();
+	static inline AUTO		OFF_stcvsOne=CANVAS_RGB_RAM<{INT16(IMAGE_stcui8nUnitWidth),INT16(IMAGE_stcui8nUnitHeight)}>();
 	static inline OFWBOOL	OFF_steUpdated;
 	//	VECTOR2					SCREEN_stv2iOne
 	//		描画位置を画面座標で保持します。
@@ -526,9 +526,9 @@ public:
 		}
 		return;
 	}
-	template<CUINT16 DCLASS_cui16nWidth,CUINT16 DCLASS_cui16nHeight>
-	static _INLINE_ VOID	OFF_stDrawBack(CANVAS_RGB_RAM<DCLASS_cui16nWidth,DCLASS_cui16nHeight>& cvsthis,CVECTOR2& cv2iposition_screen)noexcept{
-		using					DCLASS=CANVAS_RGB_RAM<DCLASS_cui16nWidth,DCLASS_cui16nHeight>;
+	template<CVECTOR2 DCLASS_cv2nSize>
+	static _INLINE_ VOID	OFF_stDrawBack(CANVAS_RGB_RAM<DCLASS_cv2nSize>& cvsthis,CVECTOR2& cv2iposition_screen)noexcept{
+		using					DCLASS=CANVAS_RGB_RAM<DCLASS_cv2nSize>;
 
 #ifdef SHOWBACKBITMAP
 		cvsthis.CopyRect(
@@ -2588,7 +2588,7 @@ public:
 	//
 
 	//	CANVAS_MENU
-	using					CANVAS_MENU=CANVAS_RGB_RAM<UINT16(stcv2nOne_Screen.i16nWidth()),UINT16(stcv2nOne_Screen.i16nHeight())>;
+	using					CANVAS_MENU=CANVAS_RGB_RAM<stcv2nOne_Screen>;
 	using					CCANVAS_MENU=const CANVAS_MENU;
 	using					PCANVAS_MENU=CANVAS_MENU*;
 	using					PCCANVAS_MENU=CCANVAS_MENU*;

@@ -5,6 +5,7 @@ require 'base.pl';
 new BASE::();
 
 sub main{
+	BASE::SetCurrentDirectory($BASE::PathBase);
 	if(system('./build.sh')==0){
 		system("'/d/Sync/Package/Cross/ORE68000_ACE/ORE68000 ACE.exe'&");
 	}

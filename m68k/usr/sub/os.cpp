@@ -10,9 +10,9 @@
 //		include
 //
 
-#include				"os.hpp"
 #include				"interrupter.hpp"
 #include				"pattern.hpp"
+#include				"os.hpp"
 
 //
 //		using

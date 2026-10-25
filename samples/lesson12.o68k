@@ -23,6 +23,7 @@
 //
 
 using namespace m68k::i71::sub;
+using					FB=FAMILYBASIC_R<FAMILYBASIC::IDRESOLUTION::n320x240>;
 
 //
 //		class
@@ -250,7 +251,7 @@ public:
 			case IDTYPE::Left:
 				FALLTHROUGH;
 			case IDTYPE::Right:
-				FAMILYBASIC::SPRITE_stWrite8_R(cui8isprite,(v2iPosition>>FIXEDL_stcui8nBit)-VECTOR2(4,4),222,3);
+				FB::SPRITE_stWrite8(cui8isprite,(v2iPosition>>FIXEDL_stcui8nBit)-VECTOR2(4,4),222,3);
 				return 1;
 			default:
 				break;
@@ -417,7 +418,7 @@ public:
 				//	出現ついでに音鳴らすんですが、
 				//	現状の演奏処理はノイズ使わない想定なので手動で「YM2151B」のレジスタを設定します。
 				SOUND_DRIVER::DEVICE_FM_stWrite(SOUND_DRIVER::FM_IDREGISTERW::NoiseDivRatio5,0x80+16);
-				FAMILYBASIC::SE1_stPlay(SE1_stacui8cCrush);
+				FB::SE1_stPlay(SE1_stacui8cCrush);
 				break;
 			case IDTYPE::NormalWavy:
 				SetPosition(VECTOR2(
@@ -434,7 +435,7 @@ public:
 				break;
 			case IDTYPE::NormalStraight:
 				SetPosition(VECTOR2(
-					INT16(FAMILYBASIC::stui8GetRandom<UINT8(stcv2nScreen.i16nWidth())>()),
+					INT16(FB::stui8GetRandom<UINT8(stcv2nScreen.i16nWidth())>()),
 					0-8
 				)<<FIXEDL_stcui8nBit);
 				v2dVelocity={
@@ -446,7 +447,7 @@ public:
 				break;
 			case IDTYPE::NormalStraightSide:
 				SetPosition(VECTOR2(
-					INT16(FAMILYBASIC::stui8GetRandom<UINT8(stcv2nScreen.i16nWidth())>()),
+					INT16(FB::stui8GetRandom<UINT8(stcv2nScreen.i16nWidth())>()),
 					0-8
 				)<<FIXEDL_stcui8nBit);
 				v2dVelocity={
@@ -460,7 +461,7 @@ public:
 				break;
 			case IDTYPE::NormalBackAttacker:
 				SetPosition(VECTOR2(
-					INT16(FAMILYBASIC::stui8GetRandom<UINT8(stcv2nScreen.i16nWidth())>()),
+					INT16(FB::stui8GetRandom<UINT8(stcv2nScreen.i16nWidth())>()),
 					stcv2nScreen.i16nHeight()+8
 				)<<FIXEDL_stcui8nBit);
 				//	基本は「追いかけ」なんですが、まずは上方向に移動させます。
@@ -474,7 +475,7 @@ public:
 				break;
 			case IDTYPE::NormalHighSpeed:
 				SetPosition(VECTOR2(
-					INT16(FAMILYBASIC::stui8GetRandom<UINT8(stcv2nScreen.i16nWidth())>()),
+					INT16(FB::stui8GetRandom<UINT8(stcv2nScreen.i16nWidth())>()),
 					0-4
 				)<<FIXEDL_stcui8nBit);
 				//	移動方向を「自機」に向けます。
@@ -484,7 +485,7 @@ public:
 			case IDTYPE::NormalFollower:
 				ui8nDurability=6;
 				SetPosition(VECTOR2(
-					INT16(FAMILYBASIC::stui8GetRandom<UINT8(stcv2nScreen.i16nWidth())>()),
+					INT16(FB::stui8GetRandom<UINT8(stcv2nScreen.i16nWidth())>()),
 					0-8
 				)<<FIXEDL_stcui8nBit);
 				//	基本は「追いかけ」なんですが、まずは下方向に移動させます。
@@ -515,66 +516,66 @@ public:
 		UINT8					ui8nShow(CUINT8 cui8isprite)const noexcept{
 			switch(idType){
 			case IDTYPE::Crushed:
-				FAMILYBASIC::SPRITE_stWrite16_R(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),(ui16iPattern&4)+176,3);
+				FB::SPRITE_stWrite16(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),(ui16iPattern&4)+176,3);
 				return 1;
 			case IDTYPE::NormalWavy:
-				FAMILYBASIC::SPRITE_stWrite16_R(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),(ui16iPattern&4)+144,1);
+				FB::SPRITE_stWrite16(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),(ui16iPattern&4)+144,1);
 				return 1;
 			case IDTYPE::NormalStraight:
-				FAMILYBASIC::SPRITE_stWrite16_R(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),160,1,FALSE,TRUE);
+				FB::SPRITE_stWrite16(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),160,1,FALSE,TRUE);
 				return 1;
 			case IDTYPE::NormalStraightSide:
 				//	「ui16iPattern」は下記のように解釈
 				//		0:下
 				//		1:右
 				//		2:左
-				FAMILYBASIC::SPRITE_stWrite16_R(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),(ui16iPattern==0)?160:152,2,(ui16iPattern==1),TRUE);
+				FB::SPRITE_stWrite16(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),(ui16iPattern==0)?160:152,2,(ui16iPattern==1),TRUE);
 				return 1;
 			case IDTYPE::NormalBackAttacker:
-				FAMILYBASIC::SPRITE_stWrite16_R(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),(ui16iPattern&4)+144,2);
+				FB::SPRITE_stWrite16(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),(ui16iPattern&4)+144,2);
 				return 1;
 			case IDTYPE::NormalHighSpeed:
 				//	回転アニメーションさせるため泥臭く分岐。
 				switch((ui16iPattern>>1)&3){
 				case 0:
 					//	－
-					FAMILYBASIC::SPRITE_stWrite8_R(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),209,1,FALSE,FALSE);
+					FB::SPRITE_stWrite8(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),209,1,FALSE,FALSE);
 					break;
 				case 1:
 					//	＼
-					FAMILYBASIC::SPRITE_stWrite8_R(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),211,1,FALSE,FALSE);
+					FB::SPRITE_stWrite8(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),211,1,FALSE,FALSE);
 					break;
 				case 2:
 					//	｜
-					FAMILYBASIC::SPRITE_stWrite8_R(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),213,1,FALSE,FALSE);
+					FB::SPRITE_stWrite8(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),213,1,FALSE,FALSE);
 					break;
 				case 3:
 					//	／
-					FAMILYBASIC::SPRITE_stWrite8_R(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),211,1,TRUE,FALSE);
+					FB::SPRITE_stWrite8(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),211,1,TRUE,FALSE);
 					break;
 				}
 				return 1;
 			case IDTYPE::NormalFollower:
-				FAMILYBASIC::SPRITE_stWrite16_R(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),((ui16iPattern>>1)&4)+88,1);
+				FB::SPRITE_stWrite16(cui8isprite,v2iPosition_Upper-VECTOR2(8,8),((ui16iPattern>>1)&4)+88,1);
 				return 1;
 			case IDTYPE::Bullet:
 				//	回転アニメーションさせるため泥臭く分岐。
 				switch((ui16iPattern>>2)&3){
 				case 0:
 					//	－
-					FAMILYBASIC::SPRITE_stWrite8_R(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),209,3,FALSE,FALSE,2);
+					FB::SPRITE_stWrite8(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),209,3,FALSE,FALSE,2);
 					break;
 				case 1:
 					//	＼
-					FAMILYBASIC::SPRITE_stWrite8_R(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),211,3,FALSE,FALSE,2);
+					FB::SPRITE_stWrite8(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),211,3,FALSE,FALSE,2);
 					break;
 				case 2:
 					//	｜
-					FAMILYBASIC::SPRITE_stWrite8_R(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),213,3,FALSE,FALSE,2);
+					FB::SPRITE_stWrite8(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),213,3,FALSE,FALSE,2);
 					break;
 				case 3:
 					//	／
-					FAMILYBASIC::SPRITE_stWrite8_R(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),211,3,TRUE,FALSE,2);
+					FB::SPRITE_stWrite8(cui8isprite,v2iPosition_Upper-VECTOR2(4,4),211,3,TRUE,FALSE,2);
 					break;
 				}
 				return 1;
@@ -713,7 +714,7 @@ public:
 						cpgameowner->AddScore(1);
 						Start(cpgameowner,IDTYPE::Crushed,v2iPosition);
 					}else{
-						if(cui8ndurability_original!=ui8nDurability)FAMILYBASIC::SE0_stPlay(SE0_stacui8cHit);
+						if(cui8ndurability_original!=ui8nDurability)FB::SE0_stPlay(SE0_stacui8cHit);
 						//	撃ち落とされてないので移動を実施
 						++ui16iPattern;
 						if(ui16iPattern<0x0200){
@@ -768,7 +769,7 @@ public:
 		//		「敵弾」発射管理情報を初期化します。
 		VOID					AIM_Start(const PGAME cpgameowner)noexcept{
 			//	カウンタ初期値を乱数にしておく事で、「敵弾」に「バラまき感」が出ます
-			ui16nAimRest=1+cpgameowner->ENEMY_ui16nAim-STD::stxGetMinimum(cpgameowner->ENEMY_ui16nAim,FAMILYBASIC::stui16GetRandom()&63);
+			ui16nAimRest=1+cpgameowner->ENEMY_ui16nAim-STD::stxGetMinimum(cpgameowner->ENEMY_ui16nAim,FB::stui16GetRandom()&63);
 			return;
 		}
 		//	VOID					AIM_Move(const PGAME cpgameowner)
@@ -983,7 +984,7 @@ public:
 		//	「背景」初期化
 		SCROLL_ui16iPosition=0;
 		//	点数系初期化
-		FAMILYBASIC::BG0_stPrint_R({10,19},"          ",0);
+		FB::BG0_stPrint({10,19},"          ",0);
 		ShowScore();
 		Normal();
 		return;
@@ -1034,12 +1035,12 @@ public:
 			PLAYER_v2iPosition=PLAYER_v2iPosition.v2GetMinimum(PLAYER_stcv2iiMaximum);
 			PLAYER_v2iPosition_Upper=PLAYER_v2iPosition>>FIXEDL_stcui8nBit;
 			//	「ショット」発射操作はソフトウェア連射で
-			if(CONTROLLER_ui8cGetRapid()&FAMILYBASIC::stcui8cMaskButtonB)switch(PLAYER_idShot){
+			if(CONTROLLER_ui8cGetRapid()&FB::JOYSTICK_stcui8cMaskButtonB)switch(PLAYER_idShot){
 			case IDSHOT::UpSingle:
 				{
 					CAUTO					ceshot0=SHOT_steStart(SHOT_ashotThis0,SHOT::IDTYPE::Up,PLAYER_v2iPosition);
 
-					if(ceshot0)FAMILYBASIC::SE0_stPlay(SE0_stacui8cShot);
+					if(ceshot0)FB::SE0_stPlay(SE0_stacui8cShot);
 				}
 				break;
 			case IDSHOT::UpDual:
@@ -1048,7 +1049,7 @@ public:
 					CAUTO					ceshot0=SHOT_steStart(SHOT_ashotThis0,SHOT::IDTYPE::Up,PLAYER_v2iPosition-cv2idoffset);
 					CAUTO					ceshot1=SHOT_steStart(SHOT_ashotThis1,SHOT::IDTYPE::Up,PLAYER_v2iPosition+cv2idoffset);
 
-					if(ceshot0||ceshot1)FAMILYBASIC::SE0_stPlay(SE0_stacui8cShot);
+					if(ceshot0||ceshot1)FB::SE0_stPlay(SE0_stacui8cShot);
 				}
 				break;
 			case IDSHOT::UpLeftRight:
@@ -1058,7 +1059,7 @@ public:
 					CAUTO					ceshot1=SHOT_steStart(SHOT_ashotThis1,SHOT::IDTYPE::Left,PLAYER_v2iPosition-cv2idoffset);
 					CAUTO					ceshot2=SHOT_steStart(SHOT_ashotThis2,SHOT::IDTYPE::Right,PLAYER_v2iPosition+cv2idoffset);
 
-					if(ceshot0||ceshot1||ceshot2)FAMILYBASIC::SE0_stPlay(SE0_stacui8cShot);
+					if(ceshot0||ceshot1||ceshot2)FB::SE0_stPlay(SE0_stacui8cShot);
 				}
 				break;
 			}
@@ -1101,7 +1102,7 @@ public:
 				};
 
 				//	新規「敵集団」開始
-				ENEMYGROUP_idType=stacidtype[FAMILYBASIC::stui16GetRandom()&15];
+				ENEMYGROUP_idType=stacidtype[FB::stui16GetRandom()&15];
 				ENEMYGROUP_ui16nCounterRest=ENEMYGROUP_ui16nCounter;
 				ENEMYGROUP_ui16nEntityRest=ENEMYGROUP_stcui16nEntity;
 				ENEMY_ui16nCounterRest=ENEMY_ui16nCounter;
@@ -1119,9 +1120,9 @@ public:
 		if(PLAYER_ui16iPattern){
 			++PLAYER_ui16iPattern;
 			if(PLAYER_ui16iPattern==16){
-				FAMILYBASIC::BG0_stPrint_R({10,19},"GAME  OVER",0);
+				FB::BG0_stPrint({10,19},"GAME  OVER",0);
 				idMode=IDMODE::GameOver;
-				FAMILYBASIC::BGM_stSetMasterVolumeFade(255,4);
+				FB::BGM_stSetMasterVolumeFade(255,4);
 			}
 		}
 		return;
@@ -1135,7 +1136,7 @@ public:
 		CONTROLLER_Update();
 		Show();
 		//	リスタート判定
-		if(CONTROLLER_ui8cSingle&(1<<FAMILYBASIC::IDBUTTON::A))idMode=IDMODE::Start;
+		if(CONTROLLER_ui8cSingle&(1<<FB::JOYSTICK_IDBUTTON::A))idMode=IDMODE::Start;
 		return;
 	}
 private:
@@ -1152,9 +1153,9 @@ private:
 		VIDEO_DRIVER::stWrite(IDREGISTERW::BG3OffsetX,((SCROLL_ui16iPosition>>(FIXEDL_stcui8nBit+2))&0x0ff)|0x2000);
 		//	自機
 		if(PLAYER_ui16iPattern==0){
-			FAMILYBASIC::SPRITE_stWrite16_R(ui8isprite,PLAYER_v2iPosition_Upper-VECTOR2(8,8),172,0);
+			FB::SPRITE_stWrite16(ui8isprite,PLAYER_v2iPosition_Upper-VECTOR2(8,8),172,0);
 		}else{
-			FAMILYBASIC::SPRITE_stWrite16_R(ui8isprite,PLAYER_v2iPosition_Upper-VECTOR2(8,8),(PLAYER_ui16iPattern&4)+176,3);
+			FB::SPRITE_stWrite16(ui8isprite,PLAYER_v2iPosition_Upper-VECTOR2(8,8),(PLAYER_ui16iPattern&4)+176,3);
 		}
 		++ui8isprite;
 		//	ショット
@@ -1165,7 +1166,7 @@ private:
 		for(CAUTO& cenmycurrent:ENEMY_aenmyThis)ui8isprite+=cenmycurrent.ui8nShow(ui8isprite);
 		//	残りは消去
 		while(ui8isprite!=0){
-			FAMILYBASIC::SPRITE_stErase(ui8isprite);
+			FB::SPRITE_stErase(ui8isprite);
 			++ui8isprite;
 		}
 		return;
@@ -1206,7 +1207,7 @@ private:
 		}
 		//	「一」の位は空白表示の場合が無いので単純変換
 		austrscore[3]='0'+ui16nscore;
-		FAMILYBASIC::BG0_stPrint_R({6,1},austrscore,0);
+		FB::BG0_stPrint({6,1},austrscore,0);
 		return;
 	}
 	//	VOID					AddScore(CUINT16 cui16nscore)
@@ -1256,7 +1257,7 @@ private:
 		AUTO					ui8crapid=CONTROLLER_aui8cRapid[0];
 
 		//	現在値
-		CONTROLLER_ui8cCurrent=FAMILYBASIC::CONTROLLER_stui8cRead(0);
+		CONTROLLER_ui8cCurrent=FB::CONTROLLER_stui8cRead(0);
 		//	変化値
 		CONTROLLER_ui8cSingle=CONTROLLER_ui8cCurrent&(CONTROLLER_ui8cCurrent^cui8cprevious);
 		//	連射値
@@ -1280,7 +1281,7 @@ private:
 		if(PLAYER_ui16iPattern==0)if(PLAYER_v2iPosition_Upper.FIXED512_eIsHit(PLAYER_stcv2inHitHalf_Upper,cv2iposition_upper,cv2nhithalf_upper)){
 			PLAYER_ui16iPattern=1;
 			SOUND_DRIVER::DEVICE_FM_stWrite(SOUND_DRIVER::FM_IDREGISTERW::NoiseDivRatio5,0x80+31);
-			FAMILYBASIC::SE1_stPlay(SE1_stacui8cCrush);
+			FB::SE1_stPlay(SE1_stacui8cCrush);
 		}
 		return FALSE;
 	}
@@ -1294,7 +1295,7 @@ private:
 		if(PLAYER_ui16iPattern==0)if(PLAYER_v2iPosition_Upper.FIXED512_eIsHit(PLAYER_stcv2inHitHalf_Upper,cv2iposition_upper,cv2nhithalf_upper)){
 			PLAYER_ui16iPattern=1;
 			SOUND_DRIVER::DEVICE_FM_stWrite(SOUND_DRIVER::FM_IDREGISTERW::NoiseDivRatio5,0x80+31);
-			FAMILYBASIC::SE1_stPlay(SE1_stacui8cCrush);
+			FB::SE1_stPlay(SE1_stacui8cCrush);
 		}
 		return FALSE;
 	}
@@ -1397,28 +1398,28 @@ static GAME				stgameThis;
 //
 
 VOID					USER_New(VOID)noexcept{
-	FAMILYBASIC::stNew(FAMILYBASIC::IDRESOLUTION::n320x240_R);
-	FAMILYBASIC::PALETTE_stWriteSet(1,1);
+	FB::stNew();
+	FB::PALETTE_stWriteSet(1,1);
 	//	左右ループさせたくないので、スプライトは縦横512ドット空間に設定
-	FAMILYBASIC::SPRITE_stSetSize(FAMILYBASIC::IDSIZE::n512);
-	FAMILYBASIC::BG0_stPrint_R({0,0},"LESSON 12:GAME(VERTICAL)",0);
-	FAMILYBASIC::BG0_stPrint_R({0,1},"SCORE",0);
+	FB::SPRITE_stSetSize(FB::IDSIZE::n512);
+	FB::BG0_stPrint({0,0},"LESSON 12:GAME(VERTICAL)",0);
+	FB::BG0_stPrint({0,1},"SCORE",0);
 	//	星描画
 	for(UINT8 i=0;i<3;++i)for(UINT8 j=0;j<128;++j){
-		CAUTO				cui16random=FAMILYBASIC::stui16GetRandom();
+		CAUTO				cui16random=FB::stui16GetRandom();
 		CAUTO				cv2iposition=VECTOR2(cui16random&31,(cui16random>>5)&31);
 		CAUTO				cui8ipattern=UINT8(0xcd+((cui16random>>10)&1));
 		CAUTO				cui8ibgpalette=UINT8((cui16random>>11)&3);
 
 		switch(i){
 		case 0:
-			FAMILYBASIC::BG1_stWrite_R(cv2iposition,cui8ipattern,cui8ibgpalette);
+			FB::BG1_stWrite(cv2iposition,cui8ipattern,cui8ibgpalette);
 			break;
 		case 1:
-			FAMILYBASIC::BG2_stWrite_R(cv2iposition,cui8ipattern,cui8ibgpalette);
+			FB::BG2_stWrite(cv2iposition,cui8ipattern,cui8ibgpalette);
 			break;
 		case 2:
-			FAMILYBASIC::BG3_stWrite_R(cv2iposition,cui8ipattern,cui8ibgpalette);
+			FB::BG3_stWrite(cv2iposition,cui8ipattern,cui8ibgpalette);
 			break;
 		}
 	}
@@ -1428,7 +1429,7 @@ VOID					USER_New(VOID)noexcept{
 
 VOID					USER_Delete(VOID)noexcept{
 	stgameThis.Delete();
-	FAMILYBASIC::stDelete();
+	FB::stDelete();
 	return;
 }
 

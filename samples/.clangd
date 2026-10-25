@@ -11,7 +11,7 @@ CompileFlags:
         - -Wno-pointer-to-int-cast
         - --target=m68k-elf
         - -xc++
-        - -std=c++2a
+        - -std=c++23
         - --include-directory=/Sync/Package/Cross/ORE68000_ACE/m68k/common/include
         - --include-directory=/Sync/Package/Cross/ORE68000_ACE/m68k/usr
 Hover:

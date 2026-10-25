@@ -210,7 +210,7 @@ VOID					USER_Delete(VOID)noexcept{
 
 VOID					USER_Main(VOID)noexcept{
 	using					IDREGISTERW=VIDEO_DRIVER::IDREGISTERW;
-	CAUTO					cekeydown=FAMILYBASIC::KEY_steIsDown(FAMILYBASIC::IDKEY::Space);
+	CAUTO					cekeydown=FAMILYBASIC::KEY_steIsDown(FAMILYBASIC::KEYBOARD_IDKEY::Space);
 
 	FAMILYBASIC::SPRITE_stWrite16(0,VECTOR2(128,ui16iY+ 0),(ui16iPattern>>1)+0x00,0);
 	--ui16iX;

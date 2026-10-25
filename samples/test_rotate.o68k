@@ -23,6 +23,7 @@
 //
 
 using namespace m68k::i71::sub;
+using					FB=FAMILYBASIC_R<FAMILYBASIC::IDRESOLUTION::n320x240>;
 
 //
 //		user
@@ -31,22 +32,22 @@ using namespace m68k::i71::sub;
 VECTOR2					v2iPosition={120,98};
 
 VOID					USER_New(VOID)noexcept{
-	FAMILYBASIC::stNew(FAMILYBASIC::IDRESOLUTION::n320x240_R);
-	FAMILYBASIC::PALETTE_stWriteSet(1,1);
-	FAMILYBASIC::BG0_stPrint_R({2,3},"TEST:ROTATE",0);
+	FB::stNew();
+	FB::PALETTE_stWriteSet(1,1);
+	FB::BG0_stPrint({2,3},"TEST:ROTATE",0);
 	return;
 }
 
 VOID					USER_Delete(VOID)noexcept{
-	FAMILYBASIC::stDelete();
+	FB::stDelete();
 	return;
 }
 
 VOID					USER_Main(VOID)noexcept{
-	using					IDBUTTON=FAMILYBASIC::IDBUTTON;
-	CAUTO					cui8cjoystick=FAMILYBASIC::CONTROLLER_stui8cRead(0);
+	using					IDBUTTON=FB::JOYSTICK_IDBUTTON;
+	CAUTO					cui8cjoystick=FB::CONTROLLER_stui8cRead(0);
 
-	FAMILYBASIC::SPRITE_stWrite16_R(0,v2iPosition,172,0);
+	FB::SPRITE_stWrite16(0,v2iPosition,172,0);
 	if(cui8cjoystick&(1<<IDBUTTON::Right))++v2iPosition.i16iX();
 	if(cui8cjoystick&(1<<IDBUTTON::Left))--v2iPosition.i16iX();
 	if(cui8cjoystick&(1<<IDBUTTON::Down))++v2iPosition.i16iY();

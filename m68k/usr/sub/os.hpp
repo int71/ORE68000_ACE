@@ -23,7 +23,6 @@
 #define __O68K_PATTERN(cpcustrfilename,...)	{}
 #define __O68K_PALETTE(cpcustrfilename,...)	{}
 #define __O68K_SEQUENCE(cpcustrsource,...)	{0xff}
-#define __O68K_TMX2BIN(cpcustrfilename,...)	{}
 
 //
 //		namespace:m68k::i71::sub

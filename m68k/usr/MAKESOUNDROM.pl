@@ -9,7 +9,7 @@
 use strict;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'base.pl';
-my($sVersion,$sDate)=('1.00','2025/12/06');
+my($sVersion,$sDate)=('1.10','2026/10/22');
 my($COM_sDirectory)=('/d/Sync/Package/Cross/ORE68000_ACE/m68k');
 
 new BASE::();
@@ -309,7 +309,7 @@ END
 **																			**
 END
 	);
-	$image_hpp->AddLINE("**\t".&USR_sTabLeft("'".$$ref_hash_switch{'NameHPP'}.".hpp'",12)."2025 written by int71\t**");
+	$image_hpp->AddLINE("**\t".&USR_sTabLeft("'".$$ref_hash_switch{'NameHPP'}.".hpp'",12)."2026 written by int71\t**");
 	$image_hpp->AddTEXT(<<END
  ****************************************************************************/
 #ifndef $smacro
@@ -319,7 +319,7 @@ END
 //		include
 //
 
-#include				"map.hpp"
+#include				"map.hpp"	// IWYU pragma: keep
 
 //
 //		namespace:m68k::${snamespace}::common

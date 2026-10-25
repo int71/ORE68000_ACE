@@ -26,6 +26,13 @@
                   UncapturableHidden:
                     マウスキャプチャ(非表示)切り替え不可で、非表示固定です。
                     が、「ORE68000 ACE」では「CapturableCaptured」と解釈します。
+                  FullScreenCaptured:
+                    フルスクリーン化による強制キャプチャ状態です。
+                    キャプチャ状態でのフルスクリーン化であれば「強制」扱いになら
+                    ず、「CapturableCaptured」となります。
+                    フルスクリーン状態で起動した後ウィンドウ表示に切り替えると、
+                    「FullScreenCaptured」であればキャプチャ解除され、さもなけれ
+                    ばキャプチャ状態が継続されます。
                 <MAP>
                     <CAPTUREMOUSE value="((Keyboard,255,Space,TRUE,00000000,
                     (Keyboard,255,Alt,FALSE,00000000,,4096,0),4096,0))"/>

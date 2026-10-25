@@ -24,7 +24,7 @@ using namespace m68k::i71::sub;
 
 //	private
 
-CANVAS_CHAR				CANVAS_::stcvsChar(staui16cCharImage);
+CANVAS_CHAR				CANVAS_::stcvsChar(staui8cCharImage);
 
 //	protected
 
@@ -225,13 +225,21 @@ VOID					CANVAS_::A_stCopy(
 CCANVAS_CHAR&			CANVAS_::stccvsGetChar(
 	CUINT16					cui16cchar
 )noexcept{
+	AUTO					pui16cdestination=PUINT16(staui8cCharImage);
+	CAUTO					cpui16cdestination_end=pui16cdestination+64;
+
 	GRAPHIC::FONTROM_stWriteData(cui16cchar);
 	if(0x0100<=cui16cchar){
-		for(AUTO& ui16cimage:staui16cCharImage)ui16cimage=GRAPHIC::FONTROM_stui16ReadData();
+		while(pui16cdestination<cpui16cdestination_end){
+			*pui16cdestination=GRAPHIC::FONTROM_stui16ReadData();
+			++pui16cdestination;
+		}
 	}else{
-		for(UINT8 ui8iline=0;ui8iline<64;ui8iline+=4){
-			staui16cCharImage[ui8iline+0]=GRAPHIC::FONTROM_stui16ReadData();
-			staui16cCharImage[ui8iline+1]=GRAPHIC::FONTROM_stui16ReadData();
+		while(pui16cdestination<cpui16cdestination_end){
+			*pui16cdestination=GRAPHIC::FONTROM_stui16ReadData();
+			++pui16cdestination;
+			*pui16cdestination=GRAPHIC::FONTROM_stui16ReadData();
+			pui16cdestination+=3;
 		}
 	}
 	return stcvsChar;
