@@ -124,8 +124,8 @@ VOID					FAMILYBASIC::PALETTE_stWriteSet(
 	CAUTO&					acsetbg=PALETTE_staacSetBG[(cui8isetbg<2)?cui8isetbg:0];
 
 	for(UINT8 ui8ipalette=0;ui8ipalette<4;++ui8ipalette){
-		PALETTE_stWrite(PALETTE_stui8iBase_Sprite+	ui8ipalette,acsetsprite[ui8ipalette]);
-		PALETTE_stWrite(PALETTE_stui8iBase_BG+		ui8ipalette,acsetbg[ui8ipalette]);
+		PALETTE_stWrite(PALETTE_stcui8iBase_Sprite+	ui8ipalette,acsetsprite[ui8ipalette]);
+		PALETTE_stWrite(PALETTE_stcui8iBase_BG+		ui8ipalette,acsetbg[ui8ipalette]);
 	}
 	return;
 }
@@ -142,10 +142,10 @@ VOID					FAMILYBASIC::PALETTE_stWriteSet2(
 	CAUTO&					acsetbg1=PALETTE_staacSetBG[(cui8isetbg1<2)?cui8isetbg1:0];
 
 	for(UINT8 ui8ipalette=0;ui8ipalette<4;++ui8ipalette){
-		PALETTE_stWrite(PALETTE_stui8iBase_Sprite+	ui8ipalette+0,acsetsprite0[ui8ipalette]);
-		PALETTE_stWrite(PALETTE_stui8iBase_Sprite+	ui8ipalette+4,acsetsprite1[ui8ipalette]);
-		PALETTE_stWrite(PALETTE_stui8iBase_BG+		ui8ipalette+0,acsetbg0[ui8ipalette]);
-		PALETTE_stWrite(PALETTE_stui8iBase_BG+		ui8ipalette+4,acsetbg1[ui8ipalette]);
+		PALETTE_stWrite(PALETTE_stcui8iBase_Sprite+	ui8ipalette+0,acsetsprite0[ui8ipalette]);
+		PALETTE_stWrite(PALETTE_stcui8iBase_Sprite+	ui8ipalette+4,acsetsprite1[ui8ipalette]);
+		PALETTE_stWrite(PALETTE_stcui8iBase_BG+		ui8ipalette+0,acsetbg0[ui8ipalette]);
+		PALETTE_stWrite(PALETTE_stcui8iBase_BG+		ui8ipalette+4,acsetbg1[ui8ipalette]);
 	}
 	return;
 }
@@ -487,7 +487,7 @@ VOID					FAMILYBASIC::BG_stPrint_R_Body(
 	return;
 }
 
-VOID					FAMILYBASIC::BG_stCopyRect_Body(
+VOID					FAMILYBASIC::BG_stWriteRect_Body(
 	CUINT32					cui32doffset,
 	const PCUINT16			cpcui16csource,
 	CUINT16					cui16nsourcepitch,
@@ -515,7 +515,7 @@ VOID					FAMILYBASIC::BG_stCopyRect_Body(
 	return;
 }
 
-VOID					FAMILYBASIC::BG_stCopyRect_R_Body(
+VOID					FAMILYBASIC::BG_stWriteRect_R_Body(
 	CUINT32					cui32doffset,
 	const PCUINT16			cpcui16csource,
 	CUINT16					cui16nsourcepitch,
@@ -539,6 +539,63 @@ VOID					FAMILYBASIC::BG_stCopyRect_R_Body(
 			CAUTO					cpui8cdestinationvline_end=pui8cdestination-cui16ndestinationv;
 			cpui8cdestinationvline_end<pui8cdestination;
 			pui8cdestination-=cui16ndestinationpitch,pcui8csource+=SIZEOF(UINT16)
+		)*PUINT16(pui8cdestination)=*PCUINT16(pcui8csource);
+	}
+	return;
+}
+
+VOID					FAMILYBASIC::BG_stReadRect_Body(
+	CUINT32					cui32doffset,
+	const PUINT16			cpui16cdestination,
+	CUINT16					cui16ndestinationpitch,
+	CVECTOR2&				cv2ndestination
+)noexcept{
+	CAUTO					cui16dsourceoffsetend=UINT16(cv2ndestination.i16nHeight()<<8);
+	CAUTO					cui16nsourceh=UINT16(cv2ndestination.i16nWidth()<<1);
+	constexpr AUTO			cui16nsourcepitch=UINT16(256);
+	CAUTO					cui16nsourcenext=UINT16(cui16nsourcepitch-cui16nsourceh);
+	CAUTO					cui16ndestinationnext=UINT16(cui16ndestinationpitch-cui16nsourceh);
+	AUTO					pcui8csource=PCUINT8(&MEMORY::VRAM_stui16DelegateThis(cui32doffset));
+	AUTO					pui8cdestinaton=PUINT8(cpui16cdestination);
+
+	for(
+		CAUTO					cpui8csource_end=pcui8csource+cui16dsourceoffsetend;
+		pcui8csource<cpui8csource_end;
+		pcui8csource+=cui16nsourcenext,pui8cdestinaton+=cui16ndestinationnext
+	){
+		for(
+			CAUTO					cpui8csourcehline_end=pcui8csource+cui16nsourceh;
+			pcui8csource<cpui8csourcehline_end;
+			pcui8csource+=SIZEOF(UINT16),pui8cdestinaton+=SIZEOF(UINT16)
+		)*PUINT16(pui8cdestinaton)=*PCUINT16(pcui8csource);
+	}
+	return;
+}
+
+VOID					FAMILYBASIC::BG_stReadRect_R_Body(
+	CUINT32					cui32doffset,
+	const PUINT16			cpui16cdestination,
+	CUINT16					cui16ndestinationpitch,
+	CVECTOR2&				cv2ndestination
+)noexcept{
+	CAUTO					cui16dsourceoffsetend=UINT16(cv2ndestination.i16nHeight()<<1);
+	CAUTO					cui16nsourceh=UINT16(cv2ndestination.i16nWidth()<<1);
+	CAUTO					cui16nsourcev=UINT16(cv2ndestination.i16nWidth()<<8);
+	constexpr AUTO			cui16nsourcepitch=UINT16(256);
+	CAUTO					cui16nsourcenext=UINT16(SIZEOF(UINT16)+cui16nsourcev);
+	CAUTO					cui16ndestinationnext=UINT16(cui16ndestinationpitch-cui16nsourceh);
+	AUTO					pcui8csource=PCUINT8(&MEMORY::VRAM_stui16DelegateThis(cui32doffset));
+	AUTO					pui8cdestination=PUINT8(cpui16cdestination);
+
+	for(
+		CAUTO					cpui8csource_end=pcui8csource+cui16dsourceoffsetend;
+		pcui8csource<cpui8csource_end;
+		pcui8csource+=cui16nsourcenext,pui8cdestination+=cui16ndestinationnext
+	){
+		for(
+			CAUTO					cpui8csourcevline_end=pcui8csource-cui16nsourcev;
+			cpui8csourcevline_end<pcui8csource;
+			pcui8csource-=cui16nsourcepitch,pui8cdestination+=SIZEOF(UINT16)
 		)*PUINT16(pui8cdestination)=*PCUINT16(pcui8csource);
 	}
 	return;

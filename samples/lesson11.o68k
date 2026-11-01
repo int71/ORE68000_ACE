@@ -2623,7 +2623,7 @@ public:
 	_INLINE_ VOID			Main(VOID)noexcept{
 		switch(idMode){
 		case IDMODE::Start:
-			Start();
+			Main_Start();
 			break;
 		case IDMODE::Normal:
 			Normal();
@@ -2637,7 +2637,7 @@ public:
 	//	VOID					Start(VOID)
 	//		ゲーム開始処理です。
 	//		初期化処理の後の他、ゲームオーバー後の再開時にも実行されます。
-	VOID					Start(VOID)noexcept{
+	VOID					Main_Start(VOID)noexcept{
 		idMode=IDMODE::Normal;
 		ui16nScore=0;
 		//	「自機」初期化
@@ -2648,8 +2648,8 @@ public:
 		SHELLCREEPER::stStart(&ENEMY_aenmyThis[3],VECTOR2((32<<3),(89<<3))<<FIXEDL_stcui8nBit,CHARACTER_::IDDIRECTION::Right);
 		//	「背景」初期化
 		SCROLL_SetPosition();
-		FAMILYBASIC::BG1_stCopy(MAP_stccvsBG,{0,0});
-		FAMILYBASIC::BG2_stCopy(BG_stccvsBG,{0,0});
+		FAMILYBASIC::BG1_stWrite(MAP_stccvsBG,{0,0});
+		FAMILYBASIC::BG2_stWrite(BG_stccvsBG,{0,0});
 		//	点数系初期化
 		FAMILYBASIC::BG0_stPrint({11,12},"          ",0);
 		ShowScore();

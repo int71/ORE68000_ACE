@@ -39,7 +39,7 @@ VOID					USER_New(VOID)noexcept{
 
 	FAMILYBASIC::stNew();
 	FAMILYBASIC::PALETTE_stWriteSet(0,1);
-	FAMILYBASIC::BG0_stCopy(stccvsthis,{0,8});
+	FAMILYBASIC::BG0_stWrite(stccvsthis,{0,8});
 	return;
 }
 

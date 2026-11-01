@@ -9,7 +9,7 @@
 use strict;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'smf.pl';
-my($sVersion,$sDate)=('2.46','2026/09/30');
+my($sVersion,$sDate)=('2.50','2026/10/30');
 my($COM_sDirectory)=('/d/Sync/Package/Cross/ORE68000_ACE/m68k');
 my($sChannelAdditionalVariableName)=('_INIT');
 new BASE::();
@@ -93,6 +93,11 @@ sub main{
 		}else{
 			$switch{'IgnorePan'}=0;
 		}
+		if(defined $$option{'ar'}){
+			$switch{'PortamentoAccuracy'}=$$option{'ar'};
+		}else{
+			$switch{'PortamentoAccuracy'}=.5;
+		}
 		if(defined $$option{'m'}){
 			if($$option{'m'} ne '-'){
 				$switch{'FixedPitchModulation'}=BASE::Clamp($$option{'m'},0,127);
@@ -163,7 +168,7 @@ sub USR_stShowHelp{
   「.mid」SMF形式ファイルを「M68K_MAKESEQUENCE」演奏テキストに変換します。
 
 <書式>
-$BASE::Self (入力).mid [-v] [-h] [-o (演奏テキスト).sh] [-u (音符長分母)] [-a (追加制御文)[,(追加制御文)...]] [-c (演奏データ)] [-op (プログラム番号オフセット)] [-ov (音量オフセット)] [-m (ピッチモジュレーション固定値)] [-z (初期フレーム数)] [-f (チャンネル)[,(チャンネル)...]] [-n (チャンネル)[,(チャンネル)...]] [-r (置換文字列定義)] [-d]
+$BASE::Self (入力).mid [-v] [-h] [-o (演奏テキスト).sh] [-u (音符長分母)] [-a (追加制御文)[,(追加制御文)...]] [-c (演奏データ)] [-op (プログラム番号オフセット)] [-ov (音量オフセット)] [-ip] [-ar (ポルタメント精度)] [-m (ピッチモジュレーション固定値)] [-z (初期フレーム数)] [-f (チャンネル)[,(チャンネル)...]] [-n (チャンネル)[,(チャンネル)...]] [-r (置換文字列定義)] [-d]
 
 <オプション>
 -v: バージョンを表示します。
@@ -178,6 +183,9 @@ $BASE::Self (入力).mid [-v] [-h] [-o (演奏テキスト).sh] [-u (音符長�
   デフォルト値は「0」です。
 -ip:パン値を読み飛ばし、「PN=0」が出力されないようにします。
   アプリケーションによるパン指定がそのまま演奏に反映されます。
+-ar:ピッチベンド値からポルタメント指示に変換する精度を指定します。値が小さいほど精度は高くなります。
+  「ポルタメント指示」は「音程変化の傾き」として分数を使用できますが、ピッチベンド値には誤差が入る場合があり、必要以上に精度を高め(「-ar」指定値を小さくし)て分数化すると、本来「+2」とすべきところが「7/3」になる等、却って精度が低下します。
+  デフォルト値は「0.5」です。
 -m: 「0」以外のピッチモジュレーション値を「0～127」の値で固定します。デフォルト値は「-(固定無し)」です。
 -z: 冒頭の無音時間フレーム数を指定します。「1」なら1フレームに切り詰めます。「2」以上を指定すると初期化が分散され、瞬間的負荷上昇を緩和できます。デフォルト値は「0(切り詰め無し)」です。
 -f: 指定チャンネルについて、「KeyOn」時の無変化パラメータ省略を行わないようにします。
@@ -1090,8 +1098,11 @@ sub USR_stSMF2SEQ{
 		#	冒頭無音にボリューム0のダミー音符を追加
 		#	チャンネル単位で事を進める
 		for(my($ichannel)=0;$ichannel<$nchannel;++$ichannel){
+			my($nline)=scalar(@array_ref_line);
+			my($iline);
+
 			#	ライン0番が「チャンネル」かは分からないので辿る
-			for(my($iline,$nline)=(0,scalar(@array_ref_line));$iline<$nline;++$iline){
+			for($iline=0;$iline<$nline;++$iline){
 				my($ref_line)=$array_ref_line[$iline];
 
 				if(
@@ -1101,8 +1112,11 @@ sub USR_stSMF2SEQ{
 					#	冒頭「チャンネル」イベントに到達
 					my($snote,@array_parameter)=@{$$ref_line{'Event'}[$ichannel]};
 
+					if($snote ne ''){
+						#	冒頭音アリだったので小細工不要
+						last;
+					}
 					while($snote eq ''){
-						#	冒頭無音であった
 						for(my($iline_next)=$iline+1;$iline_next<$nline;++$iline_next){
 							my($ref_line_next)=$array_ref_line[$iline_next];
 
@@ -1159,9 +1173,25 @@ sub USR_stSMF2SEQ{
 						}
 						last;
 					}
-					if($snote ne ''){
-						$$ref_line{'Event'}[$ichannel]=[$snote,@array_parameter];
+					if($snote eq ''){
+						my(%hash_parameter);
+
+						#	当該チャンネル、発音イベント無しにつき、
+						#	冒頭イベントをダミー無音化
+						$snote=' 0C ';
+						foreach my($sparameter)(@array_parameter){
+							my($sname,$svalue)=split(/\=/,$sparameter);
+
+							$hash_parameter{$sname}=$svalue;
+						}
+						$hash_parameter{'VM'}='0';
+						#	冒頭無音「チャンネル」イベントのパラメータ指定を作り直す
+						undef @array_parameter;
+						foreach my($sname)(sort keys %hash_parameter){
+							push(@array_parameter,"$sname=$hash_parameter{$sname}");
+						}
 					}
+					$$ref_line{'Event'}[$ichannel]=[$snote,@array_parameter];
 					last;
 				}
 			}
@@ -1257,9 +1287,21 @@ sub USR_stSMF2SEQ{
 				if($$line{'Type'} eq 'Channel'){
 					my($ref_array_ref_array_event)=$$line{'Event'};
 
-					if($nframe!=$$line{'Frame'}){
-						$nframe=$$line{'Frame'};
-						$img_return->AddLINE("	\"#SPEED=$nframe\",");
+					if(exists $$line{'Marker'}){
+						my($smarker)=$$line{'Marker'};
+
+						if($smarker eq 'LoopEnd'){
+							$img_return->AddLINE("	\"#JUMP=LoopStart\",");
+							$eend=1;
+						}else{
+							$img_return->AddLINE("	\"#LABEL=$smarker\",");
+						}
+					}
+					if(!$eend){
+						if($nframe!=$$line{'Frame'}){
+							$nframe=$$line{'Frame'};
+							$img_return->AddLINE("	\"#SPEED=$nframe\",");
+						}
 					}
 					if(0<scalar(@$ref_array_ref_array_event)){
 						my(@array_event);
@@ -1279,14 +1321,16 @@ sub USR_stSMF2SEQ{
 										--$ievent;
 										--$nevent;
 									}else{
+										my($dportamentoaccuracy)=$$ref_switch{'PortamentoAccuracy'};
 										my($dportamento)=$value*$$line{'Frame'};
 										my($nportamentoframe)=1;
 										my($dportamentoresult)=$dportamento;
 
 										#	「16時間単位で12音階」等、1時間単位当たりの変化音階が整数でない場合、
 										#	所要フレーム数を与えて誤差が出ないようにする。
-										#	半端閾値「.25」だと爆発する場合あるんで「.5」でいく。
-										while(.25<BASE::Absolute($dportamentoresult-BASE::Round($dportamentoresult))){
+										#	半端閾値「.25」だと爆発する場合あるんで「.5」が良さげではあるが、
+										#	一応引数で設定できる事にしておく。
+										while($dportamentoaccuracy<BASE::Absolute($dportamentoresult-BASE::Round($dportamentoresult))){
 											++$nportamentoframe;
 											$dportamentoresult=$dportamento*$nportamentoframe;
 										}
@@ -1339,16 +1383,6 @@ sub USR_stSMF2SEQ{
 						$_=join('/',@array_event);
 					}else{
 						$_=$sblank;
-					}
-					if(exists $$line{'Marker'}){
-						my($smarker)=$$line{'Marker'};
-
-						if($smarker eq 'LoopEnd'){
-							$img_return->AddLINE("	\"#JUMP=LoopStart\",");
-							$eend=1;
-						}else{
-							$img_return->AddLINE("	\"#LABEL=$smarker\",");
-						}
 					}
 					if(!$eend){
 						$img_return->AddLINE("	\"$_\",");

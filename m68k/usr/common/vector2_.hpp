@@ -112,6 +112,16 @@ namespace m68k::i71::common{
 				STD::stxGetAbs(i16Value1_Body)
 			};
 		}
+		constexpr OFWBOOL		eIsHit(CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)const noexcept{
+			CAUTO					ci16nsizehalf_width=cv2nsizehalf.i16nWidth();
+
+			if(UINT16(i16iX()-cv2iposition.i16iX()+ci16nsizehalf_width)<=UINT16(ci16nsizehalf_width<<1)){
+				CAUTO					ci16nsizehalf_height=cv2nsizehalf.i16nHeight();
+
+				return (UINT16(i16iY()-cv2iposition.i16iY()+ci16nsizehalf_height)<=UINT16(ci16nsizehalf_height<<1));
+			}
+			return FALSE;
+		}
 		//	OFWBOOL					FIXED_eIsHit<CUINT8 FIXEDL_cui8nBit>(CVECTOR2_& cv2iposition,CVECTOR2_& cv2nsizehalf)
 		//		「cv2iposition」と衝突しているかを判定します。
 		//		衝突していれば「TRUE」を返します。

@@ -76,8 +76,8 @@ namespace m68k::i71::sub{
 			0x0200,
 			0x0400
 		};
-		static constexpr UINT8	PALETTE_stui8iBase_Sprite=						0x0;
-		static constexpr UINT8	PALETTE_stui8iBase_BG=							0x8;
+		static constexpr UINT8	PALETTE_stcui8iBase_Sprite=						0x0;
+		static constexpr UINT8	PALETTE_stcui8iBase_BG=							0x8;
 		static constexpr UINT16	PALETTE_stacui16cColor[]={
 			common::ui16cGetColor(0x616161),common::ui16cGetColor(0x000088),common::ui16cGetColor(0x1f0d99),common::ui16cGetColor(0x371379),common::ui16cGetColor(0x561260),common::ui16cGetColor(0x5d0010),common::ui16cGetColor(0x520e00),common::ui16cGetColor(0x3a2308),
 			common::ui16cGetColor(0x21350c),common::ui16cGetColor(0x0d410e),common::ui16cGetColor(0x174417),common::ui16cGetColor(0x003a1f),common::ui16cGetColor(0x002f57),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),common::ui16cGetColor(0x000000),
@@ -173,9 +173,29 @@ namespace m68k::i71::sub{
 		static UINT8			stui8GetRandom(VOID)noexcept{
 			return UINT8(((stui16GetRandom()&0xff)*UINT16(cui8nRange))>>8);
 		}
+		static _INLINE_ VOID	VIDEO_stWaitforVBlank(VOID)noexcept{
+			OS::VIDEO_stWaitforVBlank();
+			return;
+		}
 		static VOID				PALETTE_stWrite(CUINT8 cui8ipalette,CUINT8 cui8inescolor0,CUINT8 cui8inescolor1,CUINT8 cui8inescolor2)noexcept;
 		static _INLINE_ VOID	PALETTE_stWrite(CUINT8 cui8ipalette,CUINT8 (&acui8inescolor)[3])noexcept{
 			PALETTE_stWrite(cui8ipalette,acui8inescolor[0],acui8inescolor[1],acui8inescolor[2]);
+			return;
+		}
+		static _INLINE_ VOID	PALETTE_SPRITE_stWrite(CUINT8 cui8ipalette,CUINT8 cui8inescolor0,CUINT8 cui8inescolor1,CUINT8 cui8inescolor2)noexcept{
+			PALETTE_stWrite(PALETTE_stcui8iBase_Sprite+cui8ipalette,cui8inescolor0,cui8inescolor1,cui8inescolor2);
+			return;
+		}
+		static _INLINE_ VOID	PALETTE_SPRITE_stWrite(CUINT8 cui8ipalette,CUINT8 (&acui8inescolor)[3])noexcept{
+			PALETTE_SPRITE_stWrite(cui8ipalette,acui8inescolor[0],acui8inescolor[1],acui8inescolor[2]);
+			return;
+		}
+		static _INLINE_ VOID	PALETTE_BG_stWrite(CUINT8 cui8ipalette,CUINT8 cui8inescolor0,CUINT8 cui8inescolor1,CUINT8 cui8inescolor2)noexcept{
+			PALETTE_stWrite(PALETTE_stcui8iBase_BG+cui8ipalette,cui8inescolor0,cui8inescolor1,cui8inescolor2);
+			return;
+		}
+		static _INLINE_ VOID	PALETTE_BG_stWrite(CUINT8 cui8ipalette,CUINT8 (&acui8inescolor)[3])noexcept{
+			PALETTE_BG_stWrite(cui8ipalette,acui8inescolor[0],acui8inescolor[1],acui8inescolor[2]);
 			return;
 		}
 		static VOID				PALETTE_stWriteBack(CUINT8 cui8inescolor)noexcept;
@@ -298,15 +318,27 @@ namespace m68k::i71::sub{
 			return;
 		}
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static _INLINE_ VOID	BG0_stCopy(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CVECTOR2& cv2iposition)noexcept{
+		static _INLINE_ VOID	BG0_stWrite(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CVECTOR2& cv2iposition)noexcept{
 			using					SCLASS=CANVASBG_SIZED_<SCLASS_cv2nSize>;
 
-			BG0_stCopyRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition);
+			BG0_stWriteRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition);
 			return;
 		}
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static _INLINE_ VOID	BG0_stCopyRect(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
-			BG_stCopyRect(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,ccvssource,cshpsource,cv2iposition);
+		static _INLINE_ VOID	BG0_stWriteRect(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
+			BG_stWriteRect(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,ccvssource,cshpsource,cv2iposition);
+			return;
+		}
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static _INLINE_ VOID	BG0_stRead(const CANVASBG_SIZED_<DCLASS_cv2nSize>& ccvsdestination,CVECTOR2& cv2iposition)noexcept{
+			using					DCLASS=CANVASBG_SIZED_<DCLASS_cv2nSize>;
+
+			BG0_stReadRect(ccvsdestination,{VECTOR2::stv2ImmediateZero(),DCLASS::stcv2nSize},cv2iposition);
+			return;
+		}
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static _INLINE_ VOID	BG0_stReadRect(const CANVASBG_SIZED_<DCLASS_cv2nSize>& ccvsdestination,CANVASBG_::CSHAPE& cshpdestination,CVECTOR2& cv2iposition)noexcept{
+			BG_stReadRect(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,ccvsdestination,cshpdestination,cv2iposition);
 			return;
 		}
 		static _INLINE_ UINT16	BG0_stui16cReadAttribute(CVECTOR2& cv2iposition)noexcept{
@@ -352,15 +384,27 @@ namespace m68k::i71::sub{
 			return;
 		}
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static _INLINE_ VOID	BG1_stCopy(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CVECTOR2& cv2iposition)noexcept{
+		static _INLINE_ VOID	BG1_stWrite(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CVECTOR2& cv2iposition)noexcept{
 			using					SCLASS=CANVASBG_SIZED_<SCLASS_cv2nSize>;
 
-			BG1_stCopyRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition);
+			BG1_stWriteRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition);
 			return;
 		}
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static _INLINE_ VOID	BG1_stCopyRect(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
-			BG_stCopyRect(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,ccvssource,cshpsource,cv2iposition);
+		static _INLINE_ VOID	BG1_stWriteRect(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
+			BG_stWriteRect(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,ccvssource,cshpsource,cv2iposition);
+			return;
+		}
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static _INLINE_ VOID	BG1_stRead(const CANVASBG_SIZED_<DCLASS_cv2nSize>& ccvsdestination,CVECTOR2& cv2iposition)noexcept{
+			using					DCLASS=CANVASBG_SIZED_<DCLASS_cv2nSize>;
+
+			BG1_stReadRect(ccvsdestination,{VECTOR2::stv2ImmediateZero(),DCLASS::stcv2nSize},cv2iposition);
+			return;
+		}
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static _INLINE_ VOID	BG1_stReadRect(const CANVASBG_SIZED_<DCLASS_cv2nSize>& ccvsdestination,CANVASBG_::CSHAPE& cshpdestination,CVECTOR2& cv2iposition)noexcept{
+			BG_stReadRect(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,ccvsdestination,cshpdestination,cv2iposition);
 			return;
 		}
 		static _INLINE_ UINT16	BG1_stui16cReadAttribute(CVECTOR2& cv2iposition)noexcept{
@@ -406,15 +450,27 @@ namespace m68k::i71::sub{
 			return;
 		}
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static _INLINE_ VOID	BG2_stCopy(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CVECTOR2& cv2iposition)noexcept{
+		static _INLINE_ VOID	BG2_stWrite(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CVECTOR2& cv2iposition)noexcept{
 			using					SCLASS=CANVASBG_SIZED_<SCLASS_cv2nSize>;
 
-			BG2_stCopyRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition);
+			BG2_stWriteRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition);
 			return;
 		}
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static _INLINE_ VOID	BG2_stCopyRect(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
-			BG_stCopyRect(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,ccvssource,cshpsource,cv2iposition);
+		static _INLINE_ VOID	BG2_stWriteRect(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
+			BG_stWriteRect(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,ccvssource,cshpsource,cv2iposition);
+			return;
+		}
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static _INLINE_ VOID	BG2_stRead(const CANVASBG_SIZED_<DCLASS_cv2nSize>& ccvsdestination,CVECTOR2& cv2iposition)noexcept{
+			using					DCLASS=CANVASBG_SIZED_<DCLASS_cv2nSize>;
+
+			BG2_stReadRect(ccvsdestination,{VECTOR2::stv2ImmediateZero(),DCLASS::stcv2nSize},cv2iposition);
+			return;
+		}
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static _INLINE_ VOID	BG2_stReadRect(const CANVASBG_SIZED_<DCLASS_cv2nSize>& ccvsdestination,CANVASBG_::CSHAPE& cshpdestination,CVECTOR2& cv2iposition)noexcept{
+			BG_stReadRect(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,ccvsdestination,cshpdestination,cv2iposition);
 			return;
 		}
 		static _INLINE_ UINT16	BG2_stui16cReadAttribute(CVECTOR2& cv2iposition)noexcept{
@@ -460,15 +516,27 @@ namespace m68k::i71::sub{
 			return;
 		}
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static _INLINE_ VOID	BG3_stCopy(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CVECTOR2& cv2iposition)noexcept{
+		static _INLINE_ VOID	BG3_stWrite(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CVECTOR2& cv2iposition)noexcept{
 			using					SCLASS=CANVASBG_SIZED_<SCLASS_cv2nSize>;
 
-			BG3_stCopyRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition);
+			BG3_stWriteRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition);
 			return;
 		}
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static _INLINE_ VOID	BG3_stCopyRect(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
-			BG_stCopyRect(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,ccvssource,cshpsource,cv2iposition);
+		static _INLINE_ VOID	BG3_stWriteRect(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
+			BG_stWriteRect(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,ccvssource,cshpsource,cv2iposition);
+			return;
+		}
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static _INLINE_ VOID	BG3_stRead(const CANVASBG_SIZED_<DCLASS_cv2nSize>& ccvsdestination,CVECTOR2& cv2iposition)noexcept{
+			using					DCLASS=CANVASBG_SIZED_<DCLASS_cv2nSize>;
+
+			BG3_stReadRect(ccvsdestination,{VECTOR2::stv2ImmediateZero(),DCLASS::stcv2nSize},cv2iposition);
+			return;
+		}
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static _INLINE_ VOID	BG3_stReadRect(const CANVASBG_SIZED_<DCLASS_cv2nSize>& ccvsdestination,CANVASBG_::CSHAPE& cshpdestination,CVECTOR2& cv2iposition)noexcept{
+			BG_stReadRect(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,ccvsdestination,cshpdestination,cv2iposition);
 			return;
 		}
 		static _INLINE_ UINT16	BG3_stui16cReadAttribute(CVECTOR2& cv2iposition)noexcept{
@@ -477,6 +545,13 @@ namespace m68k::i71::sub{
 		static _INLINE_ VOID	BGM_stPlay(_UNDISCARDABLE_ CUINT8* const cpcui8csequence)noexcept{
 			OS::BGM_stPlay(cpcui8csequence);
 			return;
+		}
+		static _INLINE_ VOID	BGM_stPlayReserve(_UNDISCARDABLE_ CUINT8* const cpcui8csequence)noexcept{
+			OS::BGM_stPlayReserve(cpcui8csequence);
+			return;
+		}
+		static _INLINE_ OFWBOOL	BGM_steIsPlaying(VOID)noexcept{
+			return OS::BGM_steIsPlaying();
 		}
 		static _INLINE_ VOID	BGM_stSetMasterVolume(CUINT8 cui8nvolume)noexcept{
 			OS::BGM_stSetMasterVolume(cui8nvolume);
@@ -490,9 +565,15 @@ namespace m68k::i71::sub{
 			OS::SE0_stPlay(cpcui8csequence);
 			return;
 		}
+		static _INLINE_ OFWBOOL	SE0_steIsPlaying(VOID)noexcept{
+			return OS::SE0_steIsPlaying();
+		}
 		static _INLINE_ VOID	SE1_stPlay(_UNDISCARDABLE_ CUINT8* const cpcui8csequence)noexcept{
 			OS::SE1_stPlay(cpcui8csequence);
 			return;
+		}
+		static _INLINE_ OFWBOOL	SE1_steIsPlaying(VOID)noexcept{
+			return OS::SE1_steIsPlaying();
 		}
 		static OFWBOOL			KEY_steIsDown(const KEYBOARD_IDKEY cidkey)noexcept{
 			return OS::DEVICE_KEYBOARD_stui16Read(cidkey>>4)&(1<<(cidkey&0xf));
@@ -574,14 +655,14 @@ namespace m68k::i71::sub{
 		static VOID				BG_stPrint(CUINT32 cui32doffset,CVECTOR2& cv2iposition,const PCUSTR cpcustrstring,CUINT8 cui8ibgpalette)noexcept;
 		static VOID				BG_stPrint_R_Body(CUINT32 cui32doffset,CVECTOR2& cv2iposition,const PCUSTR cpcustrstring,CUINT8 cui8ibgpalette,CVECTOR2& cv2ntrim)noexcept;
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static _INLINE_ VOID	BG_stCopyRect(CUINT32 cui32doffset,const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
+		static _INLINE_ VOID	BG_stWriteRect(CUINT32 cui32doffset,const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
 			using					SCLASS=CANVASBG_SIZED_<SCLASS_cv2nSize>;
 			AUTO					shpsource=cshpsource;
 			AUTO					v2iposition=cv2iposition;
 
 			SCLASS::stTrimSending(shpsource,v2iposition);
 			CANVASBG_DEVICE::stTrimReceiving(shpsource,v2iposition);
-			BG_stCopyRect_Body(
+			BG_stWriteRect_Body(
 				cui32doffset+UINT32(CANVASBG_DEVICE::stui16iGetPosition(v2iposition)),
 				ccvssource.pcui16cGetThis()+SCLASS::stui16iGetPosition(shpsource.v2iPosition),
 				SCLASS::stcui16nPitch,
@@ -589,8 +670,26 @@ namespace m68k::i71::sub{
 			);
 			return;
 		}
-		static VOID				BG_stCopyRect_Body(CUINT32 cui32doffset,const PCUINT16 cpcui16csource,CUINT16 cui16nsourcepitch,CVECTOR2& cv2nsource)noexcept;
-		static VOID				BG_stCopyRect_R_Body(CUINT32 cui32doffset,const PCUINT16 cpcui16csource,CUINT16 cui16nsourcepitch,CVECTOR2& cv2nsource)noexcept;
+		static VOID				BG_stWriteRect_Body(CUINT32 cui32doffset,const PCUINT16 cpcui16csource,CUINT16 cui16nsourcepitch,CVECTOR2& cv2nsource)noexcept;
+		static VOID				BG_stWriteRect_R_Body(CUINT32 cui32doffset,const PCUINT16 cpcui16csource,CUINT16 cui16nsourcepitch,CVECTOR2& cv2nsource)noexcept;
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static _INLINE_ VOID	BG_stReadRect(CUINT32 cui32doffset,const CANVASBG_RAM<DCLASS_cv2nSize>& ccvsdestination,CANVASBG_::CSHAPE& cshpdestination,CVECTOR2& cv2iposition)noexcept{
+			using					DCLASS=CANVASBG_RAM<DCLASS_cv2nSize>;
+			AUTO					shpdestination=cshpdestination;
+			AUTO					v2iposition=cv2iposition;
+
+			DCLASS::stTrimSending(shpdestination,v2iposition);
+			CANVASBG_DEVICE::stTrimReceiving(shpdestination,v2iposition);
+			BG_stReadRect_Body(
+				cui32doffset+UINT32(CANVASBG_DEVICE::stui16iGetPosition(v2iposition)),
+				ccvsdestination.pui16cGetThis()+DCLASS::stui16iGetPosition(shpdestination.v2iPosition),
+				DCLASS::stcui16nPitch,
+				shpdestination.v2nSize
+			);
+			return;
+		}
+		static VOID				BG_stReadRect_Body(CUINT32 cui32doffset,const PUINT16 cpui16cdestination,CUINT16 cui16ndestinationpitch,CVECTOR2& cv2ndestination)noexcept;
+		static VOID				BG_stReadRect_R_Body(CUINT32 cui32doffset,const PUINT16 cpui16cdestination,CUINT16 cui16ndestinationpitch,CVECTOR2& cv2ndestination)noexcept;
 		static _INLINE_ UINT16	BG_stui16cReadAttribute(CUINT32 cui32doffset,CVECTOR2& cv2iposition)noexcept{
 			CAUTO					cpcui16source=(
 				&MEMORY::VRAM_stcui16GetThis(cui32doffset)+
@@ -671,10 +770,15 @@ namespace m68k::i71::sub{
 			return;
 		}
 		static _INLINE_ VOID	SPRITE_stWrite8(CUINT8 cui8isprite,CVECTOR2& cv2iposition,CUINT8 cui8ipattern,CUINT8 cui8ispritepalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE,CUINT8 cui8ipriority=1)noexcept{
+			//	0->1 1->3 2->0 3->2
+			static constexpr UINT8	stacui8doffset[]={
+				1,3,0,2
+			};
+
 			SUPER::SPRITE_stWrite8(
 				cui8isprite,			//	cui8isprite
 				SPRITE_stv2iMakePosition8(cv2iposition),	//	cv2iposition
-				cui8ipattern,			//	cui8ipattern
+				(cui8ipattern&~3)|(stacui8doffset[cui8ipattern&3]),	//	cui8ipattern
 				cui8ispritepalette,		//	cui8ispritepalette
 				ceinvertv,				//	ceinverth
 				ceinverth,				//	ceinvertv
@@ -734,15 +838,27 @@ namespace m68k::i71::sub{
 			return;
 		}
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static _INLINE_ VOID	BG0_stCopy(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CVECTOR2& cv2iposition)noexcept{
+		static _INLINE_ VOID	BG0_stWrite(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CVECTOR2& cv2iposition)noexcept{
 			using					SCLASS=CANVASBG_SIZED_<SCLASS_cv2nSize>;
 
-			BG0_stCopyRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition);
+			BG0_stWriteRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition);
 			return;
 		}
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static _INLINE_ VOID	BG0_stCopyRect(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
-			BG_stCopyRect(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,ccvssource,cshpsource,cv2iposition,BG0_stv2nGetSize8());
+		static _INLINE_ VOID	BG0_stWriteRect(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
+			BG_stWriteRect(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,ccvssource,cshpsource,cv2iposition,BG0_stv2nGetSize8());
+			return;
+		}
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static _INLINE_ VOID	BG0_stRead(CANVASBG_RAM<DCLASS_cv2nSize>& cvsdestination,CVECTOR2& cv2iposition)noexcept{
+			using					DCLASS=CANVASBG_RAM<DCLASS_cv2nSize>;
+
+			BG0_stReadRect(cvsdestination,{VECTOR2::stv2ImmediateZero(),DCLASS::stcv2nSize},cv2iposition);
+			return;
+		}
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static _INLINE_ VOID	BG0_stReadRect(CANVASBG_RAM<DCLASS_cv2nSize>& cvsdestination,CANVASBG_::CSHAPE& cshpdestination,CVECTOR2& cv2iposition)noexcept{
+			BG_stReadRect(MAP::VRAM::ATTRIBUTE_BG0_stcui32dOffset,cvsdestination,cshpdestination,cv2iposition,BG0_stv2nGetSize8());
 			return;
 		}
 		static _INLINE_ UINT16	BG0_stui16cReadAttribute(CVECTOR2& cv2iposition)noexcept{
@@ -788,15 +904,27 @@ namespace m68k::i71::sub{
 			return;
 		}
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static _INLINE_ VOID	BG1_stCopy(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CVECTOR2& cv2iposition)noexcept{
+		static _INLINE_ VOID	BG1_stWrite(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CVECTOR2& cv2iposition)noexcept{
 			using					SCLASS=CANVASBG_SIZED_<SCLASS_cv2nSize>;
 
-			BG1_stCopyRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition);
+			BG1_stWriteRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition);
 			return;
 		}
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static _INLINE_ VOID	BG1_stCopyRect(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
-			BG_stCopyRect(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,ccvssource,cshpsource,cv2iposition,BG1_stv2nGetSize8());
+		static _INLINE_ VOID	BG1_stWriteRect(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
+			BG_stWriteRect(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,ccvssource,cshpsource,cv2iposition,BG1_stv2nGetSize8());
+			return;
+		}
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static _INLINE_ VOID	BG1_stRead(CANVASBG_RAM<DCLASS_cv2nSize>& cvsdestination,CVECTOR2& cv2iposition)noexcept{
+			using					DCLASS=CANVASBG_RAM<DCLASS_cv2nSize>;
+
+			BG1_stReadRect(cvsdestination,{VECTOR2::stv2ImmediateZero(),DCLASS::stcv2nSize},cv2iposition);
+			return;
+		}
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static _INLINE_ VOID	BG1_stReadRect(CANVASBG_RAM<DCLASS_cv2nSize>& cvsdestination,CANVASBG_::CSHAPE& cshpdestination,CVECTOR2& cv2iposition)noexcept{
+			BG_stReadRect(MAP::VRAM::ATTRIBUTE_BG1_stcui32dOffset,cvsdestination,cshpdestination,cv2iposition,BG1_stv2nGetSize8());
 			return;
 		}
 		static _INLINE_ UINT16	BG1_stui16cReadAttribute(CVECTOR2& cv2iposition)noexcept{
@@ -842,15 +970,27 @@ namespace m68k::i71::sub{
 			return;
 		}
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static _INLINE_ VOID	BG2_stCopy(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CVECTOR2& cv2iposition)noexcept{
+		static _INLINE_ VOID	BG2_stWrite(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CVECTOR2& cv2iposition)noexcept{
 			using					SCLASS=CANVASBG_SIZED_<SCLASS_cv2nSize>;
 
-			BG2_stCopyRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition);
+			BG2_stWriteRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition);
 			return;
 		}
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static _INLINE_ VOID	BG2_stCopyRect(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
-			BG_stCopyRect(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,ccvssource,cshpsource,cv2iposition,BG2_stv2nGetSize8());
+		static _INLINE_ VOID	BG2_stWriteRect(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
+			BG_stWriteRect(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,ccvssource,cshpsource,cv2iposition,BG2_stv2nGetSize8());
+			return;
+		}
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static _INLINE_ VOID	BG2_stRead(CANVASBG_RAM<DCLASS_cv2nSize>& cvsdestination,CVECTOR2& cv2iposition)noexcept{
+			using					DCLASS=CANVASBG_RAM<DCLASS_cv2nSize>;
+
+			BG2_stReadRect(cvsdestination,{VECTOR2::stv2ImmediateZero(),DCLASS::stcv2nSize},cv2iposition);
+			return;
+		}
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static _INLINE_ VOID	BG2_stReadRect(CANVASBG_RAM<DCLASS_cv2nSize>& cvsdestination,CANVASBG_::CSHAPE& cshpdestination,CVECTOR2& cv2iposition)noexcept{
+			BG_stReadRect(MAP::VRAM::ATTRIBUTE_BG2_stcui32dOffset,cvsdestination,cshpdestination,cv2iposition,BG2_stv2nGetSize8());
 			return;
 		}
 		static _INLINE_ UINT16	BG2_stui16cReadAttribute(CVECTOR2& cv2iposition)noexcept{
@@ -896,15 +1036,27 @@ namespace m68k::i71::sub{
 			return;
 		}
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static _INLINE_ VOID	BG3_stCopy(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CVECTOR2& cv2iposition)noexcept{
+		static _INLINE_ VOID	BG3_stWrite(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CVECTOR2& cv2iposition)noexcept{
 			using					SCLASS=CANVASBG_SIZED_<SCLASS_cv2nSize>;
 
-			BG3_stCopyRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition);
+			BG3_stWriteRect(ccvssource,{VECTOR2::stv2ImmediateZero(),SCLASS::stcv2nSize},cv2iposition);
 			return;
 		}
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static _INLINE_ VOID	BG3_stCopyRect(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
-			BG_stCopyRect(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,ccvssource,cshpsource,cv2iposition,BG3_stv2nGetSize8());
+		static _INLINE_ VOID	BG3_stWriteRect(const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition)noexcept{
+			BG_stWriteRect(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,ccvssource,cshpsource,cv2iposition,BG3_stv2nGetSize8());
+			return;
+		}
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static _INLINE_ VOID	BG3_stRead(CANVASBG_RAM<DCLASS_cv2nSize>& cvsdestination,CVECTOR2& cv2iposition)noexcept{
+			using					DCLASS=CANVASBG_RAM<DCLASS_cv2nSize>;
+
+			BG3_stReadRect(cvsdestination,{VECTOR2::stv2ImmediateZero(),DCLASS::stcv2nSize},cv2iposition);
+			return;
+		}
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static _INLINE_ VOID	BG3_stReadRect(CANVASBG_RAM<DCLASS_cv2nSize>& cvsdestination,CANVASBG_::CSHAPE& cshpdestination,CVECTOR2& cv2iposition)noexcept{
+			BG_stReadRect(MAP::VRAM::ATTRIBUTE_BG3_stcui32dOffset,cvsdestination,cshpdestination,cv2iposition,BG3_stv2nGetSize8());
 			return;
 		}
 		static _INLINE_ UINT16	BG3_stui16cReadAttribute(CVECTOR2& cv2iposition)noexcept{
@@ -1014,7 +1166,7 @@ namespace m68k::i71::sub{
 			return;
 		}
 		template<CVECTOR2 SCLASS_cv2nSize>
-		static VOID				BG_stCopyRect(CUINT32 cui32doffset,const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition,CVECTOR2& cv2ntrim)noexcept{
+		static VOID				BG_stWriteRect(CUINT32 cui32doffset,const CANVASBG_SIZED_<SCLASS_cv2nSize>& ccvssource,CANVASBG_::CSHAPE& cshpsource,CVECTOR2& cv2iposition,CVECTOR2& cv2ntrim)noexcept{
 			using					SCLASS=CANVASBG_SIZED_<SCLASS_cv2nSize>;
 			AUTO					shpsource=cshpsource;
 			AUTO					v2iposition=cv2iposition;
@@ -1032,7 +1184,7 @@ namespace m68k::i71::sub{
 					(stcv2nBG.i16nWidth()<=v2iposition.i16iX())||
 					(ci16ndestinationy_over<=0)
 				){
-					SUPER::BG_stCopyRect_R_Body(
+					SUPER::BG_stWriteRect_R_Body(
 						cui32doffset_r,
 						cpcui16csource0,
 						SCLASS::stcui16nPitch,
@@ -1041,7 +1193,7 @@ namespace m68k::i71::sub{
 				}else{
 					CAUTO					ci16nsource0width=INT16(shpsource.v2nSize.i16nWidth()-ci16ndestinationy_over);
 
-					SUPER::BG_stCopyRect_R_Body(
+					SUPER::BG_stWriteRect_R_Body(
 						cui32doffset_r,
 						cpcui16csource0,
 						SCLASS::stcui16nPitch,
@@ -1050,11 +1202,11 @@ namespace m68k::i71::sub{
 							shpsource.v2nSize.i16nHeight()
 						}
 					);
-					SUPER::BG_stCopyRect_R_Body(
+					SUPER::BG_stWriteRect_R_Body(
 						cui32doffset+UINT32(CANVASBG_DEVICE::stui16iGetPosition(
 							{
 								cv2iposition_r.i16iX(),
-								INT16(ci16idestinationy_end-1)
+								INT16(ci16idestinationy_end-1+cv2ntrim.i16nHeight()-32)
 							}
 						)),
 						cpcui16csource0+ci16nsource0width,
@@ -1062,6 +1214,61 @@ namespace m68k::i71::sub{
 						{
 							ci16ndestinationy_over,
 							shpsource.v2nSize.i16nHeight()
+						}
+					);
+				}
+			}
+			return;
+		}
+		template<CVECTOR2 DCLASS_cv2nSize>
+		static VOID				BG_stReadRect(CUINT32 cui32doffset,CANVASBG_RAM<DCLASS_cv2nSize>& cvsdestination,CANVASBG_::CSHAPE& cshpdestination,CVECTOR2& cv2iposition,CVECTOR2& cv2ntrim)noexcept{
+			using					DCLASS=CANVASBG_RAM<DCLASS_cv2nSize>;
+			AUTO					shpdestination=cshpdestination;
+			AUTO					v2iposition=cv2iposition;
+
+			DCLASS::stTrimSending(shpdestination,v2iposition);
+			stTrimReceiving(shpdestination,v2iposition,cv2ntrim);
+			{
+				CAUTO					cv2iposition_r=BG_stv2iMakePosition(v2iposition,cv2ntrim);
+				CAUTO					cui32doffset_r=UINT32(cui32doffset+UINT32(CANVASBG_DEVICE::stui16iGetPosition(cv2iposition_r)));
+				CAUTO					cpui16cdestination0=PUINT16(PUINT8(cvsdestination.pui16cGetThis())+DCLASS::stui16iGetPosition(shpdestination.v2iPosition));
+				CAUTO					ci16isourcey_end=INT16(v2iposition.i16iX()+shpdestination.v2nSize.i16nWidth());
+				CAUTO					ci16nsourcey_over=INT16(ci16isourcey_end-stcv2nBG.i16nWidth());
+
+				if(
+					(stcv2nBG.i16nWidth()<=v2iposition.i16iX())||
+					(ci16nsourcey_over<=0)
+				){
+					SUPER::BG_stReadRect_R_Body(
+						cui32doffset_r,
+						cpui16cdestination0,
+						DCLASS::stcui16nPitch,
+						shpdestination.v2nSize
+					);
+				}else{
+					CAUTO					ci16ndestination0width=INT16(shpdestination.v2nSize.i16nWidth()-ci16nsourcey_over);
+
+					SUPER::BG_stReadRect_R_Body(
+						cui32doffset_r,
+						cpui16cdestination0,
+						DCLASS::stcui16nPitch,
+						{
+							ci16ndestination0width,
+							shpdestination.v2nSize.i16nHeight()
+						}
+					);
+					SUPER::BG_stReadRect_R_Body(
+						cui32doffset+UINT32(CANVASBG_DEVICE::stui16iGetPosition(
+							{
+								cv2iposition_r.i16iX(),
+								INT16(ci16isourcey_end-1+cv2ntrim.i16nHeight()-32)
+							}
+						)),
+						cpui16cdestination0+ci16ndestination0width,
+						DCLASS::stcui16nPitch,
+						{
+							ci16nsourcey_over,
+							shpdestination.v2nSize.i16nHeight()
 						}
 					);
 				}

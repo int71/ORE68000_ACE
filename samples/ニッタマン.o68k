@@ -1,0 +1,2352 @@
+/****************************************************************************
+**  マイコン ORE68000 ACE Magazine                                          **
+**                                                                          **
+**                                ニッタマン                                **
+**                                                                          **
+**  'ニッタマン.o68k'                                2026 written by int71  **
+ ****************************************************************************/
+
+//
+//		include
+//
+
+#include				<sub/familybasic.hpp>
+
+//
+//		macro
+//
+
+#define __O68K_ROTATE
+//#define GAME_INVINCIBLE
+
+//
+//		using
+//
+
+using namespace m68k::i71::sub;
+using					FB=FAMILYBASIC_R<FAMILYBASIC::IDRESOLUTION::n320x240,{288,224}>;
+
+//
+//		class
+//
+
+class GAME;
+using					CGAME=const GAME;
+using					PGAME=GAME*;
+using					PCGAME=CGAME*;
+
+//
+//		class:GAME
+//
+
+//	GAME
+//		動作に必要なデータ、共通処理等を置きます。
+//		グローバル変数、関数でも構わないのですが、クラスにしとくと、
+//		後で「2人交互プレー対応」が必要になったりしても慌てずに済みます。
+class GAME{
+public:
+
+	//
+	//		const
+	//
+
+	//	IDSTATE
+	enum class IDSTATE:UINT8{
+		Title,
+		Start,
+		Normal,
+		Clear,
+		Miss,
+		Next,
+		GameOver
+	};
+	//	IDPAUSEREASON
+	enum class IDPAUSEREASON:UINT8{
+		Ready,
+		Eaten,
+		Clear,
+		Miss,
+		GameOver
+	};
+	//	UINT8					FIXEDU_stcui8nBit
+	//		固定小数点値の整数部ビット数を示します。
+	//		「INT16」で「+320」を表現するなら、「10」が最小値になります。
+	static constexpr UINT8	FIXEDU_stcui8nBit=		10;
+	static constexpr INT16	FIXEDU_stci16nSize=		1<<FIXEDU_stcui8nBit;
+	static constexpr INT16	FIXEDU_stci16cMask=		FIXEDU_stci16nSize-1;
+	//	UINT8					FIXEDL_stcui8nBit
+	//		固定小数点値の小数部ビット数を示します。
+	static constexpr UINT8	FIXEDL_stcui8nBit=		16-FIXEDU_stcui8nBit;
+	static constexpr INT16	FIXEDL_stci16nSize=		1<<FIXEDL_stcui8nBit;
+	static constexpr INT16	FIXEDL_stci16cMask=		FIXEDL_stci16nSize-1;
+	static constexpr INT16	FIXED_stci16cMask_Lower=	FIXEDL_stci16nSize-1;
+	static constexpr INT16	FIXED_stci16cMask_Upper=	~FIXED_stci16cMask_Lower;
+	static constexpr INT16	FIXED_stci16iXMinimum=	(  0-8)<<FIXEDL_stcui8nBit;
+	static constexpr INT16	FIXED_stci16iXMaximum=	(224+8)<<FIXEDL_stcui8nBit;
+	static constexpr INT16	FIXED_stci16iXCenter=	(112-4)<<FIXEDL_stcui8nBit;
+	static constexpr UINT8	PALETTE_SPRITE_stcui8iPlayer=	0;
+	static constexpr UINT8	PALETTE_SPRITE_stcui8iEnemy_Normal_Oikake=	1;
+	static constexpr UINT8	PALETTE_SPRITE_stcui8iEnemy_Normal_Machibuse=	2;
+	static constexpr UINT8	PALETTE_SPRITE_stcui8iEnemy_Normal_Kimagure=	3;
+	static constexpr UINT8	PALETTE_SPRITE_stcui8iEnemy_Normal_Otoboke=	4;
+	static constexpr UINT8	ENEMY_stcui8nNumber=	4;
+	static constexpr UINT8	PALETTE_SPRITE_stacui8iEnemy_Normal[ENEMY_stcui8nNumber]={
+		PALETTE_SPRITE_stcui8iEnemy_Normal_Oikake,
+		PALETTE_SPRITE_stcui8iEnemy_Normal_Machibuse,
+		PALETTE_SPRITE_stcui8iEnemy_Normal_Kimagure,
+		PALETTE_SPRITE_stcui8iEnemy_Normal_Otoboke
+	};
+	static constexpr UINT8	PALETTE_SPRITE_stcui8iEnemy_Ijike=	5;
+	static constexpr UINT8	PALETTE_SPRITE_stcui8iEnemy_Eaten=	6;
+	static constexpr UINT8	PALETTE_BG_stcui8iDefault=	0;
+	static constexpr UINT8	PALETTE_BG_stcui8iDotNormal=	1;
+	static constexpr UINT8	PALETTE_BG_stcui8iDotPower=	2;
+	static constexpr UINT8	PALETTE_BG_stcui8iTemporary=	3;
+	static constexpr UINT8	SPRITE_stcui8iMaximum=	0x10;
+	static constexpr UINT8	BG_stcui8nBit=			FIXEDL_stcui8nBit+3;
+	static constexpr INT16	BG_stci16nSize=			1<<BG_stcui8nBit;
+	static constexpr INT16	BG_stci16cMask=			BG_stci16nSize-1;
+	static constexpr UINT8	BG_stcui8cSpace=		0x20;
+	static constexpr UINT8	BG_stcui8cDotNormal=	0x1c;
+	static constexpr UINT8	BG_stcui8cDotPower=		0xcf;
+	static constexpr AUTO	BGSHADOW_stcv2dOffset=	VECTOR2(32,0);
+	static constexpr UINT8	BGSHADOW_stcui8cNone=	0x00;
+	static constexpr UINT8	BGSHADOW_stcui8cWarp=	0x01;
+	static constexpr UINT8	BGSHADOW_stcui8cOneWayFrom=	0x02;
+	static constexpr UINT8	BGSHADOW_stcui8cOneWayTo=	0x03;
+	//	CANVASBG_ROM			stccvsTitle
+	static constexpr AUTO	stccvsTitle=			__O68K_CANVASBG_ROM("(Resource)/ニッタマン - タイトル.tmx");
+	//	CANVASBG_ROM			stccvsMaze
+	//		地形データ兼BGアトリビュート初期値です。
+	static constexpr AUTO	stccvsMaze=				__O68K_CANVASBG_ROM("(Resource)/ニッタマン - 迷路.tmx");
+	static constexpr AUTO&	MAZE_stcv2nSize=		stccvsMaze.stcv2nSize;
+	static constexpr AUTO	MAZE_stcshpBody=		CANVASBG_::SHAPE({{1,4},{26,29}});
+	static constexpr AUTO	MAZE_stcshpAjito=		CANVASBG_::SHAPE({{11,16},{6,3}});
+	static constexpr UINT8	PLAYER_stcui8nRest=		3;
+	static constexpr UINT16	ENEMY_IJIKE_stcui16nWarning=	120;
+	static constexpr UINT8	BGM_stacui8cStart[]=__O68K_SEQUENCE(R"([
+		"#CHANNEL=PCM0/PCM1",
+		#==========================	   0
+		"#SPEED=4",
+		" 5C ,PG=4,PN=0,PM=0,VL=255,VM=255/ 3C ,PG=1,PN=0,PM=0,VL=255,VM=255",
+		"-           /-           ",
+		" >C         /            ",
+		"-           /            ",
+		" <G         /            ",
+		"-           /            ",
+		"  C         / >C         ",
+		"-           /-           ",
+		#==========================	   1
+		" >C         / <C         ",
+		"-           /-           ",
+		" <G         /            ",
+		"-           /            ",
+		"  C         /            ",
+		"#SPEED=12",
+		"-           /            ",
+		#==========================	   2
+		"#SPEED=4",
+		"  C#        /  C#        ",
+		"-           /-           ",
+		" >C#        /            ",
+		"-           /            ",
+		" <G#        /            ",
+		"-           /            ",
+		"  C#        / >C#        ",
+		"-           /-           ",
+		#==========================	   3
+		" >C#        / <C#        ",
+		"-           /-           ",
+		" <G#        /            ",
+		"-           /            ",
+		"  C#        /            ",
+		"#SPEED=12",
+		"-           /            ",
+		#==========================	   4
+		"#SPEED=4",
+		"  C         /  C         ",
+		"-           /-           ",
+		" >C         /            ",
+		"-           /            ",
+		" <G         /            ",
+		"-           /            ",
+		"  C         / >C         ",
+		"-           /-           ",
+		#==========================	   5
+		" >C         / <C         ",
+		"-           /-           ",
+		" <G         /            ",
+		"-           /            ",
+		"  C         /            ",
+		"-           /            ",
+		" >C         /            ",
+		"-           /            ",
+		#==========================	   6
+		" <F         /  G         ",
+		"  F#        /-           ",
+		"  G         /            ",
+		"-           /            ",
+		"  G         /  A         ",
+		"  G#        /-           ",
+		"  A         /            ",
+		"-           /            ",
+		#==========================	   7
+		"  A         /  B         ",
+		"  A#        /-           ",
+		"  B         /            ",
+		"-           /            ",
+		" >C         / >C         ",
+		"#SPEED=1",
+		"-           /-           "
+	];)");
+	static constexpr UINT8	BGM_stacui8cNormal0[]=__O68K_SEQUENCE(R"([
+		"#CHANNEL=PCM0/PCM1",
+		#==========================	   0
+		"#LABEL=LoopStart",
+		"#SPEED=12",
+		" 5A ,PT=-12,PG=4,PN=0,PM=0,VL=255,VM=255/ 0C ,PG=127,PM=0,PN=0,VL=127,VM=0",
+		"+<A ,PT=+12 /            ",
+		"#JUMP=LoopStart"
+	];)");
+	static constexpr UINT8	BGM_stacui8cNormal1[]=__O68K_SEQUENCE(R"([
+		"#CHANNEL=PCM0/PCM1",
+		#==========================	   0
+		"#LABEL=LoopStart",
+		"#SPEED=12",
+		" 6C ,PT=-12,PG=4,PN=0,PM=0,VL=255,VM=255/ 0C ,PG=127,PM=0,PN=0,VL=127,VM=0",
+		"+<C ,PT=+12 /            ",
+		"#JUMP=LoopStart"
+	];)");
+	static constexpr UINT8	BGM_stacui8cNormal2[]=__O68K_SEQUENCE(R"([
+		"#CHANNEL=PCM0/PCM1",
+		#==========================	   0
+		"#LABEL=LoopStart",
+		"#SPEED=10",
+		" 6D#,PT=-12,PG=4,PN=0,PM=0,VL=255,VM=255/ 0C ,PG=127,PM=0,PN=0,VL=127,VM=0",
+		"+<D#,PT=+12 /            ",
+		"#JUMP=LoopStart"
+	];)");
+	static constexpr UINT8	BGM_stacui8cNormal3[]=__O68K_SEQUENCE(R"([
+		"#CHANNEL=PCM0/PCM1",
+		#==========================	   0
+		"#LABEL=LoopStart",
+		"#SPEED=10",
+		" 6F#,PT=-12,PG=4,PN=0,PM=0,VL=255,VM=255/ 0C ,PG=127,PM=0,PN=0,VL=127,VM=0",
+		"+<F#,PT=+12 /            ",
+		"#JUMP=LoopStart"
+	];)");
+	static constexpr UINT8	BGM_stacui8cNormal4[]=__O68K_SEQUENCE(R"([
+		"#CHANNEL=PCM0/PCM1",
+		#==========================	   0
+		"#LABEL=LoopStart",
+		"#SPEED=8",
+		" 6A ,PT=-12,PG=4,PN=0,PM=0,VL=255,VM=255/ 0C ,PG=127,PM=0,PN=0,VL=127,VM=0",
+		"+<A ,PT=+12 /            ",
+		"#JUMP=LoopStart"
+	];)");
+	static constexpr PCUINT8	BGM_stapcui8cNormal[]={
+		BGM_stacui8cNormal0,
+		BGM_stacui8cNormal1,
+		BGM_stacui8cNormal2,
+		BGM_stacui8cNormal3,
+		BGM_stacui8cNormal4
+	};
+	static constexpr UINT8	BGM_stcui8nNormal=UINT8(SIZEOF(BGM_stapcui8cNormal)/SIZEOF(PCUINT8));
+	static constexpr UINT8	BGM_stacui8cPower0[]=__O68K_SEQUENCE(R"([
+		"#CHANNEL=PCM0/PCM1",
+		#==========================	   0
+		"#LABEL=LoopStart",
+		"#SPEED=2",
+		" 5C#,PG=0,PN=0,PM=0,VL=255,VM=255/ 0C ,PG=4,PM=0,PN=0,VL=127,VM=0",
+		" <C#        /            ",
+		" <C#        /            ",
+		" >C#        /            ",
+		"#JUMP=LoopStart"
+	];)");
+	static constexpr UINT8	BGM_stacui8cPower1[]=__O68K_SEQUENCE(R"([
+		"#CHANNEL=PCM0/PCM1",
+		#==========================	   0
+		"#LABEL=LoopStart",
+		"#SPEED=2",
+		" 5C#,PG=0,PN=0,PM=0,VL=255,VM=255/ 5A#,PT=-1,PG=4,PN=0,PM=0,VL=255,VM=255",
+		" <C#        /            ",
+		" <C#        /            ",
+		" >C#        /            ",
+		" >C#        /            ",
+		" <C#        /            ",
+		" <C#        /            ",
+		" >C#        /            ",
+		" >C#        /            ",
+		" <C#        /            ",
+		" <C#        /            ",
+		" >C#        /            ",
+		"#JUMP=LoopStart"
+	];)");
+	static constexpr UINT8	BGM_stacui8cMiss[]=__O68K_SEQUENCE(R"([
+		"#CHANNEL=PCM0/PCM1",
+		#==========================	   0
+		"#SPEED=4",
+		" 5F ,PT=-4,PG=9,PN=0,PM=0,VL=255,VM=255/ 0C ,PG=127,PM=0,PN=0,VL=127,VM=0",
+		"#SPEED=8",
+		"+ D ,PT=+7  /            ",
+		"+ A ,PT=-8  /            ",
+		"#SPEED=1",
+		"+ D ,PT=-1  /            ",
+		"#SPEED=7",
+		"+ D ,PT=+2  /            ",
+		"#SPEED=8",
+		"+ F ,PT=-8  /            ",
+		#==========================	   1
+		"+<A ,PT=+5  /            ",
+		"+>D ,PT=-10 /            ",
+		"+<F ,PT=+4  /            ",
+		"+ A ,PT=-8  /            ",
+		#==========================	   2
+		"#SPEED=1",
+		"+ D ,PT=-1  /            ",
+		"#SPEED=7",
+		"+ D ,PT=+2  /            ",
+		"#SPEED=8",
+		"+ F ,PT=-9  /            ",
+		" 2A ,PT=+24,PG=8/            ",
+		"  A ,PT=+24 /            ",
+		#==========================	   3
+		"#SPEED=1",
+		"-4A         /            "
+	];)");
+	static constexpr _ORDERED_("SE0-02") UINT8	SE_stacui8cDot[]=__O68K_SEQUENCE(R"([
+		"#CHANNEL=PCM3",
+		#=============	   0
+		"#SPEED=8",
+		" 5E ,PT=-36,PG=8,PN=0,PM=0,VL=255,VM=249",
+		" 3C ,PT=+36 ",
+		"#SPEED=1",
+		"-           "
+	];)");
+	static constexpr _ORDERED_("SE0-01") UINT8	SE_stacui8cEaten[]=__O68K_SEQUENCE(R"([
+		"#CHANNEL=PCM3",
+		#=============	   0
+		"#SPEED=2",
+		" 4C ,PG=12,PN=0,PM=0,VL=255,VM=255",
+		" <C         ",
+		"  D#        ",
+		"  F#        ",
+		"  A         ",
+		" >C         ",
+		"  D#        ",
+		"  F#        ",
+		"  A         ",
+		" >C         ",
+		"  D#        ",
+		"  F#        ",
+		"  A         ",
+		" >C         ",
+		"  D#        ",
+		"  F#        ",
+		#=============	   1
+		"#SPEED=1",
+		"-           "
+	];)");
+	static constexpr _ORDERED_("SE0-00") UINT8	SE_stacui8cBonus[]=__O68K_SEQUENCE(R"([
+		"#CHANNEL=PCM3",
+		#=============	   0
+		"#SPEED=8",
+		" 5C ,PT=-18,PG=12,PN=0,PM=0,VL=255,VM=255",
+		"            ",
+		" 2G ,PT=+18 ",
+		"            ",
+		#=============	   1
+		"#SPEED=1",
+		"-           "
+	];)");
+
+	//
+	//		class
+	//
+
+	//	CANVAS
+	using					CANVAS=CANVASBG_ROM<MAZE_stcv2nSize>;
+	using					CCANVAS=const CANVAS;
+	using					PCANVAS=CANVAS*;
+	using					PCCANVAS=CCANVAS*;
+	//	CHARACTER_
+	class CHARACTER_;
+	using					CCHARACTER_=const CHARACTER_;
+	using					PCHARACTER_=CHARACTER_*;
+	using					PCCHARACTER_=CCHARACTER_*;
+	//	PLAYER
+	class PLAYER;
+	using					CPLAYER=const PLAYER;
+	using					PPLAYER=PLAYER*;
+	using					PCPLAYER=CPLAYER*;
+	//	ENEMY
+	class ENEMY;
+	using					CENEMY=const ENEMY;
+	using					PENEMY=ENEMY*;
+	using					PCENEMY=CENEMY*;
+
+	//
+	//		const
+	//
+
+	static constexpr AUTO	MAZE_stcui16nDot=		[](VOID)constexpr noexcept{
+		UINT16					ui16ndot=0;
+		AUTO					pcui16cthis=stccvsMaze.pcui16cGetThis();
+
+		for(
+			CAUTO					cpcui16cthis_end=pcui16cthis+CANVAS::stcv2nSize.i16nWidth()*CANVAS::stcv2nSize.i16nHeight();
+			pcui16cthis<cpcui16cthis_end;
+			++pcui16cthis
+		){
+			if(
+				CAUTO					cui8cthis=UINT8((*pcui16cthis)&0xff);
+				(cui8cthis==BG_stcui8cDotNormal)||
+				(cui8cthis==BG_stcui8cDotPower)
+			)++ui16ndot;
+		}
+		return ui16ndot;
+	}();
+	static constexpr UINT16	MAZE_stacui16nDotNormal[BGM_stcui8nNormal-1]={
+		UINT16(MAZE_stcui16nDot*6/8),
+		UINT16(MAZE_stcui16nDot*4/8),
+		UINT16(MAZE_stcui16nDot*2/8),
+		UINT16(MAZE_stcui16nDot*1/8)
+	};
+
+	//
+	//		class:CHARACTER_
+	//
+
+	class CHARACTER_{
+	public:
+
+		//
+		//		const
+		//
+
+		class _IDDIRECTION{
+		public:
+			enum BODY:UINT8{
+				Up=						0x00,
+				Right=					0x01,
+				Down=					0x02,
+				Left=					0x03,
+				Stop=					0xff
+			};
+		};
+		using					IDDIRECTION=_IDDIRECTION::BODY;
+		static constexpr INT16	FIXED_stci16nHitHalf=12<<FIXEDL_stcui8nBit;
+
+		//
+		//		body:CHARACTER_
+		//
+
+	protected:
+		VECTOR2					FIXED_v2iPosition;
+		INT16					FIXED_i16nSpeed;
+		IDDIRECTION				idDirection;
+		UINT8					ui8iAnimation;
+	public:
+		VOID					New(VOID)noexcept{
+			return;
+		}
+		VOID					Delete(VOID)noexcept{
+			return;
+		}
+		VOID					Start(CVECTOR2& fixed_cv2iposition,CINT16 fixed_ci16nspeed,const IDDIRECTION ciddirection=IDDIRECTION::Stop)noexcept{
+			FIXED_v2iPosition=fixed_cv2iposition;
+			FIXED_i16nSpeed=fixed_ci16nspeed;
+			idDirection=ciddirection;
+			return;
+		}
+		VOID					End(VOID)noexcept{
+			return;
+		}
+		_INLINE_ VOID			IncrementAnimation(VOID)noexcept{
+			++ui8iAnimation;
+			return;
+		}
+		_INLINE_ CVECTOR2&		FIXED_v2iGetPosition(VOID)const noexcept{
+			return FIXED_v2iPosition;
+		}
+	protected:
+		static constexpr IDDIRECTION	stidGetDirection_HandRight(const IDDIRECTION ciddirection)noexcept{
+			return IDDIRECTION((UINT8(ciddirection)+1)&3);
+		}
+		static constexpr IDDIRECTION	stidGetDirection_HandLeft(const IDDIRECTION ciddirection)noexcept{
+			return IDDIRECTION((UINT8(ciddirection)+3)&3);
+		}
+		static constexpr IDDIRECTION	stidGetDirection_Backward(const IDDIRECTION ciddirection)noexcept{
+			return IDDIRECTION((UINT8(ciddirection)+2)&3);
+		}
+		static constexpr VOID	stGetDirection_Aim(CVECTOR2& cv2ithis,CVECTOR2& cv2itarget,IDDIRECTION& iddirectiontarget0,IDDIRECTION& iddirectiontarget1)noexcept{
+			CAUTO					cv2ddirection=cv2itarget-cv2ithis;
+			CAUTO					cv2ndirection=cv2ddirection.v2GetAbs();
+
+			if(cv2ndirection.i16nWidth()<cv2ndirection.i16nHeight()){
+				iddirectiontarget0=(0<cv2ddirection.i16iY())?IDDIRECTION::Down:IDDIRECTION::Up;
+				if(cv2ndirection.i16nWidth()){
+					iddirectiontarget1=(0<cv2ddirection.i16iX())?IDDIRECTION::Right:IDDIRECTION::Left;
+				}else iddirectiontarget1=IDDIRECTION::Stop;
+			}else{
+				iddirectiontarget0=(0<cv2ddirection.i16iX())?IDDIRECTION::Right:IDDIRECTION::Left;
+				if(cv2ndirection.i16nHeight()){
+					iddirectiontarget1=(0<cv2ddirection.i16iY())?IDDIRECTION::Down:IDDIRECTION::Up;
+				}else iddirectiontarget1=IDDIRECTION::Stop;
+			}
+			return;
+		}
+		static constexpr VECTOR2	stv2dGetDirection(const IDDIRECTION ciddirection)noexcept{
+			switch(ciddirection){
+			case IDDIRECTION::Up:
+				return VECTOR2(0,-1);
+			case IDDIRECTION::Right:
+				return VECTOR2(1,0);
+			case IDDIRECTION::Down:
+				return VECTOR2(0,1);
+			case IDDIRECTION::Left:
+				return VECTOR2(-1,0);
+			case IDDIRECTION::Stop:
+				break;
+			}
+			return VECTOR2::stv2ImmediateZero();
+		}
+		static _INLINE_ VOID	BG_stClear(CVECTOR2& bg_cv2iposition)noexcept{
+			FB::BG1_stWriteAttribute(bg_cv2iposition,UINT16(BG_stcui8cSpace));
+			return;
+		}
+		static _INLINE_ UINT16	BG_stui16cGet(CVECTOR2& bg_cv2iposition)noexcept{
+			return FB::BG1_stui16cReadAttribute({
+				INT16(bg_cv2iposition.i16iX()&31),
+				bg_cv2iposition.i16iY()
+			});
+		}
+		static _INLINE_ UINT8	BG_stui8cGet(CVECTOR2& bg_cv2iposition)noexcept{
+			return UINT8(BG_stui16cGet(bg_cv2iposition)&0xff);
+		}
+		static constexpr OFWBOOL	BG_steIsMovable(CUINT8 bg_cui8csource)noexcept{
+			return (
+				(bg_cui8csource==BG_stcui8cSpace)||
+				(bg_cui8csource==BG_stcui8cDotNormal)||
+				(bg_cui8csource==BG_stcui8cDotPower)
+			);
+		}
+		static _INLINE_ OFWBOOL	BG_steIsMovable(CVECTOR2& bg_cv2iposition)noexcept{
+			return BG_steIsMovable(BG_stui8cGet(bg_cv2iposition));
+		}
+		static OFWBOOL			BG_steIsMovable_Up(CVECTOR2& bg_cv2iposition)noexcept{
+			return BG_steIsMovable(bg_cv2iposition+stv2dGetDirection(IDDIRECTION::Up));
+		}
+		static OFWBOOL			BG_steIsMovable_Right(CVECTOR2& bg_cv2iposition)noexcept{
+			return BG_steIsMovable(bg_cv2iposition+stv2dGetDirection(IDDIRECTION::Right));
+		}
+		static OFWBOOL			BG_steIsMovable_Down(CVECTOR2& bg_cv2iposition)noexcept{
+			return BG_steIsMovable(bg_cv2iposition+stv2dGetDirection(IDDIRECTION::Down));
+		}
+		static OFWBOOL			BG_steIsMovable_Left(CVECTOR2& bg_cv2iposition)noexcept{
+			return BG_steIsMovable(bg_cv2iposition+stv2dGetDirection(IDDIRECTION::Left));
+		}
+		static VECTOR2			BG_stv2iPredict(CVECTOR2& bg_cv2iposition,const IDDIRECTION ciddirection,CUINT8 cui8nspan)noexcept{
+			AUTO					bg_v2iposition=bg_cv2iposition;
+			AUTO					iddirection=ciddirection;
+			AUTO					ui16crandom=FB::stui16GetRandom();
+
+			for(AUTO ui8nspan=cui8nspan;ui8nspan;--ui8nspan){
+				VECTOR2					bg_v2iposition_next;
+
+				bg_v2iposition_next=bg_v2iposition+stv2dGetDirection(iddirection);
+				if(BG_steIsMovable(bg_v2iposition_next)){
+					bg_v2iposition=bg_v2iposition_next;
+				}else{
+					CAUTO					ciddirection_nextr=stidGetDirection_HandRight(iddirection);
+					CAUTO					ciddirection_nextl=stidGetDirection_HandLeft(iddirection);
+					CAUTO					ceright=OFWBOOL(ui16crandom&1);
+					CAUTO					ciddirection_next0=ceright?ciddirection_nextr:ciddirection_nextl;
+					CAUTO					ciddirection_next1=ceright?ciddirection_nextl:ciddirection_nextr;
+
+					ui16crandom>>=1;
+					if(
+						bg_v2iposition_next=bg_v2iposition+stv2dGetDirection(ciddirection_next0);
+						BG_steIsMovable(bg_v2iposition_next)
+					){
+						bg_v2iposition=bg_v2iposition_next;
+						iddirection=ciddirection_next0;
+					}else if(
+						bg_v2iposition_next=bg_v2iposition+stv2dGetDirection(ciddirection_next1);
+						BG_steIsMovable(bg_v2iposition_next)
+					){
+						bg_v2iposition=bg_v2iposition_next;
+						iddirection=ciddirection_next1;
+					}else{
+						iddirection=stidGetDirection_Backward(iddirection);
+						bg_v2iposition=bg_v2iposition+stv2dGetDirection(iddirection);
+					}
+				}
+			}
+			return bg_v2iposition;
+		}
+		static _INLINE_ UINT16	BGSHADOW_stui16cGet(CVECTOR2& bg_cv2iposition)noexcept{
+			return FB::BG1_stui16cReadAttribute(
+				VECTOR2(
+					INT16(bg_cv2iposition.i16iX()&31),
+					bg_cv2iposition.i16iY()
+				)+BGSHADOW_stcv2dOffset
+			);
+		}
+		static _INLINE_ UINT8	BGSHADOW_stui8cGet(CVECTOR2& bg_cv2iposition)noexcept{
+			return UINT8(BGSHADOW_stui16cGet(bg_cv2iposition)&0xff);
+		}
+		_INLINE_ OFWBOOL		eIsBoundary8(VOID)const noexcept{
+			return (
+				((FIXED_v2iPosition.i16iX()&BG_stci16cMask)==0)&&
+				((FIXED_v2iPosition.i16iY()&BG_stci16cMask)==0)
+			);
+		}
+		//	VOID					eMove_Boundary8(INT16& fixed_i16doffset)
+		//		固定小数点座標「FIXED_v2iPosition」に固定小数点値(正負いづれも可)「fixed_i16doffset」を加算し、
+		//		8ドット境界に到達したなら「TRUE」を返します。
+		//		「fixed_i16doffset」は「足し残し分」として更新され、
+		//		「0」より大きいなら再度「eMove_Boundary8」を実行する必要があります。
+		//		もし移動結果が8ドット境界ジャストであれば、
+		//		「fixed_i16doffset」が「0」かつ「TRUE」が返されます。
+		OFWBOOL					eMove_Boundary8(INT16& fixed_i16doffset)noexcept{
+			switch(idDirection){
+			case IDDIRECTION::Up:
+				{
+					AUTO					fixed_i16doffset_negative=INT16(-fixed_i16doffset);
+					CAUTO					ceboundary=eMove_Boundary8_One(FIXED_v2iPosition.i16iY(),fixed_i16doffset_negative);
+
+					fixed_i16doffset=-fixed_i16doffset_negative;
+					return ceboundary;
+				}
+			case IDDIRECTION::Right:
+				{
+					CAUTO					ceboundary=eMove_Boundary8_One(FIXED_v2iPosition.i16iX(),fixed_i16doffset);
+
+					if(ceboundary){
+						if(FIXED_v2iPosition.i16iX()==FIXED_stci16iXMaximum)FIXED_v2iPosition.i16iX()=FIXED_stci16iXMinimum;
+					}
+					return ceboundary;
+				}
+			case IDDIRECTION::Down:
+				return eMove_Boundary8_One(FIXED_v2iPosition.i16iY(),fixed_i16doffset);
+			case IDDIRECTION::Left:
+				{
+					AUTO					fixed_i16doffset_negative=INT16(-fixed_i16doffset);
+					CAUTO					ceboundary=eMove_Boundary8_One(FIXED_v2iPosition.i16iX(),fixed_i16doffset_negative);
+
+					fixed_i16doffset=-fixed_i16doffset_negative;
+					if(ceboundary){
+						if(FIXED_v2iPosition.i16iX()==FIXED_stci16iXMinimum)FIXED_v2iPosition.i16iX()=FIXED_stci16iXMaximum;
+					}
+					return ceboundary;
+				}
+			case IDDIRECTION::Stop:
+				break;
+			}
+			return TRUE;
+		}
+		//	VOID					eMove_Boundary8_One(INT16& fixed_i16ivalue,INT16& fixed_i16doffset)
+		//		固定小数点値「fixed_i16ivalue」に固定小数点値(正負いづれも可)「fixed_i16doffset」を加算し、
+		//		8ドット境界に到達したなら「TRUE」を返します。
+		//		「fixed_i16doffset」は「足し残し分」として更新され、
+		//		「0」より大きいなら再度「eMove_Boundary8_One」を実行する必要があります。
+		//		もし移動結果が8ドット境界ジャストであれば、
+		//		「fixed_i16doffset」が「0」かつ「TRUE」が返されます。
+		_INLINE_ OFWBOOL		eMove_Boundary8_One(INT16& fixed_i16ivalue,INT16& fixed_i16doffset)noexcept{
+			if(0<fixed_i16doffset){
+				CAUTO					ci16nrest=INT16(((-fixed_i16ivalue-1)&BG_stci16cMask)+1);
+
+				if(fixed_i16doffset<=ci16nrest){
+					CAUTO					ceboundary=OFWBOOL(fixed_i16doffset==ci16nrest);
+
+					fixed_i16ivalue+=fixed_i16doffset;
+					fixed_i16doffset=0;
+					++ui8iAnimation;
+					return ceboundary;
+				}else{
+					fixed_i16ivalue+=ci16nrest;
+					fixed_i16doffset-=ci16nrest;
+					return TRUE;
+				}
+			}else{
+				CAUTO					ci16nrest=INT16(((fixed_i16ivalue-1)&BG_stci16cMask)+1);
+
+				if(-fixed_i16doffset<=ci16nrest){
+					CAUTO					ceboundary=OFWBOOL(-fixed_i16doffset==ci16nrest);
+
+					fixed_i16ivalue+=fixed_i16doffset;
+					fixed_i16doffset=0;
+					++ui8iAnimation;
+					return ceboundary;
+				}else{
+					fixed_i16ivalue-=ci16nrest;
+					fixed_i16doffset+=ci16nrest;
+					return TRUE;
+				}
+			}
+		}
+		constexpr VOID			Stop(VOID)noexcept{
+			idDirection=IDDIRECTION::Stop;
+			return;
+		}
+		constexpr VOID			Turn_HandRight(VOID)noexcept{
+			idDirection=stidGetDirection_HandRight(idDirection);
+			return;
+		}
+		constexpr VOID			Turn_HandLeft(VOID)noexcept{
+			idDirection=stidGetDirection_HandLeft(idDirection);
+			return;
+		}
+		constexpr VOID			Turn_Backward(VOID)noexcept{
+			idDirection=stidGetDirection_Backward(idDirection);
+			return;
+		}
+		constexpr VECTOR2		BG_v2iGetForward(CVECTOR2& bg_cv2iposition)const noexcept{
+			return bg_cv2iposition+stv2dGetDirection(idDirection);
+		}
+		constexpr VECTOR2		BG_v2iGetHandRight(CVECTOR2& bg_cv2iposition)const noexcept{
+			return bg_cv2iposition+stv2dGetDirection(stidGetDirection_HandRight(idDirection));
+		}
+		constexpr VECTOR2		BG_v2iGetHandLeft(CVECTOR2& bg_cv2iposition)const noexcept{
+			return bg_cv2iposition+stv2dGetDirection(stidGetDirection_HandLeft(idDirection));
+		}
+		constexpr VECTOR2		BG_v2iGetBackward(CVECTOR2& bg_cv2iposition)const noexcept{
+			return bg_cv2iposition+stv2dGetDirection(stidGetDirection_Backward(idDirection));
+		}
+		_INLINE_ UINT8			BG_ui8cGet_Forward(CVECTOR2& bg_cv2iposition)const noexcept{
+			return BG_stui8cGet(BG_v2iGetForward(bg_cv2iposition));
+		}
+		_INLINE_ UINT8			BG_ui8cGet_HandRight(CVECTOR2& bg_cv2iposition)const noexcept{
+			return BG_stui8cGet(BG_v2iGetHandRight(bg_cv2iposition));
+		}
+		_INLINE_ UINT8			BG_ui8cGet_HandLeft(CVECTOR2& bg_cv2iposition)const noexcept{
+			return BG_stui8cGet(BG_v2iGetHandLeft(bg_cv2iposition));
+		}
+		_INLINE_ UINT8			BG_ui8cGet_Backward(CVECTOR2& bg_cv2iposition)const noexcept{
+			return BG_stui8cGet(BG_v2iGetBackward(bg_cv2iposition));
+		}
+		OFWBOOL					BG_eIsMovable_Forward(CVECTOR2& bg_cv2iposition)const noexcept{
+			return BG_steIsMovable(BG_ui8cGet_Forward(bg_cv2iposition));
+		}
+		OFWBOOL					BG_eIsMovable_HandRight(CVECTOR2& bg_cv2iposition)const noexcept{
+			return BG_steIsMovable(BG_ui8cGet_HandRight(bg_cv2iposition));
+		}
+		OFWBOOL					BG_eIsMovable_HandLeft(CVECTOR2& bg_cv2iposition)const noexcept{
+			return BG_steIsMovable(BG_ui8cGet_HandLeft(bg_cv2iposition));
+		}
+		OFWBOOL					BG_eIsMovable_Backward(CVECTOR2& bg_cv2iposition)const noexcept{
+			return BG_steIsMovable(BG_ui8cGet_Backward(bg_cv2iposition));
+		}
+	};
+
+	//
+	//		class:PLAYER
+	//
+
+	class PLAYER:public CHARACTER_{
+	public:
+
+		//
+		//		const
+		//
+
+		class _IDSTICK{
+		public:
+			enum BODY:UINT8{
+				Up=						0x00,
+				RightUp=				0x01,
+				Right=					0x02,
+				RightDown=				0x03,
+				Down=					0x04,
+				LeftDown=				0x05,
+				Left=					0x06,
+				LeftUp=					0x07,
+				None=					0xff
+			};
+		};
+		using					IDSTICK=_IDSTICK::BODY;
+
+		//
+		//		class
+		//
+
+		//	SUPER
+		using					SUPER=CHARACTER_;
+
+		//
+		//		body:PLAYER
+		//
+
+	public:
+		UINT32					ui32nScore;
+		//	UINT8					BGM_ui8iNormal
+		//		ノーマルBGMと言うか巡回音の「序数」を保持します。
+		//		ドットの残り数に応じて音、テンポを高め、緊張感を醸します。
+		UINT8					BGM_ui8iNormal;
+	private:
+		UINT8					ui8iNumber;
+		UINT8					ui8nRest;
+		UINT8					ui8iStage;
+		UINT16					ui16nDotRest;
+		//	CANVASBG_RAM			MAZE_cvsThis
+		//		迷路表示状態(VRAM)の写しです。
+		//		プレイヤー切り替えでのドット状態復元に使用します。
+		//		本当はドット配置の保持だけで良いんですが、
+		//		切羽詰まってる訳ではないので大雑把にいきます。
+		CANVASBG_RAM<MAZE_stcshpBody.v2nSize>	MAZE_cvsThis;
+		VECTOR2					BG_v2iPosition;
+		//	OFWBOOL					SE_eDot
+		//		ドットをゲットした直後であるかどうかを保持します。
+		//		「食った音」の再生判定に使用します。
+		//		毎ドットだと「鳴り過ぎ」なのです。
+		OFWBOOL					SE_eDot;
+	public:
+		/*VOID*/				PLAYER(CUINT8 cui8inumber)noexcept:
+			ui32nScore(0),			//	タイトル画面初回で点数表示するため
+			ui8iNumber(cui8inumber)
+		{}
+		VOID					Initialize(VOID)noexcept{
+			ui8nRest=PLAYER_stcui8nRest;
+			ui32nScore=0;
+			ui8iStage=0;
+			Initialize_Stage();
+			return;
+		}
+		VOID					Start(const PGAME cpgameowner,CVECTOR2& fixed_cv2iposition)noexcept{
+			SUPER::Start(fixed_cv2iposition,cpgameowner->PLAYER_FIXED_ui16nGetSpeed());
+			ui8iAnimation=0;
+			FB::BG1_stWrite(stccvsMaze,{0,0});
+			FB::BG1_stWrite(MAZE_cvsThis,MAZE_stcshpBody.v2iPosition);
+			BG_v2iPosition=FIXED_v2iPosition>>BG_stcui8nBit;
+			SE_eDot=FALSE;
+			return;
+		}
+		VOID					End(VOID)noexcept{
+			FB::BG1_stRead(MAZE_cvsThis,MAZE_stcshpBody.v2iPosition);
+			SUPER::End();
+			return;
+		}
+		VOID					Initialize_Stage(VOID)noexcept{
+			MAZE_cvsThis.CopyRect(stccvsMaze,MAZE_stcshpBody,VECTOR2::stv2ImmediateZero());
+			++ui8iStage;
+			ui16nDotRest=MAZE_stcui16nDot;
+			BGM_ui8iNormal=0;
+			return;
+		}
+		_INLINE_ OFWBOOL		eDecrementRest(VOID)noexcept{
+			if(0<ui8nRest){
+				--ui8nRest;
+				return TRUE;
+			}
+			return FALSE;
+		}
+		constexpr UINT8			ui8iGetStage(VOID)const noexcept{
+			return ui8iStage;
+		}
+		constexpr UINT16		ui16nGetDotRest(VOID)const noexcept{
+			return ui16nDotRest;
+		}
+		VOID					Move(const PGAME cpgameowner,CUINT8 controller_cui8csource)noexcept{
+			//	IDSTICK					cidstick
+			//		ジョイスティック上下左右入力4ビットを右回り8方向識別子「IDSTICK」に変換した値です。
+			CAUTO					cidstick=idGetStick(controller_cui8csource);
+			//	UINT8					cui8doffset
+			//		現状の向き4方向を8方向に変換(x2)した値基準の、
+			//		相対ジョイスティック入力方向です。
+			//		現状の向きと同じ入力方向、もしくは「無入力」であれば「0」です。
+			CAUTO					cui8doffset=(cidstick!=IDSTICK::None)?(
+				UINT8((UINT8(cidstick)-(UINT8(idDirection)<<1))&7)
+			):(
+				UINT8(0)
+			);
+
+			if(idDirection!=IDDIRECTION::Stop){
+				AUTO					fixed_i16doffset=FIXED_i16nSpeed;
+
+				//	何かしらか移動している。
+				if(eIsBoundary8()){
+					//	8ドット境界スタート時、次の方向はこのタイミングで決定。
+					//	コーナリング直後は微妙な加速により8ドットキリ番にならないので、
+					//	この分岐には至らない。
+					Move_Boundary8(cpgameowner,cui8doffset);
+					eMove_Boundary8(fixed_i16doffset);
+				}else{
+					//	8ドット境界にない状態なので、行えるのは引き返しだけ
+					if((3<=cui8doffset)&&(cui8doffset<=5)){
+						//	引き返し入力があった
+						Turn_Backward();
+						if(eMove_Boundary8(fixed_i16doffset)){
+							//	起きにくい状況ではあろうが、
+							//	引き返し直後に8ドット境界に至った。
+							if(fixed_i16doffset){
+								//	移動距離に残りがあるなら、
+								//	反転後の「直進」、つまり相対方向「0」として次の方向を決定。
+								//	恐らく「直進」のままであろうが、
+								//	何かのはずみで壁があったなら停止に変更
+								Move_Boundary8(cpgameowner,0);
+								eMove_Boundary8(fixed_i16doffset);
+							}
+						}
+					}else{
+						CAUTO					ciddirection_original=idDirection;
+
+						//	引き返し入力は無かったので直進
+						if(eMove_Boundary8(fixed_i16doffset)){
+							//	8ドット境界に至った。
+							Move_Boundary8(cpgameowner,cui8doffset);
+							if(idDirection!=ciddirection_original){
+								//	引き返しではないという事はコーナリング。
+								//	移動1回分足してやって微妙に加速。
+								fixed_i16doffset+=FIXED_i16nSpeed;
+							}
+							if(fixed_i16doffset){
+								//	移動距離に残りがあるなら、
+								//	次の方向はこのタイミングで決定。
+								eMove_Boundary8(fixed_i16doffset);
+							}
+						}
+						//	エサは「1キャラクタ先」からゲット。
+						//	足元直下だと「取り損ね」の感覚があったので。
+						switch(
+							CAUTO					bg_cv2iposition_forward=BG_v2iGetForward(BG_v2iPosition);
+							BG_stui8cGet(bg_cv2iposition_forward)
+						){
+						case BG_stcui8cDotNormal:
+							cpgameowner->AddScore(1);
+							Move_Dot(cpgameowner,bg_cv2iposition_forward);
+							break;
+						case BG_stcui8cDotPower:
+							cpgameowner->AddScore(5);
+							cpgameowner->ENEMY_Ijike_Start();
+							Move_Dot(cpgameowner,bg_cv2iposition_forward);
+							break;
+						default:
+							SE_eDot=FALSE;
+							break;
+						}
+					}
+				}
+			}else{
+				//	停止状態(ステージ開始直後を除けば、8ドット境界でもあるはず)
+				//	ここは「現状の方向基準」でなく、
+				//	「入力タテヨコどちら優先か」という絶対値判定を行う。
+				switch(cidstick){
+				case IDSTICK::Up:
+					if(BG_steIsMovable_Up(BG_v2iPosition))idDirection=IDDIRECTION::Up;
+					break;
+				case IDSTICK::RightUp:
+					if(BG_steIsMovable_Right(BG_v2iPosition))idDirection=IDDIRECTION::Right;
+					else if(BG_steIsMovable_Up(BG_v2iPosition))idDirection=IDDIRECTION::Up;
+					break;
+				case IDSTICK::Right:
+					if(BG_steIsMovable_Right(BG_v2iPosition))idDirection=IDDIRECTION::Right;
+					break;
+				case IDSTICK::RightDown:
+					if(BG_steIsMovable_Right(BG_v2iPosition))idDirection=IDDIRECTION::Right;
+					else if(BG_steIsMovable_Down(BG_v2iPosition))idDirection=IDDIRECTION::Down;
+					break;
+				case IDSTICK::Down:
+					if(BG_steIsMovable_Down(BG_v2iPosition))idDirection=IDDIRECTION::Down;
+					break;
+				case IDSTICK::LeftDown:
+					if(BG_steIsMovable_Left(BG_v2iPosition))idDirection=IDDIRECTION::Left;
+					else if(BG_steIsMovable_Down(BG_v2iPosition))idDirection=IDDIRECTION::Down;
+					break;
+				case IDSTICK::Left:
+					if(BG_steIsMovable_Left(BG_v2iPosition))idDirection=IDDIRECTION::Left;
+					break;
+				case IDSTICK::LeftUp:
+					if(BG_steIsMovable_Left(BG_v2iPosition))idDirection=IDDIRECTION::Left;
+					else if(BG_steIsMovable_Up(BG_v2iPosition))idDirection=IDDIRECTION::Up;
+					break;
+				case IDSTICK::None:
+					break;
+				}
+				if(idDirection!=IDDIRECTION::Stop){
+					AUTO					fixed_i16doffset=FIXED_i16nSpeed;
+
+					eMove_Boundary8(fixed_i16doffset);
+				}
+			}
+			return;
+		}
+		VOID					Show(const PGAME cpgameowner)noexcept{
+			cpgameowner->SPRITE_Write16(FIXED_v2iPosition,0x58+(ui8iAnimation&4),PALETTE_SPRITE_stcui8iPlayer);
+			return;
+		}
+		VOID					Show_Up(const PGAME cpgameowner,COFWBOOL ceshow)noexcept{
+			switch(ui8iNumber){
+			case 0:
+				FB::BG1_stPrint({ 3,0},ceshow?"1UP":"   ",0);
+				break;
+			case 1:
+				FB::BG1_stPrint({22,0},ceshow?"2UP":"   ",0);
+				break;
+			}
+			{
+				CAUTO					cui8nrest=STD::stxGetMinimum(ui8nRest,UINT8(7));
+
+				for(UINT8 ui8irest=0;ui8irest<cui8nrest;++ui8irest){
+					cpgameowner->SPRITE_Write16(
+						{
+							INT16(INT16((ui8irest<<4)+4)<<FIXEDL_stcui8nBit),
+							INT16((34*8+4)<<FIXEDL_stcui8nBit)
+						},
+						0x58,
+						PALETTE_SPRITE_stcui8iPlayer
+					);
+				}
+			}
+			return;
+		}
+		VOID					Show_Score(const PGAME cpgameowner)noexcept{
+			switch(ui8iNumber){
+			case 0:
+				cpgameowner->BG_ShowScore({1,1},ui32nScore);
+				break;
+			case 1:
+				cpgameowner->BG_ShowScore({21,1},ui32nScore);
+				break;
+			}
+			return;
+		}
+		VOID					Show_Miss(const PGAME cpgameowner,CUINT8 cui8iprogress)noexcept{
+			if(cui8iprogress<4){
+				CAUTO					cui8ipattern_base=UINT8(0x58+(ui8iAnimation&4));
+				CAUTO					cv2icenter=FIXED_v2iPosition+(VECTOR2(4,4)<<FIXEDL_stcui8nBit);
+				CAUTO					ci16doffset=INT16((3-cui8iprogress)<<FIXEDL_stcui8nBit);
+
+				cpgameowner->SPRITE_Write8(
+					cv2icenter+VECTOR2(-ci16doffset,-ci16doffset),
+					cui8ipattern_base+0,
+					PALETTE_SPRITE_stcui8iPlayer
+				);
+				cpgameowner->SPRITE_Write8(
+					cv2icenter+VECTOR2(-ci16doffset,+ci16doffset),
+					cui8ipattern_base+1,
+					PALETTE_SPRITE_stcui8iPlayer
+				);
+				cpgameowner->SPRITE_Write8(
+					cv2icenter+VECTOR2(+ci16doffset,-ci16doffset),
+					cui8ipattern_base+2,
+					PALETTE_SPRITE_stcui8iPlayer
+				);
+				cpgameowner->SPRITE_Write8(
+					cv2icenter+VECTOR2(+ci16doffset,+ci16doffset),
+					cui8ipattern_base+3,
+					PALETTE_SPRITE_stcui8iPlayer
+				);
+			}else if(cui8iprogress==4){
+				cpgameowner->SPRITE_Write16(FIXED_v2iPosition,0xb0,PALETTE_SPRITE_stcui8iPlayer);
+			}else{
+				cpgameowner->SPRITE_Write16(FIXED_v2iPosition,0xb4,PALETTE_SPRITE_stcui8iPlayer);
+			}
+			return;
+		}
+		_INLINE_ VECTOR2		BG_v2iPredict(CUINT8 cui8nspan)const noexcept{
+			return BG_stv2iPredict(BG_v2iPosition,idDirection,cui8nspan);
+		}
+	private:
+		static constexpr IDSTICK	idGetStick(CUINT8 controller_cui8csource)noexcept{
+			static constexpr IDSTICK	stacidstick[]={
+				//						//	UDLR
+				IDSTICK::None,			//	0000
+				IDSTICK::Right,			//	0001
+				IDSTICK::Left,			//	0010
+				IDSTICK::None,			//	0011
+				IDSTICK::Down,			//	0100
+				IDSTICK::RightDown,		//	0101
+				IDSTICK::LeftDown,		//	0110
+				IDSTICK::Down,			//	0111
+				IDSTICK::Up,			//	1000
+				IDSTICK::RightUp,		//	1001
+				IDSTICK::LeftUp,		//	1010
+				IDSTICK::Up,			//	1011
+				IDSTICK::None,			//	1100
+				IDSTICK::Right,			//	1101
+				IDSTICK::Left,			//	1110
+				IDSTICK::None,			//	1111
+			};
+
+			return stacidstick[controller_cui8csource&0x0f];
+		}
+		VOID					Move_Boundary8(const PGAME cpgameowner,CUINT8 controller_cui8doffset)noexcept{
+			BG_v2iPosition=FIXED_v2iPosition>>BG_stcui8nBit;
+			switch(controller_cui8doffset){
+			case 0:
+				//	方向変化無し
+				if(!BG_eIsMovable_Forward(BG_v2iPosition))Stop();
+				break;
+			case 1:
+				FALLTHROUGH;
+			case 2:
+				FALLTHROUGH;
+			case 3:
+				if(BG_eIsMovable_HandRight(BG_v2iPosition))Turn_HandRight();
+				else if(!BG_eIsMovable_Forward(BG_v2iPosition))Stop();
+				break;
+			case 4:
+				if(BG_eIsMovable_Backward(BG_v2iPosition))Turn_Backward();
+				else if(!BG_eIsMovable_Forward(BG_v2iPosition))Stop();
+				break;
+			case 5:
+				FALLTHROUGH;
+			case 6:
+				FALLTHROUGH;
+			case 7:
+				if(BG_eIsMovable_HandLeft(BG_v2iPosition))Turn_HandLeft();
+				else if(!BG_eIsMovable_Forward(BG_v2iPosition))Stop();
+				break;
+			}
+			return;
+		}
+		VOID					Move_Dot(const PGAME cpgameowner,CVECTOR2& bg_cv2iposition)noexcept{
+			BG_stClear(bg_cv2iposition);
+			if(SE_eDot){
+				SE_eDot=FALSE;
+			}else{
+				FB::SE0_stPlay(SE_stacui8cDot);
+				SE_eDot=TRUE;
+			}
+			--ui16nDotRest;
+			cpgameowner->PLAYER_Dot();
+			return;
+		}
+	};
+
+	//
+	//		class:ENEMY
+	//
+
+	class ENEMY:public CHARACTER_{
+	public:
+
+		//
+		//		const
+		//
+
+		//	IDSTATE
+		enum class IDSTATE:UINT8{
+			Ajito_Idling,
+			Ajito_Exiting0,
+			Ajito_Exiting1,
+			Ajito_Gate,
+			Normal,
+			Ijike,
+			Eaten_Returning,
+			Eaten_Gate,
+			Eaten_MoveH
+		};
+		//	IDTYPE
+		class _IDTYPE{
+		public:
+			enum BODY:UINT8{
+				Oikake					=0x00,
+				Machibuse				=0x01,
+				Kimagure				=0x02,
+				Otoboke					=0x03
+			};
+		};
+		using					IDTYPE=_IDTYPE::BODY;
+		static constexpr AUTO	FIXED_cv2iPosition_AjitoUL=MAZE_stcshpAjito.v2iPosition<<BG_stcui8nBit;
+		static constexpr AUTO	FIXED_cv2iPosition_AjitoDR=(MAZE_stcshpAjito.v2iPosition+MAZE_stcshpAjito.v2nSize-VECTOR2(1,1))<<BG_stcui8nBit;
+		static constexpr AUTO	FIXED_cv2iPosition_AjitoCenter=(
+			+(MAZE_stcshpAjito.v2iPosition<<BG_stcui8nBit)
+			+(MAZE_stcshpAjito.v2nSize<<(BG_stcui8nBit-1))
+			-(VECTOR2(4,4)<<FIXEDL_stcui8nBit)
+		);
+		static constexpr AUTO	FIXED_cv2iPosition_AjitoEntrance=VECTOR2(
+			FIXED_cv2iPosition_AjitoCenter.i16iX(),
+			INT16(FIXED_cv2iPosition_AjitoUL.i16iY()-(2<<BG_stcui8nBit))
+		);
+
+		//
+		//		class
+		//
+
+		//	SUPER
+		using					SUPER=CHARACTER_;
+
+		//
+		//		body:ENEMY
+		//
+
+	private:
+		IDSTATE					idState;
+		IDTYPE					idType;
+		UINT8					ui8iMode;
+		OFWBOOL					eSlow;
+	public:
+		/*VOID*/				ENEMY(const IDTYPE cidtype)noexcept:
+			idType(cidtype)
+		{}
+		VOID					Initialize(VOID)noexcept{
+			return;
+		}
+		VOID					Start(const PGAME cpgameowner)noexcept{
+			constexpr INT16			ci16doffset=14<<FIXEDL_stcui8nBit;
+			CAUTO					fixed_ci16nspeed=cpgameowner->ENEMY_FIXED_ui16nGetSpeed();
+
+			switch(idType){
+			case IDTYPE::Oikake:
+				SUPER::Start(
+					{
+						FIXED_cv2iPosition_AjitoUL.i16iX(),
+						FIXED_cv2iPosition_AjitoUL.i16iY()
+					},
+					fixed_ci16nspeed,
+					IDDIRECTION::Down
+				);
+				ui8iAnimation=0;
+				ui8iMode=4;
+				break;
+			case IDTYPE::Machibuse:
+				SUPER::Start(
+					{
+						FIXED_cv2iPosition_AjitoDR.i16iX(),
+						FIXED_cv2iPosition_AjitoUL.i16iY()
+					},
+					fixed_ci16nspeed,
+					IDDIRECTION::Down
+				);
+				ui8iAnimation=1;
+				ui8iMode=8;
+				break;
+			case IDTYPE::Kimagure:
+				SUPER::Start(
+					{
+						INT16(FIXED_cv2iPosition_AjitoUL.i16iX()+ci16doffset),
+						FIXED_cv2iPosition_AjitoDR.i16iY()
+					},
+					fixed_ci16nspeed,
+					IDDIRECTION::Up
+				);
+				ui8iAnimation=2;
+				ui8iMode=14;
+				break;
+			case IDTYPE::Otoboke:
+				SUPER::Start(
+					{
+						INT16(FIXED_cv2iPosition_AjitoDR.i16iX()-ci16doffset),
+						FIXED_cv2iPosition_AjitoDR.i16iY()
+					},
+					fixed_ci16nspeed,
+					IDDIRECTION::Up
+				);
+				ui8iAnimation=3;
+				ui8iMode=18;
+				break;
+			}
+			idState=IDSTATE::Ajito_Idling;
+			eSlow=FALSE;
+			return;
+		}
+		VOID					Move(const PGAME cpgameowner)noexcept{
+			AUTO					fixed_i16doffset=FIXED_i16nSpeed;
+
+			switch(idState){
+			case IDSTATE::Ajito_Idling:
+				//	アジト内上下移動
+				if(eMove_Boundary8(fixed_i16doffset)){
+					--ui8iMode;
+					if(ui8iMode){
+						if(idDirection==IDDIRECTION::Up){
+							if(FIXED_v2iPosition.i16iY()==FIXED_cv2iPosition_AjitoUL.i16iY())idDirection=IDDIRECTION::Down;
+						}else{
+							if(FIXED_v2iPosition.i16iY()==FIXED_cv2iPosition_AjitoDR.i16iY())idDirection=IDDIRECTION::Up;
+						}
+					}else{
+						if(FIXED_v2iPosition.i16iX()<FIXED_stci16iXCenter)idDirection=IDDIRECTION::Right;
+						else idDirection=IDDIRECTION::Left;
+						idState=IDSTATE::Ajito_Exiting0;
+					}
+					if(fixed_i16doffset)eMove_Boundary8(fixed_i16doffset);
+				}
+				break;
+			case IDSTATE::Ajito_Exiting0:
+				//	アジトから出口に向かう横移動
+				eMove_Boundary8(fixed_i16doffset);
+				if(fixed_i16doffset)eMove_Boundary8(fixed_i16doffset);
+				if(
+					(idDirection==IDDIRECTION::Right)?(
+						FIXED_cv2iPosition_AjitoCenter.i16iX()<=FIXED_v2iPosition.i16iX()
+					):(
+						FIXED_v2iPosition.i16iX()<=FIXED_cv2iPosition_AjitoCenter.i16iX()
+					)
+				){
+					FIXED_v2iPosition.i16iX()=FIXED_cv2iPosition_AjitoCenter.i16iX();
+					idDirection=IDDIRECTION::Up;
+					idState=IDSTATE::Ajito_Exiting1;
+				}
+				break;
+			case IDSTATE::Ajito_Exiting1:
+				//	アジトから出口に向かう上移動
+				eMove_Boundary8(fixed_i16doffset);
+				if(fixed_i16doffset)eMove_Boundary8(fixed_i16doffset);
+				if(FIXED_v2iPosition.i16iY()<=FIXED_cv2iPosition_AjitoUL.i16iY()){
+					idState=IDSTATE::Ajito_Gate;
+				}
+				break;
+			case IDSTATE::Ajito_Gate:
+				//	アジトゲート通過(ゆっくり移動)
+				fixed_i16doffset>>=1;
+				if(eMove_Boundary8(fixed_i16doffset)){
+					if(FIXED_v2iPosition.i16iY()==FIXED_cv2iPosition_AjitoEntrance.i16iY()){
+						CAUTO					bg_cv2iposition=FIXED_v2iPosition>>BG_stcui8nBit;
+
+						idState=IDSTATE::Normal;
+						ui8iMode=0;
+						Move_Specific(cpgameowner);
+					}
+					if(fixed_i16doffset)eMove_Boundary8(fixed_i16doffset);
+				}
+				break;
+			case IDSTATE::Normal:
+				//	通常状態
+				if(eSlow)fixed_i16doffset>>=1;
+				if(eMove_Boundary8(fixed_i16doffset)){
+					Move_Specific(cpgameowner);
+					if(fixed_i16doffset)eMove_Boundary8(fixed_i16doffset);
+					//	ワープゾーンは隠しアトリビュートで
+					eSlow=(BGSHADOW_stui16cGet(FIXED_v2iPosition>>BG_stcui8nBit)==BGSHADOW_stcui8cWarp);
+				}
+#ifndef GAME_INVINCIBLE
+				if(Move_eIsHit(cpgameowner)){
+					cpgameowner->PLAYER_Miss(this);
+				}
+#else
+				if(cpgameowner->CONTROLLER_ui8cSingle&FB::JOYSTICK_stcui8cMaskButtonA){
+					cpgameowner->PLAYER_Miss(this);
+				}
+#endif
+				break;
+			case IDSTATE::Ijike:
+				//	食われ待ち
+				fixed_i16doffset>>=1;
+				if(eMove_Boundary8(fixed_i16doffset)){
+					CAUTO					bg_cv2iposition=FIXED_v2iPosition>>BG_stcui8nBit;
+
+					Move_Away(cpgameowner,bg_cv2iposition,((ui8iMode&1)==0));
+					++ui8iMode;
+					if(fixed_i16doffset)eMove_Boundary8(fixed_i16doffset);
+				}
+				//	ポーズ状態かどうかのチェックをしてるのは、
+				//	単一フレーム同時食いを避けるため
+				if(!cpgameowner->eIsPaused())if(Move_eIsHit(cpgameowner)){
+					idState=IDSTATE::Eaten_Returning;
+					cpgameowner->ENEMY_Ijike_Eaten(this);
+				}
+				break;
+			case IDSTATE::Eaten_Returning:
+				//	食われたのでアジト急行
+				fixed_i16doffset<<=1;
+				{
+					CAUTO					fixed_ci16ix_previous=FIXED_v2iPosition.i16iX();
+
+					if(eMove_Boundary8(fixed_i16doffset)){
+						CAUTO					bg_cv2iposition=FIXED_v2iPosition>>BG_stcui8nBit;
+						IDDIRECTION				iddirectiontarget0,iddirectiontarget1;
+
+						stGetDirection_Aim(FIXED_v2iPosition,FIXED_cv2iPosition_AjitoEntrance,iddirectiontarget0,iddirectiontarget1);
+						Move_Heading(cpgameowner,bg_cv2iposition,((ui8iMode&1)==0),iddirectiontarget0,iddirectiontarget1);
+						++ui8iMode;
+						if(fixed_i16doffset)eMove_Boundary8(fixed_i16doffset);
+					}
+					//	アジト入り口が「8ドットキリ番」でなくそこから4ドットズレているので、
+					//	「eMove_Boundary8」が「TRUE」のときだけ、という訳にはいかない。
+					if(
+						(FIXED_v2iPosition.i16iY()==FIXED_cv2iPosition_AjitoEntrance.i16iY())&&(
+							(idDirection==IDDIRECTION::Right)?(
+								(fixed_ci16ix_previous<=FIXED_cv2iPosition_AjitoEntrance.i16iX())&&
+								(FIXED_cv2iPosition_AjitoEntrance.i16iX()<=FIXED_v2iPosition.i16iX())
+							):(
+								(FIXED_cv2iPosition_AjitoEntrance.i16iX()<=fixed_ci16ix_previous)&&
+								(FIXED_v2iPosition.i16iX()<=FIXED_cv2iPosition_AjitoEntrance.i16iX())
+							)
+						)
+					){
+						FIXED_v2iPosition.i16iX()=FIXED_cv2iPosition_AjitoEntrance.i16iX();
+						idDirection=IDDIRECTION::Down;
+						idState=IDSTATE::Eaten_Gate;
+					}
+				}
+				break;
+			case IDSTATE::Eaten_Gate:
+				//	アジト帰還のゲート通過(ゆっくり移動)
+				fixed_i16doffset>>=1;
+				eMove_Boundary8(fixed_i16doffset);
+				if(fixed_i16doffset)eMove_Boundary8(fixed_i16doffset);
+				if(FIXED_cv2iPosition_AjitoUL.i16iY()<=FIXED_v2iPosition.i16iY()){
+					idDirection=(FB::stui16GetRandom()&1)?IDDIRECTION::Right:IDDIRECTION::Left;
+					idState=IDSTATE::Eaten_MoveH;
+					//	状態「IDSTATE::Eaten_MoveH」での「ui8iMode」は、
+					//	アジトに戻った後、左右端まで移動するか、
+					//	1キャラクタ分中央寄りまで移動するか。
+					//	別にバリエーション持たす必要は無いんだけども。
+					ui8iMode=FB::stui16GetRandom()&1;
+				}
+				break;
+			case IDSTATE::Eaten_MoveH:
+				//	戻ったのでちょっと横に寄りますよ。
+				if(eMove_Boundary8(fixed_i16doffset)){
+					if(
+						//	INT16					fixed_ci16ndistance
+						//		端からどれだけ離れた位置で上下移動始めるかの距離(固定小数点値)です。
+						CAUTO					fixed_ci16ndistance=INT16(((ui8iMode==0)?INT16(0):INT16(1))<<BG_stcui8nBit);
+						(
+							FIXED_v2iPosition.i16iX()<=FIXED_cv2iPosition_AjitoUL.i16iX()+fixed_ci16ndistance
+						)||(
+							FIXED_cv2iPosition_AjitoDR.i16iX()-fixed_ci16ndistance<=FIXED_v2iPosition.i16iX()
+						)
+					){
+						idDirection=IDDIRECTION::Down;
+						idState=IDSTATE::Ajito_Idling;
+						//	状態「IDSTATE::Ajito_Idling」での「ui8iMode」は、
+						//	アジト出口に向かう横移動を始めるまでの移動距離(キャラクタ単位)。
+						//	別にバリエーション持たす必要無いんだけども。
+						ui8iMode=((UINT8(FB::stui16GetRandom())&7)<<1)+4;
+					}
+					if(fixed_i16doffset)eMove_Boundary8(fixed_i16doffset);
+				}
+				break;
+			}
+			return;
+		}
+		VOID					Show(const PGAME cpgameowner)noexcept{
+			switch(idState){
+			case IDSTATE::Ijike:
+				Show_Normal(cpgameowner,PALETTE_SPRITE_stcui8iEnemy_Ijike);
+				break;
+			case IDSTATE::Eaten_Returning:
+				FALLTHROUGH;
+			case IDSTATE::Eaten_Gate:
+				cpgameowner->SPRITE_Write16(
+					FIXED_v2iPosition,
+					0x70+(ui8iAnimation&4),
+					((ui8iAnimation&4)==0)?PALETTE_SPRITE_stcui8iEnemy_Eaten:PALETTE_SPRITE_stacui8iEnemy_Normal[UINT8(idType)],
+					OFWBOOL((ui8iAnimation&8)==0)
+				);
+				break;
+			default:
+				Show_Normal(cpgameowner,PALETTE_SPRITE_stacui8iEnemy_Normal[UINT8(idType)]);
+				break;
+			}
+			return;
+		}
+		VOID					Hustle(const PGAME cpgameowner)noexcept{
+			if(idState==IDSTATE::Normal){
+				Move_Backward_Random(cpgameowner,FIXED_v2iPosition>>BG_stcui8nBit);
+			}
+			return;
+		}
+		VOID					IJIKE_Start(const PGAME cpgameowner)noexcept{
+			if(idState==IDSTATE::Normal){
+				Move_Backward_Random(cpgameowner,FIXED_v2iPosition>>BG_stcui8nBit);
+				idState=IDSTATE::Ijike;
+			}
+			return;
+		}
+		VOID					IJIKE_End(const PGAME cpgameowner)noexcept{
+			if(idState==IDSTATE::Ijike){
+				Move_Backward_Random(cpgameowner,FIXED_v2iPosition>>BG_stcui8nBit);
+				idState=IDSTATE::Normal;
+			}
+			return;
+		}
+		_INLINE_ OFWBOOL		IJIKE_eIsApplicable(VOID)const noexcept{
+			return (idState==IDSTATE::Ijike);
+		}
+	private:
+		//	OFWBOOL					BG_eIsMovable_Forward(CVECTOR2& bg_cv2iposition)
+		//		前方移動できるかどうかを判定します。
+		//		「CHARACTER_::BG_eIsMovable_Forward」と異なり、
+		//		隠しアトリビュートによる一方通行判定も行います。
+		OFWBOOL					BG_eIsMovable_Forward(CVECTOR2& bg_cv2iposition)const noexcept{
+			if(
+				idState==IDSTATE::Normal
+			)if(
+				BGSHADOW_stui8cGet(bg_cv2iposition)==BGSHADOW_stcui8cOneWayFrom
+			)if(
+				BGSHADOW_stui8cGet(BG_v2iGetForward(bg_cv2iposition))==BGSHADOW_stcui8cOneWayTo
+			)return FALSE;
+			return SUPER::BG_eIsMovable_Forward(bg_cv2iposition);
+		}
+		//	OFWBOOL					BG_eIsMovable_HandRight(CVECTOR2& bg_cv2iposition)
+		//		右折移動できるかどうかを判定します。
+		//		「CHARACTER_::BG_eIsMovable_Forward」と異なり、
+		//		隠しアトリビュートによる一方通行判定も行います。
+		OFWBOOL					BG_eIsMovable_HandRight(CVECTOR2& bg_cv2iposition)const noexcept{
+			if(
+				idState==IDSTATE::Normal
+			)if(
+				BGSHADOW_stui8cGet(bg_cv2iposition)==BGSHADOW_stcui8cOneWayFrom
+			)if(
+				BGSHADOW_stui8cGet(BG_v2iGetHandRight(bg_cv2iposition))==BGSHADOW_stcui8cOneWayTo
+			)return FALSE;
+			return SUPER::BG_eIsMovable_HandRight(bg_cv2iposition);
+		}
+		//	OFWBOOL					BG_eIsMovable_HandLeft(CVECTOR2& bg_cv2iposition)
+		//		左折移動できるかどうかを判定します。
+		//		「CHARACTER_::BG_eIsMovable_Forward」と異なり、
+		//		隠しアトリビュートによる一方通行判定も行います。
+		OFWBOOL					BG_eIsMovable_HandLeft(CVECTOR2& bg_cv2iposition)const noexcept{
+			if(
+				idState==IDSTATE::Normal
+			)if(
+				BGSHADOW_stui8cGet(bg_cv2iposition)==BGSHADOW_stcui8cOneWayFrom
+			)if(
+				BGSHADOW_stui8cGet(BG_v2iGetHandLeft(bg_cv2iposition))==BGSHADOW_stcui8cOneWayTo
+			)return FALSE;
+			return SUPER::BG_eIsMovable_HandLeft(bg_cv2iposition);
+		}
+		//	OFWBOOL					BG_eIsMovable_Backward(CVECTOR2& bg_cv2iposition)
+		//		折り返し移動できるかどうかを判定します。
+		//		「CHARACTER_::BG_eIsMovable_Forward」と異なり、
+		//		隠しアトリビュートによる一方通行判定も行います。
+		OFWBOOL					BG_eIsMovable_Backward(CVECTOR2& bg_cv2iposition)const noexcept{
+			if(
+				idState==IDSTATE::Normal
+			)if(
+				BGSHADOW_stui8cGet(bg_cv2iposition)==BGSHADOW_stcui8cOneWayFrom
+			)if(
+				BGSHADOW_stui8cGet(BG_v2iGetBackward(bg_cv2iposition))==BGSHADOW_stcui8cOneWayTo
+			)return FALSE;
+			return SUPER::BG_eIsMovable_Backward(bg_cv2iposition);
+		}
+		_INLINE_ VOID			Move_Specific(const PGAME cpgameowner)noexcept{
+			CAUTO					bg_cv2iposition=FIXED_v2iPosition>>BG_stcui8nBit;
+
+			//	8ドット境界到達
+			switch(idType){
+			case IDTYPE::Oikake:
+				Move_Specific_Oikake(cpgameowner,bg_cv2iposition);
+				break;
+			case IDTYPE::Machibuse:
+				Move_Specific_Machibuse(cpgameowner,bg_cv2iposition);
+				break;
+			case IDTYPE::Kimagure:
+				Move_Specific_Kimagure(cpgameowner,bg_cv2iposition);
+				break;
+			case IDTYPE::Otoboke:
+				Move_Specific_Otoboke(cpgameowner,bg_cv2iposition);
+				break;
+			}
+			++ui8iMode;
+			return;
+		}
+		_INLINE_ VOID			Move_Specific_Oikake(const PGAME cpgameowner,CVECTOR2& bg_cv2iposition)noexcept{
+			Move_Chase(cpgameowner,bg_cv2iposition,((ui8iMode>>3)&1));
+			return;
+		}
+		_INLINE_ VOID			Move_Specific_Machibuse(const PGAME cpgameowner,CVECTOR2& bg_cv2iposition)noexcept{
+			IDDIRECTION				iddirectiontarget0,iddirectiontarget1;
+
+			stGetDirection_Aim(bg_cv2iposition,cpgameowner->PLAYER_BG_v2iPredict(8),iddirectiontarget0,iddirectiontarget1);
+			Move_Heading(cpgameowner,bg_cv2iposition,((ui8iMode>>3)&1),iddirectiontarget0,iddirectiontarget1);
+			return;
+		}
+		_INLINE_ VOID			Move_Specific_Kimagure(const PGAME cpgameowner,CVECTOR2& bg_cv2iposition)noexcept{
+			switch((ui8iMode>>2)&3){
+			case 0:
+				Move_Chase(cpgameowner,bg_cv2iposition,TRUE);
+				break;
+			case 1:
+				Move_Away(cpgameowner,bg_cv2iposition,TRUE);
+				break;
+			case 2:
+				Move_Chase(cpgameowner,bg_cv2iposition,FALSE);
+				break;
+			case 3:
+				Move_Away(cpgameowner,bg_cv2iposition,FALSE);
+				break;
+			}
+			return;
+		}
+		_INLINE_ VOID			Move_Specific_Otoboke(const PGAME cpgameowner,CVECTOR2& bg_cv2iposition)noexcept{
+			Move_Random(cpgameowner,bg_cv2iposition);
+			return;
+		}
+		_INLINE_ VOID			Move_Chase(const PGAME cpgameowner,CVECTOR2& bg_cv2iposition,COFWBOOL ceright)noexcept{
+			IDDIRECTION				iddirectiontarget0,iddirectiontarget1;
+
+			stGetDirection_Aim(FIXED_v2iPosition,cpgameowner->PLAYER_FIXED_v2iGetPosition(),iddirectiontarget0,iddirectiontarget1);
+			Move_Heading(cpgameowner,bg_cv2iposition,ceright,iddirectiontarget0,iddirectiontarget1);
+			return;
+		}
+		_INLINE_ VOID			Move_Away(const PGAME cpgameowner,CVECTOR2& bg_cv2iposition,COFWBOOL ceright)noexcept{
+			IDDIRECTION				iddirectiontarget0,iddirectiontarget1;
+
+			stGetDirection_Aim(cpgameowner->PLAYER_FIXED_v2iGetPosition(),FIXED_v2iPosition,iddirectiontarget0,iddirectiontarget1);
+			Move_Heading(cpgameowner,bg_cv2iposition,ceright,iddirectiontarget0,iddirectiontarget1);
+			return;
+		}
+		VOID					Move_Random(const PGAME cpgameowner,CVECTOR2& bg_cv2iposition)noexcept{
+			CAUTO					cui16crandom=FB::stui16GetRandom();
+			CAUTO					ciddirection_candidate=IDDIRECTION(cui16crandom&3);
+
+			Move_Heading(cpgameowner,bg_cv2iposition,((cui16crandom&4)==0),ciddirection_candidate);
+			return;
+		}
+		_INLINE_ VOID			Move_Hand(const PGAME cpgameowner,CVECTOR2& bg_cv2iposition,COFWBOOL ceright)noexcept{
+			if(ceright)Move_Hand_Right(cpgameowner,bg_cv2iposition);
+			else Move_Hand_Left(cpgameowner,bg_cv2iposition);
+			return;
+		}
+		VOID					Move_Hand_Right(const PGAME cpgameowner,CVECTOR2& bg_cv2iposition)noexcept{
+			if(BG_eIsMovable_HandRight(bg_cv2iposition)){
+				Turn_HandRight();
+			}else if(BG_eIsMovable_Forward(bg_cv2iposition)){
+			}else if(BG_eIsMovable_HandLeft(bg_cv2iposition)){
+				Turn_HandLeft();
+			}else Turn_Backward();
+			return;
+		}
+		VOID					Move_Hand_Left(const PGAME cpgameowner,CVECTOR2& bg_cv2iposition)noexcept{
+			if(BG_eIsMovable_HandLeft(bg_cv2iposition)){
+				Turn_HandLeft();
+			}else if(BG_eIsMovable_Forward(bg_cv2iposition)){
+			}else if(BG_eIsMovable_HandRight(bg_cv2iposition)){
+				Turn_HandRight();
+			}else Turn_Backward();
+			return;
+		}
+		_INLINE_ VOID			Move_Backward(const PGAME cpgameowner,CVECTOR2& bg_cv2iposition,COFWBOOL ceright)noexcept{
+			if(ceright)Move_Backward_Right(cpgameowner,bg_cv2iposition);
+			else Move_Backward_Left(cpgameowner,bg_cv2iposition);
+		}
+		_INLINE_ VOID			Move_Backward_Random(const PGAME cpgameowner,CVECTOR2& bg_cv2iposition)noexcept{
+			Move_Backward(cpgameowner,bg_cv2iposition,((FB::stui16GetRandom()&1)==0));
+			return;
+		}
+		VOID					Move_Backward_Right(const PGAME cpgameowner,CVECTOR2& bg_cv2iposition)noexcept{
+			if(!eIsBoundary8()){
+				Turn_Backward();
+			}else if(BG_eIsMovable_Backward(bg_cv2iposition)){
+				Turn_Backward();
+			}else if(BG_eIsMovable_HandLeft(bg_cv2iposition)){
+				Turn_HandLeft();
+			}else if(BG_eIsMovable_HandRight(bg_cv2iposition)){
+				Turn_HandRight();
+			}
+			return;
+		}
+		VOID					Move_Backward_Left(const PGAME cpgameowner,CVECTOR2& bg_cv2iposition)noexcept{
+			if(!eIsBoundary8()){
+				Turn_Backward();
+			}else if(BG_eIsMovable_Backward(bg_cv2iposition)){
+				Turn_Backward();
+			}else if(BG_eIsMovable_HandRight(bg_cv2iposition)){
+				Turn_HandRight();
+			}else if(BG_eIsMovable_HandLeft(bg_cv2iposition)){
+				Turn_HandLeft();
+			}
+			return;
+		}
+		VOID					Move_Heading(const PGAME cpgameowner,CVECTOR2& bg_cv2iposition,COFWBOOL ceright,const IDDIRECTION ciddirectiontarget0,const IDDIRECTION ciddirectiontarget1=IDDIRECTION::Stop)noexcept{
+			switch((UINT8(ciddirectiontarget0)-UINT8(idDirection))&3){
+			case 0:	//	Forward
+				if(BG_eIsMovable_Forward(bg_cv2iposition)){
+					//	向き変わらず
+					return;
+				}
+				break;
+			case 1:	//	HandRight
+				if(BG_eIsMovable_HandRight(bg_cv2iposition)){
+					Turn_HandRight();
+					return;
+				}
+				break;
+			case 2:	//	Backward
+				break;
+			case 3:	//	HandLeft
+				if(BG_eIsMovable_HandLeft(bg_cv2iposition)){
+					Turn_HandLeft();
+					return;
+				}
+				break;
+			}
+			if(ciddirectiontarget1!=IDDIRECTION::Stop){
+				Move_Heading(cpgameowner,bg_cv2iposition,ceright,ciddirectiontarget1);
+			}else{
+				Move_Hand(cpgameowner,bg_cv2iposition,ceright);
+			}
+			return;
+		}
+		//	OFWBOOL					Move_eIsHit(const PGAME cpgameowner)
+		//		自機に当たったかどうかを判定し、当たっていれば「TRUE」を返します。
+		//		「曲がり」で当たった事にならないよう、判定は「正方形」でなく「ひし形」で行います。
+		//		ワープゾーン越しにも衝突します。
+		_INLINE_ OFWBOOL		Move_eIsHit(const PGAME cpgameowner)const noexcept{
+			CAUTO&					cv2iplayerposition=cpgameowner->PLAYER_FIXED_v2iGetPosition();
+
+			return Move_eIsHit({
+				cv2iplayerposition.i16iX(),
+				cv2iplayerposition.i16iY()
+			})||Move_eIsHit({
+				INT16(cv2iplayerposition.i16iX()+(FIXED_stci16iXMaximum-FIXED_stci16iXMinimum)),
+				cv2iplayerposition.i16iY()
+			});
+		}
+		_INLINE_ OFWBOOL		Move_eIsHit(CVECTOR2& cv2iplayerposition)const noexcept{
+			CAUTO					cv2ndiff=(FIXED_v2iPosition-cv2iplayerposition).v2GetAbs();
+
+			return (cv2ndiff.i16nWidth()+cv2ndiff.i16nHeight()<FIXED_stci16nHitHalf);
+		}
+		VOID					Show_Normal(const PGAME cpgameowner,CUINT8 palette_cui8ithis)noexcept{
+			switch(idDirection){
+			case IDDIRECTION::Up:
+				cpgameowner->SPRITE_Write16(FIXED_v2iPosition,0x6c,palette_cui8ithis,OFWBOOL((ui8iAnimation&4)==0));
+				break;
+			case IDDIRECTION::Right:
+				cpgameowner->SPRITE_Write16(FIXED_v2iPosition,0x60+(ui8iAnimation&4),palette_cui8ithis,TRUE);
+				break;
+			case IDDIRECTION::Down:
+				cpgameowner->SPRITE_Write16(FIXED_v2iPosition,0x68,palette_cui8ithis,OFWBOOL((ui8iAnimation&4)==0));
+				break;
+			case IDDIRECTION::Left:
+				cpgameowner->SPRITE_Write16(FIXED_v2iPosition,0x60+(ui8iAnimation&4),palette_cui8ithis,FALSE);
+				break;
+			case IDDIRECTION::Stop:
+				cpgameowner->SPRITE_Write16(FIXED_v2iPosition,0x68,palette_cui8ithis,TRUE);
+				break;
+			}
+			return;
+		}
+	};
+
+	//
+	//		body:GAME
+	//
+
+private:
+	IDSTATE					idState;
+	UINT8					ui8nCredit;
+	UINT16					ui16iProgress;
+	UINT16					ui16nPause;
+	UINT8					ui8iBlink;
+	IDPAUSEREASON			idPauseReason;
+	UINT32					ui32nHighScore;
+	OFWBOOL					eUpdateScore:1;
+	OFWBOOL					eUpdateHighScore:1;
+	UINT8					SPRITE_ui8iNumber;
+	VECTOR2					BG_v2iDestination;
+	UINT8					BG_ui8nDestination;
+	PCUINT16				BG_pcui16cSource;
+	UINT16					BG_aui16cSave[8];
+	UINT8					CONTROLLER_ui8cCurrent;
+	UINT8					CONTROLLER_ui8cSingle;
+	PLAYER					PLAYER_achrThis[2]={
+		PLAYER(0),
+		PLAYER(1)
+	};
+	PPLAYER					PLAYER_pchrCurrent;
+	ENEMY					ENEMY_achrThis[4]={
+		ENEMY(ENEMY::IDTYPE::Oikake),
+		ENEMY(ENEMY::IDTYPE::Machibuse),
+		ENEMY(ENEMY::IDTYPE::Kimagure),
+		ENEMY(ENEMY::IDTYPE::Otoboke)
+	};
+	UINT16					ENEMY_ui16nIjike;
+	PENEMY					ENEMY_pchrAttention;
+	UINT8					ENEMY_ui8nEaten;
+public:
+	VOID					New(VOID)noexcept{
+		FB::PALETTE_stWriteSet(0,1);
+		FB::PALETTE_SPRITE_stWrite(PALETTE_SPRITE_stcui8iPlayer,					48, 2,39);	//	ぬたぬた
+		FB::PALETTE_SPRITE_stWrite(PALETTE_SPRITE_stcui8iEnemy_Normal_Oikake,	48,38,21);	//	AKABEI
+		FB::PALETTE_SPRITE_stWrite(PALETTE_SPRITE_stcui8iEnemy_Normal_Machibuse,	48,38,36);	//	PINKY
+		FB::PALETTE_SPRITE_stWrite(PALETTE_SPRITE_stcui8iEnemy_Normal_Kimagure,	48,38, 1);	//	AOSUKE
+		FB::PALETTE_SPRITE_stWrite(PALETTE_SPRITE_stcui8iEnemy_Normal_Otoboke,	48,38,23);	//	GUZUTA
+		FB::PALETTE_SPRITE_stWrite(PALETTE_SPRITE_stcui8iEnemy_Eaten,			33,17,29);	//	食われた
+		FB::PALETTE_BG_stWrite(PALETTE_BG_stcui8iDotNormal,				48,13,38);
+		FB::SPRITE_stSetSize(FB::IDSIZE::n1024,FB::IDSIZE::n1024);
+		FB::BG1_stSetSize(FB::IDSIZE::n1024,FB::IDSIZE::n1024);
+		//	隠しアトリビュート初期化
+		FB::BG1_stFillAttribute(BGSHADOW_stcv2dOffset,{32,36},UINT16(BGSHADOW_stcui8cNone));
+		//	ワープゾーン
+		FB::BG1_stFillAttribute(BGSHADOW_stcv2dOffset+VECTOR2( 0,17),{ 5, 1},UINT16(BGSHADOW_stcui8cWarp));
+		FB::BG1_stFillAttribute(BGSHADOW_stcv2dOffset+VECTOR2(23,17),{ 9, 1},UINT16(BGSHADOW_stcui8cWarp));
+		//	一方通行左上
+		FB::BG1_stWriteAttribute(BGSHADOW_stcv2dOffset+VECTOR2(12,14),UINT16(BGSHADOW_stcui8cOneWayFrom));
+		FB::BG1_stWriteAttribute(BGSHADOW_stcv2dOffset+VECTOR2(12,13),UINT16(BGSHADOW_stcui8cOneWayTo));
+		//	一方通行右上
+		FB::BG1_stWriteAttribute(BGSHADOW_stcv2dOffset+VECTOR2(15,14),UINT16(BGSHADOW_stcui8cOneWayFrom));
+		FB::BG1_stWriteAttribute(BGSHADOW_stcv2dOffset+VECTOR2(15,13),UINT16(BGSHADOW_stcui8cOneWayTo));
+		//	一方通行左下
+		FB::BG1_stWriteAttribute(BGSHADOW_stcv2dOffset+VECTOR2(12,26),UINT16(BGSHADOW_stcui8cOneWayFrom));
+		FB::BG1_stWriteAttribute(BGSHADOW_stcv2dOffset+VECTOR2(12,25),UINT16(BGSHADOW_stcui8cOneWayTo));
+		//	一方通行右下
+		FB::BG1_stWriteAttribute(BGSHADOW_stcv2dOffset+VECTOR2(15,26),UINT16(BGSHADOW_stcui8cOneWayFrom));
+		FB::BG1_stWriteAttribute(BGSHADOW_stcv2dOffset+VECTOR2(15,25),UINT16(BGSHADOW_stcui8cOneWayTo));
+		ui8nCredit=0;
+		ui32nHighScore=1000;
+		CONTROLLER_ui8cCurrent=0x00;
+		for(AUTO& chrthis:PLAYER_achrThis)chrthis.New();
+		for(AUTO& chrthis:ENEMY_achrThis)chrthis.New();
+		SetState(IDSTATE::Title);
+		return;
+	}
+	VOID					Delete(VOID)noexcept{
+		for(AUTO& chrthis:ENEMY_achrThis)chrthis.Delete();
+		PLAYER_pchrCurrent->Delete();
+		return;
+	}
+	VOID					Main(VOID)noexcept{
+		SPRITE_ui8iNumber=0;
+		{
+			CAUTO					controller_cui8ccurrent=FB::CONTROLLER_stui8cRead(0);
+
+			CONTROLLER_ui8cSingle=controller_cui8ccurrent&(CONTROLLER_ui8cCurrent^controller_cui8ccurrent);
+			CONTROLLER_ui8cCurrent=controller_cui8ccurrent;
+		}
+		_PARTIALSWITCH_BEGIN_
+		switch(idState){
+		case IDSTATE::Title:
+			Main_Title();
+			break;
+		case IDSTATE::Normal:
+			Main_Normal();
+			break;
+		case IDSTATE::Clear:
+			Main_Clear();
+			break;
+		case IDSTATE::Miss:
+			Main_Miss();
+			break;
+		case IDSTATE::GameOver:
+			Main_GameOver();
+			break;
+		}
+		_PARTIALSWITCH_END_
+		for(UINT8 ui8inumber=SPRITE_ui8iNumber;ui8inumber<SPRITE_stcui8iMaximum;++ui8inumber)FB::SPRITE_stErase(ui8inumber);
+		++ui16iProgress;
+		return;
+	}
+private:
+	VOID					SetState(const IDSTATE cidstate)noexcept{
+		idState=cidstate;
+		ui16iProgress=0;
+		switch(idState){
+		case IDSTATE::Title:
+			Show(FALSE);
+			FB::PALETTE_BG_stWrite(PALETTE_BG_stcui8iTemporary+0,21,21,21);
+			FB::PALETTE_BG_stWrite(PALETTE_BG_stcui8iTemporary+1,36,36,36);
+			FB::PALETTE_BG_stWrite(PALETTE_BG_stcui8iTemporary+2, 1, 1, 1);
+			FB::PALETTE_BG_stWrite(PALETTE_BG_stcui8iTemporary+3,23,23,23);
+			FB::BG1_stWrite(stccvsTitle,{0,0});
+			PLAYER_pchrCurrent=NULL;
+			//	初期化されていないが点数だけは生きている
+			for(AUTO& chrthis:PLAYER_achrThis)chrthis.Show_Score(this);
+			ShowHighScore();
+			break;
+		case IDSTATE::Start:
+			Show(FALSE);
+			PLAYER_pchrCurrent=&PLAYER_achrThis[0];
+			PLAYER_pchrCurrent->Initialize();
+			for(AUTO& chrthis:ENEMY_achrThis)chrthis.Initialize();
+			SetState_Start();
+			Pause(IDPAUSEREASON::Ready,300,{11,20},"READY!");
+			FB::BGM_stPlay(BGM_stacui8cStart);
+			idState=IDSTATE::Normal;
+			break;
+		case IDSTATE::Normal:
+			Show(FALSE);
+			SetState_End();
+			SetState_Start();
+			Pause(IDPAUSEREASON::Ready,60,{11,20},"READY!");
+			break;
+		case IDSTATE::Clear:
+			break;
+		case IDSTATE::Miss:
+			FB::BGM_stPlay(BGM_stacui8cMiss);
+			break;
+		case IDSTATE::Next:
+			Show(FALSE);
+			SetState_End();
+			PLAYER_pchrCurrent->Initialize_Stage();
+			SetState_Start();
+			Pause(IDPAUSEREASON::Ready,60,{11,20},"READY!");
+			idState=IDSTATE::Normal;
+			break;
+		case IDSTATE::GameOver:
+			SetState_End();
+			Pause(IDPAUSEREASON::GameOver,120,{ 9,20},"GAME  OVER");
+			break;
+		}
+		return;
+	}
+	VOID					SetState_Start(VOID)noexcept{
+		PLAYER_pchrCurrent->Start(this,VECTOR2(13*8+4,26*8)<<FIXEDL_stcui8nBit);
+		for(AUTO& chrthis:ENEMY_achrThis)chrthis.Start(this);
+		ENEMY_ui16nIjike=0;
+		MAZE_SetColor(FALSE);
+		return;
+	}
+	VOID					SetState_End(VOID)noexcept{
+		for(AUTO& chrthis:ENEMY_achrThis)chrthis.End();
+		PLAYER_pchrCurrent->End();
+		return;
+	}
+	VOID					Main_Title(VOID)noexcept{
+		constexpr UINT16		cui16istart=300;
+		constexpr UINT16		cui16nspan=60;
+
+		Show(TRUE);
+		if(ui16iProgress==cui16istart){
+			FB::BG1_stPrint(
+				{10,13},
+				"        ",
+				PALETTE_BG_stcui8iDefault
+			);
+			FB::BG1_stPrint(
+				{7,5},
+				"CHARACTER / NICKNAME",
+				PALETTE_BG_stcui8iDefault
+			);
+		}
+		{
+			static constexpr PCUSTR	stacpcustradvertize[]={
+				"OIKAKE----\"AKABAN\"",
+				"MACHIBUSE--\"TAIHO\"",
+				"KIMAGURE--\"GICCHO\"",
+				"OTOBOKE---\"JUHE4U\""
+			};
+			UINT8					ui8inumber;
+			UINT16					ui16ispan;
+			UINT8					ui8iy;
+
+			for(
+				ui8inumber=0,ui16ispan=cui16istart+cui16nspan,ui8iy=7;
+				ui8inumber<ENEMY_stcui8nNumber;
+				++ui8inumber,ui16ispan+=cui16nspan,ui8iy+=3
+			){
+				if(ui16ispan<=ui16iProgress){
+					SPRITE_Write16(
+						VECTOR2(
+							4*8+4,
+							INT16(INT16(ui8iy)<<3)
+						)<<FIXEDL_stcui8nBit,
+						0x60+(((ui16iProgress&16)==0)?0:4),
+						PALETTE_SPRITE_stacui8iEnemy_Normal[ui8inumber],
+						TRUE
+					);
+					if(ui16iProgress==ui16ispan){
+						FB::BG1_stPrint(
+							{8,INT16(ui8iy)},
+							stacpcustradvertize[ui8inumber],
+							PALETTE_BG_stcui8iTemporary+ui8inumber
+						);
+					}
+				}
+			}
+		}
+		FB::BG1_stWrite({10,35},UINT16('0'+ui8nCredit),PALETTE_BG_stcui8iDefault);
+		if(CONTROLLER_ui8cSingle&FB::JOYSTICK_stcui8cMaskButtonA){
+			if(ui8nCredit){
+				--ui8nCredit;
+				SetState(IDSTATE::Start);
+			}else{
+				++ui8nCredit;
+				FB::SE0_stPlay(SE_stacui8cDot);
+			}
+		}
+		return;
+	}
+	VOID					Main_Normal(VOID)noexcept{
+		Show(TRUE);
+		Main_Normal_Move();
+		Main_Normal_Show();
+		Main_Pause();
+		return;
+	}
+	VOID					Main_Clear(VOID)noexcept{
+		Show(TRUE);
+		MAZE_SetColor(ui16iProgress&8);
+		if(ui16iProgress==127){
+			SetState(IDSTATE::Next);
+		}
+		return;
+	}
+	VOID					Main_Miss(VOID)noexcept{
+		Show(TRUE);
+		PLAYER_pchrCurrent->Show_Miss(this,ui16iProgress>>4);
+		if(ui16iProgress==127){
+			if(PLAYER_pchrCurrent->eDecrementRest()){
+				SetState(IDSTATE::Normal);
+			}else{
+				SetState(IDSTATE::GameOver);
+			}
+		}
+		return;
+	}
+	VOID					Main_GameOver(VOID)noexcept{
+		FB::stShow(TRUE);
+		Main_Pause();
+		return;
+	}
+	VOID					Main_Pause(VOID)noexcept{
+		if(ui16nPause){
+			--ui16nPause;
+			if(ui16nPause==0){
+				for(UINT8 ui8idestination=0;ui8idestination<BG_ui8nDestination;++ui8idestination){
+					CAUTO					cv2idestination=VECTOR2(
+						INT16(BG_v2iDestination.i16iX()+INT16(ui8idestination)),
+						BG_v2iDestination.i16iY()
+					);
+
+					FB::BG1_stWriteAttribute(cv2idestination,BG_aui16cSave[ui8idestination]);
+				}
+				switch(idPauseReason){
+				case IDPAUSEREASON::Ready:
+					BGM_PlayNormal();
+					break;
+				case IDPAUSEREASON::Eaten:
+					break;
+				case IDPAUSEREASON::Clear:
+					SetState(IDSTATE::Clear);
+					break;
+				case IDPAUSEREASON::Miss:
+					SetState(IDSTATE::Miss);
+					break;
+				case IDPAUSEREASON::GameOver:
+					SetState(IDSTATE::Title);
+					break;
+				}
+			}
+		}
+		return;
+	}
+	_INLINE_ VOID			Main_Normal_Move(VOID)noexcept{
+		if(ui16nPause==0){
+			PLAYER_pchrCurrent->Move(this,CONTROLLER_ui8cCurrent);
+			for(AUTO& chrthis:ENEMY_achrThis)chrthis.Move(this);
+			if(ENEMY_ui16nIjike){
+				if(ENEMY_eIsIjiking()){
+					//	イジケカラー点滅
+					if(ENEMY_ui16nIjike&4){
+						FB::PALETTE_SPRITE_stWrite(PALETTE_SPRITE_stcui8iEnemy_Ijike,17, 1,33);
+					}else{
+						if(ENEMY_IJIKE_stcui16nWarning<ENEMY_ui16nIjike){
+							FB::PALETTE_SPRITE_stWrite(PALETTE_SPRITE_stcui8iEnemy_Ijike, 1,13,17);
+						}else{
+							FB::PALETTE_SPRITE_stWrite(PALETTE_SPRITE_stcui8iEnemy_Ijike,21, 5,37);
+							if(ENEMY_ui16nIjike==ENEMY_IJIKE_stcui16nWarning)FB::BGM_stPlayReserve(BGM_stacui8cPower1);
+						}
+					}
+					--ENEMY_ui16nIjike;
+					if(ENEMY_ui16nIjike==0)ENEMY_Ijike_End();
+				}else{
+					ENEMY_ui16nIjike=0;
+					ENEMY_Ijike_End();
+				}
+			}
+		}else{
+			if(idPauseReason==IDPAUSEREASON::Miss){
+				ENEMY_pchrAttention->IncrementAnimation();
+			}
+		}
+		return;
+	}
+	_INLINE_ VOID			Main_Normal_Show(VOID)noexcept{
+		if(ui16nPause==0){
+			PLAYER_pchrCurrent->Show(this);
+			for(AUTO& chrthis:ENEMY_achrThis)chrthis.Show(this);
+		}else{
+			switch(idPauseReason){
+			case IDPAUSEREASON::Eaten:
+				for(AUTO& chrthis:ENEMY_achrThis)if(&chrthis!=ENEMY_pchrAttention)chrthis.Show(this);
+				break;
+			case IDPAUSEREASON::Clear:
+				PLAYER_pchrCurrent->Show(this);
+				break;
+			case IDPAUSEREASON::Miss:
+				PLAYER_pchrCurrent->Show(this);
+				ENEMY_pchrAttention->Show(this);
+				break;
+			default:
+				PLAYER_pchrCurrent->Show(this);
+				for(AUTO& chrthis:ENEMY_achrThis)chrthis.Show(this);
+				break;
+			}
+		}
+		if(eUpdateScore){
+			PLAYER_pchrCurrent->Show_Score(this);
+			eUpdateScore=FALSE;
+		}
+		ShowHighScore();
+		return;
+	}
+	_INLINE_ VOID			Show(COFWBOOL ceshow)noexcept{
+		if(ceshow){
+			FB::stShow(TRUE);
+			if(PLAYER_pchrCurrent){
+				PLAYER_pchrCurrent->Show_Up(this,(ui8iBlink&16)==0);
+			}
+			//	パワーエサ点滅
+			if((ui8iBlink&8)==0){
+				FB::PALETTE_BG_stWrite(PALETTE_BG_stcui8iDotPower,				48,54,38);
+			}else{
+				FB::PALETTE_BG_stWrite(PALETTE_BG_stcui8iDotPower,				29,29,29);
+			}
+			++ui8iBlink;
+		}else{
+			FB::VIDEO_stWaitforVBlank();
+			FB::stShow(FALSE);
+			ui8iBlink=0;
+			eUpdateScore=TRUE;
+			eUpdateHighScore=TRUE;
+		}
+		return;
+	}
+	_INLINE_ VOID			ShowHighScore(VOID)noexcept{
+		if(eUpdateHighScore){
+			BG_ShowScore({11,1},ui32nHighScore);
+			eUpdateHighScore=FALSE;
+		}
+		return;
+	}
+	VOID					Pause(const IDPAUSEREASON cidpausereason,CUINT16 cui16npause)noexcept{
+		idPauseReason=cidpausereason;
+		ui16nPause=cui16npause;
+		BG_ui8nDestination=0;
+		return;
+	}
+	VOID					Pause(const IDPAUSEREASON cidpausereason,CUINT16 cui16npause,CVECTOR2& bg_cv2iposition,const PCUSTR cpcustrmessage)noexcept{
+		idPauseReason=cidpausereason;
+		ui16nPause=cui16npause;
+		BG_v2iDestination=bg_cv2iposition;
+		for(BG_ui8nDestination=0;cpcustrmessage[BG_ui8nDestination];++BG_ui8nDestination){
+			CAUTO					cv2idestination=VECTOR2(
+				INT16(bg_cv2iposition.i16iX()+INT16(BG_ui8nDestination)),
+				bg_cv2iposition.i16iY()
+			);
+
+			BG_aui16cSave[BG_ui8nDestination]=FB::BG1_stui16cReadAttribute(cv2idestination);
+			FB::BG1_stWriteAttribute(cv2idestination,UINT16(cpcustrmessage[BG_ui8nDestination]));
+		}
+		return;
+	}
+	_INLINE_ OFWBOOL		eIsPaused(VOID)const noexcept{
+		return OFWBOOL(0<ui16nPause);
+	}
+	//	VOID					AddScore(CUINT16 cui16nscore)
+	//		スコアを加算します。
+	_INLINE_ VOID			AddScore(CUINT16 cui16nscore)noexcept{
+		AUTO&					ui32nscore=PLAYER_pchrCurrent->ui32nScore;
+
+		ui32nscore+=cui16nscore;
+		if(99999<ui32nscore)ui32nscore=99999;
+		eUpdateScore=TRUE;
+		if(ui32nHighScore<ui32nscore){
+			ui32nHighScore=ui32nscore;
+			eUpdateHighScore=TRUE;
+		}
+		return;
+	}
+	_INLINE_ VOID			SPRITE_Write8(CVECTOR2& fixed_cv2iposition,CUINT8 cui8ipattern,CUINT8 cui8ispritepalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
+		FB::SPRITE_stWrite8(
+			SPRITE_ui8iNumber,
+			(fixed_cv2iposition>>FIXEDL_stcui8nBit)+VECTOR2(-4,-4),
+			cui8ipattern,
+			cui8ispritepalette,
+			ceinverth,
+			ceinvertv
+		);
+		++SPRITE_ui8iNumber;
+		return;
+	}
+	_INLINE_ VOID			SPRITE_Write16(CVECTOR2& fixed_cv2iposition,CUINT8 cui8ipattern,CUINT8 cui8ispritepalette,COFWBOOL ceinverth=FALSE,COFWBOOL ceinvertv=FALSE)noexcept{
+		FB::SPRITE_stWrite16(
+			SPRITE_ui8iNumber,
+			(fixed_cv2iposition>>FIXEDL_stcui8nBit)+VECTOR2(-4,-4),
+			cui8ipattern,
+			cui8ispritepalette,
+			ceinverth,
+			ceinvertv
+		);
+		++SPRITE_ui8iNumber;
+		return;
+	}
+	//	VOID					BG_ShowScore(VOID)
+	//		点数表示処理です。最大「99999(+固定0)」まで表示できます。
+	//		通常「cui32nscore%10000」等と書くところですが、
+	//		割り算は遅いので引き算の繰り返しを行っています。
+	VOID					BG_ShowScore(CVECTOR2& bg_cv2iposition,CUINT32 cui32nscore)const noexcept{
+		USTR					austrscore[]="00000";
+		AUTO					ui32nscore=cui32nscore;
+		USTR					ustrzero=' ';
+		USTR					ustrdigit;
+
+		//	「万」の位
+		for(ustrdigit='0';10000<=ui32nscore;++ustrdigit,ui32nscore-=10000);
+		if(ustrdigit=='0'){
+			austrscore[0]=ustrzero;
+		}else{
+			ustrzero='0';
+			austrscore[0]=ustrdigit;
+		}
+		//	「千」の位
+		for(ustrdigit='0';1000<=ui32nscore;++ustrdigit,ui32nscore-=1000);
+		if(ustrdigit=='0'){
+			austrscore[1]=ustrzero;
+		}else{
+			ustrzero='0';
+			austrscore[1]=ustrdigit;
+		}
+		//	「百」の位
+		for(ustrdigit='0';100<=ui32nscore;++ustrdigit,ui32nscore-=100);
+		if(ustrdigit=='0'){
+			austrscore[2]=ustrzero;
+		}else{
+			ustrzero='0';
+			austrscore[2]=ustrdigit;
+		}
+		//	「十」の位
+		for(ustrdigit='0';10<=ui32nscore;++ustrdigit,ui32nscore-=10);
+		if(ustrdigit=='0'){
+			austrscore[3]=ustrzero;
+		}else{
+			ustrzero='0';
+			austrscore[3]=ustrdigit;
+		}
+		//	「一」の位
+		if(ui32nscore==0){
+			austrscore[4]=ustrzero;
+		}else{
+			ustrzero='0';
+			austrscore[4]='0'+UINT8(ui32nscore);
+		}
+		FB::BG1_stPrint(bg_cv2iposition,austrscore,0);
+		return;
+	}
+	VOID					BGM_PlayNormal(VOID)noexcept{
+		if(ENEMY_ui16nIjike==0){
+			AUTO&					ui8inormal=PLAYER_pchrCurrent->BGM_ui8iNormal;
+
+			if(ui8inormal<BGM_stcui8nNormal-1){
+				if(PLAYER_pchrCurrent->ui16nGetDotRest()<MAZE_stacui16nDotNormal[ui8inormal]){
+					++ui8inormal;
+					if(ui8inormal==BGM_stcui8nNormal/2){
+						for(AUTO& chrthis:ENEMY_achrThis)chrthis.Hustle(this);
+					}
+				}
+			}
+			FB::BGM_stPlayReserve(BGM_stapcui8cNormal[ui8inormal]);
+		}
+		return;
+	}
+	VOID					MAZE_SetColor(OFWBOOL ceflash)noexcept{
+		if(ceflash){
+			FB::PALETTE_BG_stWrite(PALETTE_BG_stcui8iDefault,					48,48,48);
+		}else{
+			FB::PALETTE_BG_stWrite(PALETTE_BG_stcui8iDefault,					48,52,2);
+		}
+		return;
+	}
+	_INLINE_ UINT16			PLAYER_FIXED_ui16nGetSpeed(VOID)const noexcept{
+		return (4+(PLAYER_pchrCurrent->ui8iGetStage()>>2))<<(FIXEDL_stcui8nBit-2);
+	}
+	_INLINE_ CVECTOR2&		PLAYER_FIXED_v2iGetPosition(VOID)const noexcept{
+		return PLAYER_pchrCurrent->FIXED_v2iGetPosition();
+	}
+	_INLINE_ VECTOR2		PLAYER_BG_v2iPredict(CUINT8 cui8nspan)noexcept{
+		return PLAYER_pchrCurrent->BG_v2iPredict(cui8nspan);
+	}
+	VOID					PLAYER_Dot(VOID)noexcept{
+		if(PLAYER_pchrCurrent->ui16nGetDotRest()){
+			BGM_PlayNormal();
+		}else{
+			Pause(
+				IDPAUSEREASON::Clear,
+				60
+			);
+			FB::BGM_stPlay(NULL);
+		}
+		return;
+	}
+	_INLINE_ VOID			PLAYER_Miss(const PENEMY cpchreaten)noexcept{
+		ENEMY_pchrAttention=cpchreaten;
+		Pause(
+			IDPAUSEREASON::Miss,
+			60
+		);
+		FB::BGM_stPlay(NULL);
+		return;
+	}
+	_INLINE_ UINT16			ENEMY_FIXED_ui16nGetSpeed(VOID)const noexcept{
+		return (3+(PLAYER_pchrCurrent->ui8iGetStage()>>1))<<(FIXEDL_stcui8nBit-2);
+	}
+	OFWBOOL					ENEMY_eIsIjiking(VOID)const noexcept{
+		for(AUTO& chrthis:ENEMY_achrThis)if(chrthis.IJIKE_eIsApplicable())return TRUE;
+		return FALSE;
+	}
+	_INLINE_ VOID			ENEMY_Ijike_Start(VOID)noexcept{
+		for(AUTO& chrthis:ENEMY_achrThis)chrthis.IJIKE_Start(this);
+		if(ENEMY_eIsIjiking()){
+			ENEMY_ui16nIjike=512;
+			ENEMY_ui8nEaten=0;
+			FB::BGM_stPlay(BGM_stacui8cPower0);
+		}
+		return;
+	}
+	_INLINE_ VOID			ENEMY_Ijike_End(VOID)noexcept{
+		for(AUTO& chrthis:ENEMY_achrThis)chrthis.IJIKE_End(this);
+		BGM_PlayNormal();
+		return;
+	}
+	_INLINE_ VOID			ENEMY_Ijike_Eaten(const PENEMY cpchreaten)noexcept{
+		static constexpr UINT16	stacui16nscore[]={
+			20,
+			40,
+			80,
+			160
+		};
+		static constexpr PCUSTR	stapcustrscore[]={
+			"200",
+			"400",
+			"800",
+			"1600"
+		};
+		CAUTO					cui16nscore=stacui16nscore[ENEMY_ui8nEaten];
+		CAUTO					bg_cv2iposition=PLAYER_pchrCurrent->FIXED_v2iGetPosition()>>BG_stcui8nBit;
+
+		ENEMY_pchrAttention=cpchreaten;
+		AddScore(cui16nscore);
+		Pause(
+			IDPAUSEREASON::Eaten,
+			30,
+			{
+				INT16(bg_cv2iposition.i16iX()-((cui16nscore<100)?INT16(1):INT16(2))),
+				bg_cv2iposition.i16iY()
+			},
+			stapcustrscore[ENEMY_ui8nEaten]
+		);
+		++ENEMY_ui8nEaten;
+		FB::SE0_stPlay(SE_stacui8cEaten);
+		return;
+	}
+};
+
+//
+//		user
+//
+
+static GAME				stgameThis;
+
+VOID					USER_New(VOID)noexcept{
+	FB::stNew();
+	stgameThis.New();
+	return;
+}
+
+VOID					USER_Delete(VOID)noexcept{
+	stgameThis.Delete();
+	FB::stDelete();
+	return;
+}
+
+VOID					USER_Main(VOID)noexcept{
+	stgameThis.Main();
+	return;
+}

@@ -1,0 +1,306 @@
+#!/d/Sync/Package/Cross/ORE68000_ACE/m68k/M68K_MAKESEQUENCE.pl
+#
+#	TITLE:BGM00_Start
+#
+#
+
+[
+	"#CHANNEL=PCM0/PCM1",
+	#==========================	   0
+	"#SPEED=4",
+	" 5C ,PG=4,PN=0,PM=0,VL=255,VM=255/ 3C ,PG=1,PN=0,PM=0,VL=255,VM=255",
+	"-           /-           ",
+	" >C         /            ",
+	"-           /            ",
+	" <G         /            ",
+	"-           /            ",
+	"  C         / >C         ",
+	"-           /-           ",
+	#==========================	   1
+	" >C         / <C         ",
+	"-           /-           ",
+	" <G         /            ",
+	"-           /            ",
+	"  C         /            ",
+	"#SPEED=12",
+	"-           /            ",
+	#==========================	   2
+	"#SPEED=4",
+	"  C#        /  C#        ",
+	"-           /-           ",
+	" >C#        /            ",
+	"-           /            ",
+	" <G#        /            ",
+	"-           /            ",
+	"  C#        / >C#        ",
+	"-           /-           ",
+	#==========================	   3
+	" >C#        / <C#        ",
+	"-           /-           ",
+	" <G#        /            ",
+	"-           /            ",
+	"  C#        /            ",
+	"#SPEED=12",
+	"-           /            ",
+	#==========================	   4
+	"#SPEED=4",
+	"  C         /  C         ",
+	"-           /-           ",
+	" >C         /            ",
+	"-           /            ",
+	" <G         /            ",
+	"-           /            ",
+	"  C         / >C         ",
+	"-           /-           ",
+	#==========================	   5
+	" >C         / <C         ",
+	"-           /-           ",
+	" <G         /            ",
+	"-           /            ",
+	"  C         /            ",
+	"-           /            ",
+	" >C         /            ",
+	"-           /            ",
+	#==========================	   6
+	" <F         /  G         ",
+	"  F#        /-           ",
+	"  G         /            ",
+	"-           /            ",
+	"  G         /  A         ",
+	"  G#        /-           ",
+	"  A         /            ",
+	"-           /            ",
+	#==========================	   7
+	"  A         /  B         ",
+	"  A#        /-           ",
+	"  B         /            ",
+	"-           /            ",
+	" >C         / >C         ",
+	"#SPEED=1",
+	"-           /-           ",
+];
+#!/d/Sync/Package/Cross/ORE68000_ACE/m68k/M68K_MAKESEQUENCE.pl
+#
+#	TITLE:BGM01_Normal0
+#
+#
+
+[
+	"#CHANNEL=PCM0/PCM1",
+	#==========================	   0
+	"#LABEL=LoopStart",
+	"#SPEED=12",
+	" 5A ,PT=-12,PG=4,PN=0,PM=0,VL=255,VM=255/ 0C ,PG=127,PM=0,PN=0,VL=127,VM=0",
+	"+<A ,PT=+12 /            ",
+	"#JUMP=LoopStart",
+#	"->A         /            ",
+];
+#!/d/Sync/Package/Cross/ORE68000_ACE/m68k/M68K_MAKESEQUENCE.pl
+#
+#	TITLE:BGM01_Normal1
+#
+#
+
+[
+	"#CHANNEL=PCM0/PCM1",
+	#==========================	   0
+	"#LABEL=LoopStart",
+	"#SPEED=12",
+	" 6C ,PT=-12,PG=4,PN=0,PM=0,VL=255,VM=255/ 0C ,PG=127,PM=0,PN=0,VL=127,VM=0",
+	"+<C ,PT=+12 /            ",
+	"#JUMP=LoopStart",
+#	"->C         /            ",
+];
+#!/d/Sync/Package/Cross/ORE68000_ACE/m68k/M68K_MAKESEQUENCE.pl
+#
+#	TITLE:BGM01_Normal2
+#
+#
+
+[
+	"#CHANNEL=PCM0/PCM1",
+	#==========================	   0
+	"#LABEL=LoopStart",
+	"#SPEED=10",
+	" 6D#,PT=-12,PG=4,PN=0,PM=0,VL=255,VM=255/ 0C ,PG=127,PM=0,PN=0,VL=127,VM=0",
+	"+<D#,PT=+12 /            ",
+	"#JUMP=LoopStart",
+#	"-           /            ",
+];
+#!/d/Sync/Package/Cross/ORE68000_ACE/m68k/M68K_MAKESEQUENCE.pl
+#
+#	TITLE:BGM01_Normal3
+#
+#
+
+[
+	"#CHANNEL=PCM0/PCM1",
+	#==========================	   0
+	"#LABEL=LoopStart",
+	"#SPEED=10",
+	" 6F#,PT=-12,PG=4,PN=0,PM=0,VL=255,VM=255/ 0C ,PG=127,PM=0,PN=0,VL=127,VM=0",
+	"+<F#,PT=+12 /            ",
+	"#JUMP=LoopStart",
+#	"-           /            ",
+];
+#!/d/Sync/Package/Cross/ORE68000_ACE/m68k/M68K_MAKESEQUENCE.pl
+#
+#	TITLE:BGM01_Normal4
+#
+#
+
+[
+	"#CHANNEL=PCM0/PCM1",
+	#==========================	   0
+	"#LABEL=LoopStart",
+	"#SPEED=8",
+	" 6A ,PT=-12,PG=4,PN=0,PM=0,VL=255,VM=255/ 0C ,PG=127,PM=0,PN=0,VL=127,VM=0",
+	"+<A ,PT=+12 /            ",
+	"#JUMP=LoopStart",
+#	"-           /            ",
+];
+#!/d/Sync/Package/Cross/ORE68000_ACE/m68k/M68K_MAKESEQUENCE.pl
+#
+#	TITLE:BGM02_Power0
+#
+#
+
+[
+	"#CHANNEL=PCM0/PCM1",
+	#==========================	   0
+	"#LABEL=LoopStart",
+	"#SPEED=2",
+	" 5C#,PG=0,PN=0,PM=0,VL=255,VM=255/ 0C ,PG=4,PM=0,PN=0,VL=127,VM=0",
+	" <C#        /            ",
+	" <C#        /            ",
+	" >C#        /            ",
+	"#JUMP=LoopStart",
+#	"-           /            ",
+];
+#!/d/Sync/Package/Cross/ORE68000_ACE/m68k/M68K_MAKESEQUENCE.pl
+#
+#	TITLE:BGM02_Power1
+#
+#
+
+[
+	"#CHANNEL=PCM0/PCM1",
+	#==========================	   0
+	"#LABEL=LoopStart",
+	"#SPEED=2",
+	" 5C#,PG=0,PN=0,PM=0,VL=255,VM=255/ 5A#,PT=-1,PG=4,PN=0,PM=0,VL=255,VM=255",
+	" <C#        /            ",
+	" <C#        /            ",
+	" >C#        /            ",
+	" >C#        /            ",
+	" <C#        /            ",
+	" <C#        /            ",
+	" >C#        /            ",
+	" >C#        /            ",
+	" <C#        /            ",
+	" <C#        /            ",
+	" >C#        /            ",
+	"#JUMP=LoopStart",
+#	"-           /-<A#        ",
+];
+#!/d/Sync/Package/Cross/ORE68000_ACE/m68k/M68K_MAKESEQUENCE.pl
+#
+#	TITLE:BGM03_Miss
+#
+#
+
+[
+	"#CHANNEL=PCM0/PCM1",
+	#==========================	   0
+	"#SPEED=4",
+	" 5F ,PT=-4,PG=9,PN=0,PM=0,VL=255,VM=255/ 0C ,PG=127,PM=0,PN=0,VL=127,VM=0",
+	"#SPEED=8",
+	"+ D ,PT=+7  /            ",
+	"+ A ,PT=-8  /            ",
+	"#SPEED=1",
+	"+ D ,PT=-1  /            ",
+	"#SPEED=7",
+	"+ D ,PT=+2  /            ",
+	"#SPEED=8",
+	"+ F ,PT=-8  /            ",
+	#==========================	   1
+	"+<A ,PT=+5  /            ",
+	"+>D ,PT=-10 /            ",
+	"+<F ,PT=+4  /            ",
+	"+ A ,PT=-8  /            ",
+	#==========================	   2
+	"#SPEED=1",
+	"+ D ,PT=-1  /            ",
+	"#SPEED=7",
+	"+ D ,PT=+2  /            ",
+	"#SPEED=8",
+	"+ F ,PT=-9  /            ",
+	" 2A ,PT=+24,PG=8/            ",
+	"  A ,PT=+24 /            ",
+	#==========================	   3
+	"#SPEED=1",
+	"-4A         /            ",
+];
+#!/d/Sync/Package/Cross/ORE68000_ACE/m68k/M68K_MAKESEQUENCE.pl
+#
+#	TITLE:SE00_Dot
+#
+#
+
+[
+	"#CHANNEL=PCM3",
+	#=============	   0
+	"#SPEED=8",
+	" 5E ,PT=-36,PG=8,PN=0,PM=0,VL=255,VM=249",
+	" 3C ,PT=+36 ",
+	"#SPEED=1",
+	"-           ",
+];
+#!/d/Sync/Package/Cross/ORE68000_ACE/m68k/M68K_MAKESEQUENCE.pl
+#
+#	TITLE:SE01_Eaten
+#
+#
+
+[
+	"#CHANNEL=PCM3",
+	#=============	   0
+	"#SPEED=2",
+	" 4C ,PG=12,PN=0,PM=0,VL=255,VM=255",
+	" <C         ",
+	"  D#        ",
+	"  F#        ",
+	"  A         ",
+	" >C         ",
+	"  D#        ",
+	"  F#        ",
+	"  A         ",
+	" >C         ",
+	"  D#        ",
+	"  F#        ",
+	"  A         ",
+	" >C         ",
+	"  D#        ",
+	"  F#        ",
+	#=============	   1
+	"#SPEED=1",
+	"-           ",
+];
+#!/d/Sync/Package/Cross/ORE68000_ACE/m68k/M68K_MAKESEQUENCE.pl
+#
+#	TITLE:SE02_Bonus
+#
+#
+
+[
+	"#CHANNEL=PCM3",
+	#=============	   0
+	"#SPEED=8",
+	" 5C ,PT=-18,PG=12,PN=0,PM=0,VL=255,VM=255",
+	"            ",
+	" 2G ,PT=+18 ",
+	"            ",
+	#=============	   1
+	"#SPEED=1",
+	"-           ",
+];

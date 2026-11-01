@@ -363,6 +363,9 @@ namespace m68k::i71::sub{
 		constexpr /*VOID*/		CANVASBG_RAM(VOID)noexcept{
 			SUPER::pcui16cThis=aui16cThis;
 		}
+		constexpr PUINT16		pui16cGetThis(VOID)noexcept{
+			return aui16cThis;
+		}
 		//	VOID					Fill(CUINT16 cui16ccolor)
 		//		「cui16csource」での塗りつぶしを実行します。
 		_INLINE_ VOID			Fill(CUINT16 cui16csource)noexcept{

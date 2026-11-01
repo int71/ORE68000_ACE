@@ -1298,7 +1298,7 @@ public:
 	_INLINE_ VOID			Main(VOID)noexcept{
 		switch(idMode){
 		case IDMODE::Start:
-			Start();
+			Main_Start();
 			break;
 		case IDMODE::Normal:
 			Normal();
@@ -1312,7 +1312,7 @@ public:
 	//	VOID					Start(VOID)
 	//		ゲーム開始処理です。
 	//		初期化処理の後の他、ゲームオーバーになった後にも実行されます。
-	VOID					Start(VOID)noexcept{
+	VOID					Main_Start(VOID)noexcept{
 		idMode=IDMODE::Normal;
 		ui16nScore=0;
 		//	「自機」初期化
@@ -1321,7 +1321,7 @@ public:
 		FAMILYBASIC::SPRITE_stSetSize(FAMILYBASIC::IDSIZE::n1024);
 		FAMILYBASIC::BG1_stSetSize(FAMILYBASIC::IDSIZE::n1024);
 		SCROLL_v2iPosition=VECTOR2(0,1024-212)<<FIXEDL_stcui8nBit;
-		FAMILYBASIC::BG1_stCopy(MAP_stccvsBG,{0,0});
+		FAMILYBASIC::BG1_stWrite(MAP_stccvsBG,{0,0});
 		//	点数系初期化
 		FAMILYBASIC::BG0_stPrint({11,12},"          ",0);
 		ShowScore();

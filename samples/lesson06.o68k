@@ -598,7 +598,7 @@ public:
 	_INLINE_ VOID			Main(VOID)noexcept{
 		switch(idMode){
 		case IDMODE::Start:
-			Start();
+			Main_Start();
 			break;
 		case IDMODE::Normal:
 			Normal();
@@ -612,7 +612,7 @@ public:
 	//	VOID					Start(VOID)
 	//		ゲーム開始処理です。
 	//		初期化処理の後の他、ゲームオーバーになった後にも実行されます。
-	VOID					Start(VOID)noexcept{
+	VOID					Main_Start(VOID)noexcept{
 		idMode=IDMODE::Normal;
 		ui16nScore=0;
 		//	「自機」初期化

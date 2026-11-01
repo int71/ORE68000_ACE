@@ -251,7 +251,7 @@ public:
 			case IDTYPE::Left:
 				FALLTHROUGH;
 			case IDTYPE::Right:
-				FB::SPRITE_stWrite8(cui8isprite,(v2iPosition>>FIXEDL_stcui8nBit)-VECTOR2(4,4),222,3);
+				FB::SPRITE_stWrite8(cui8isprite,(v2iPosition>>FIXEDL_stcui8nBit)-VECTOR2(4,4),0xde,3);
 				return 1;
 			default:
 				break;
@@ -938,7 +938,7 @@ public:
 	_INLINE_ VOID			Main(VOID)noexcept{
 		switch(idMode){
 		case IDMODE::Start:
-			Start();
+			Main_Start();
 			break;
 		case IDMODE::Normal:
 			Normal();
@@ -952,7 +952,7 @@ public:
 	//	VOID					Start(VOID)
 	//		ゲーム開始処理です。
 	//		初期化処理の後の他、ゲームオーバーになった後にも実行されます。
-	VOID					Start(VOID)noexcept{
+	VOID					Main_Start(VOID)noexcept{
 		idMode=IDMODE::Normal;
 		ui16nScore=0;
 		ui16nShotDown=0;

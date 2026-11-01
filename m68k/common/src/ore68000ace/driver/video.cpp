@@ -421,4 +421,3 @@ VOID				 	VIDEO::VRAM_TEXT_stWrite(
 	}
 	return;
 }
-

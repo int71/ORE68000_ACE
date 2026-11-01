@@ -472,3 +472,23 @@ OREDIUS68k 0.25:
             ・上記仕様変更に伴うサンプル修正
             ・「samples/(Document)/」にファミベBG、スプライト、パレット番号早見
               表追加
+1.6.2026.9: ・「FAMILYBASIC_R::SPRITE_stWrite8」でパターン番号が異常だった問題を
+              修正
+            ・現行BGMの終了、もしくはループのタイミングで曲を切り替える
+              「FAMILYBASIC::BGM_stPlayReserve」追加
+            ・「USER_Main」で無限ループしても音声は継続再生されるように修正
+              代わりに処理開始前に音源ドライバ処理時間が追加されます。
+            ・画面拡大率を「表示比率」でなく「ドット比率」で決定するよう変更
+              320ドット系(25.17MHz)は「1:1(正方形)」、256ドット系(21.48MHz)は
+              「25.17:21.48(横長)」の再現を試みます。
+              これにより、解像度調整を行ってもドット比率がキープされます。
+            ・それに伴い設定値を変更
+              「ORE68000ACE/_SYSTEM_/DISPLAY/AspectAdjustment」、
+              「ORE68000ACE/_SYSTEM_/DISPLAY/AspectAdjustmentVertical」はそれぞ
+              れ、「ORE68000ACE/_SYSTEM_/DISPLAY/DotAspectAdjustment」、
+              「ORE68000ACE/_SYSTEM_/DISPLAY/DotAspectAdjustmentVertical」とな
+              り、補正方法が「足し算」から「分数の掛け算」になりました。
+            ・縦画面循環サイズ設定「FAMILYBASIC_R::BGn_stSetSize」の引数に
+              「FAMILYBASIC::IDSIZE::n256」以外を与えた状態で、画面右外に
+              「FAMILYBASIC_R::BGn_stWrite」で「CANVASBG_」を描画すると、異常な
+              循環が発生する問題を修正

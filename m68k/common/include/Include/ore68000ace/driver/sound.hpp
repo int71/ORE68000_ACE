@@ -795,6 +795,7 @@ namespace m68k::ore68000ace::driver{
 		UINT16					ui16cChannelMask;
 		UINT8					ui8iVoiceChannel;
 		_UNDISCARDABLE_ CUINT8* ROM_pcui8Cursor;
+		_UNDISCARDABLE_ CUINT8* ROM_pcui8Reserve;
 		UINT32					ui32nWait;
 		_UNDISCARDABLE_ CUINT8* apcui8Stack[stcui8nStack];
 		_UNDISCARDABLE_ CUINT8**	ppcui8Stack;
@@ -833,6 +834,14 @@ namespace m68k::ore68000ace::driver{
 				Play(cpcui8source);
 			}
 			return;
+		}
+		_INLINE_ VOID			PlayReserve(_UNDISCARDABLE_ CUINT8* const cpcui8source)noexcept{
+			if(ROM_pcui8Cursor)ROM_pcui8Reserve=cpcui8source;
+			else Play(cpcui8source);
+			return;
+		}
+		_INLINE_ OFWBOOL		eIsPlaying(VOID)const noexcept{
+			return (ROM_pcui8Cursor!=NULL);
 		}
 		VOID					SetMasterVolume(CUINT8 cui8nvolume)noexcept;
 		VOID					SetPan(CINT8 ci8ipan)noexcept;

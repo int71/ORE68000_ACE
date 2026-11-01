@@ -184,6 +184,7 @@ VOID					SOUND::Play(
 	_UNDISCARDABLE_ CUINT8* const	cpcui8source
 )noexcept{
 	ROM_pcui8Cursor=cpcui8source;
+	ROM_pcui8Reserve=NULL;
 	if(ROM_pcui8Cursor){
 		ui32nWait=1;
 		ppcui8Stack=apcui8Stack+stcui8nStack;
@@ -273,7 +274,12 @@ VOID					SOUND::Progress(VOID)noexcept{
 				IDFLOW(cui8cflowtype>>6)
 			){
 			case IDFLOW::Jump:
-				ROM_pcui8Cursor+=ROM_ui32dGetCursorOffset(cui8cflowtype);
+				if(ROM_pcui8Reserve==NULL){
+					ROM_pcui8Cursor+=ROM_ui32dGetCursorOffset(cui8cflowtype);
+				}else{
+					ROM_pcui8Cursor=ROM_pcui8Reserve;
+					ROM_pcui8Reserve=NULL;
+				}
 				break;
 			case IDFLOW::Call:
 				--ppcui8Stack;
@@ -285,7 +291,8 @@ VOID					SOUND::Progress(VOID)noexcept{
 				++ppcui8Stack;
 				break;
 			case IDFLOW::End:
-				ROM_pcui8Cursor=NULL;
+				ROM_pcui8Cursor=ROM_pcui8Reserve;
+				ROM_pcui8Reserve=NULL;
 				return;
 			}
 			while(eprogress){

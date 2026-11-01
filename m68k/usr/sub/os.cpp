@@ -170,22 +170,8 @@ VOID					OS::stDelete(VOID)noexcept{
 VOID					OS::stMain(VOID)noexcept{
 	USER_New();
 	while(TRUE){
-		st.eVBlank=FALSE;
-		while(!st.eVBlank);
+		VIDEO_stWaitforVBlank();
 		USER_Main();
-		if(st.BGM_ui16nVolumeFadeSpeedMain){
-			if(st.BGM_ui16nVolumeFadeSpeedMain<st.BGM_ui16nVolumeFadeMain){
-				st.BGM_ui16nVolumeFadeMain-=st.BGM_ui16nVolumeFadeSpeedMain;
-				st.BGM_drvThis.SetMasterVolume(UINT8(st.BGM_ui16nVolumeFadeMain>>8));
-			}else{
-				st.BGM_drvThis.Play(0);
-				st.BGM_ui16nVolumeFadeSpeedMain=0;
-			}
-		}
-		st.BGM_drvThis.Progress();
-		st.SE0_drvThis.Progress();
-		st.SE1_drvThis.Progress();
-		SOUND_DRIVER::stProgress();
 	}
 	USER_Delete();
 	return;
@@ -220,6 +206,19 @@ _HANDLER_ VOID			OS::stINT1(VOID)noexcept{
 		if(st.INT_fp_callbackThis)st.INT_fp_callbackThis(IDCALLBACK::HBlank,st.INT_pObject);
 	}else{
 		if(st.INT_fp_callbackThis)st.INT_fp_callbackThis(IDCALLBACK::VBlank,st.INT_pObject);
+		if(st.BGM_ui16nVolumeFadeSpeedMain){
+			if(st.BGM_ui16nVolumeFadeSpeedMain<st.BGM_ui16nVolumeFadeMain){
+				st.BGM_ui16nVolumeFadeMain-=st.BGM_ui16nVolumeFadeSpeedMain;
+				st.BGM_drvThis.SetMasterVolume(UINT8(st.BGM_ui16nVolumeFadeMain>>8));
+			}else{
+				st.BGM_drvThis.Play(0);
+				st.BGM_ui16nVolumeFadeSpeedMain=0;
+			}
+		}
+		st.BGM_drvThis.Progress();
+		st.SE0_drvThis.Progress();
+		st.SE1_drvThis.Progress();
+		SOUND_DRIVER::stProgress();
 		st.eVBlank=TRUE;
 	}
 //	INTERRUPTER::stRaiseS2M(1);
