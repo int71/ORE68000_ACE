@@ -291,9 +291,14 @@ VOID					SOUND::Progress(VOID)noexcept{
 				++ppcui8Stack;
 				break;
 			case IDFLOW::End:
-				ROM_pcui8Cursor=ROM_pcui8Reserve;
-				ROM_pcui8Reserve=NULL;
-				return;
+				if(ROM_pcui8Reserve){
+					ROM_pcui8Cursor=ROM_pcui8Reserve;
+					ROM_pcui8Reserve=NULL;
+				}else{
+					ROM_pcui8Cursor=NULL;
+					return;
+				}
+				break;
 			}
 			while(eprogress){
 				CAUTO					cui8cevent=ROM_ui8Read();

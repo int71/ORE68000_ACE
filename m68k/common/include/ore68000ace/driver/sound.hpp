@@ -840,7 +840,7 @@ namespace m68k::ore68000ace::driver{
 			else Play(cpcui8source);
 			return;
 		}
-		_INLINE_ OFWBOOL		eIsPlaying(VOID)const noexcept{
+		_INLINE_ OFWBOOL		eIsPlaying(VOID)_UNDISCARDABLE_ const noexcept{
 			return (ROM_pcui8Cursor!=NULL);
 		}
 		VOID					SetMasterVolume(CUINT8 cui8nvolume)noexcept;

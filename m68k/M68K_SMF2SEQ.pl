@@ -9,7 +9,7 @@
 use strict;
 $INC[@INC]='/usr/local/ofw/lib';
 require 'smf.pl';
-my($sVersion,$sDate)=('2.50','2026/10/30');
+my($sVersion,$sDate)=('2.51','2026/11/07');
 my($COM_sDirectory)=('/d/Sync/Package/Cross/ORE68000_ACE/m68k');
 my($sChannelAdditionalVariableName)=('_INIT');
 new BASE::();
@@ -88,6 +88,11 @@ sub main{
 		}else{
 			$switch{'VolumeOffset'}=0;
 		}
+		if(defined $$option{'mt'}){
+			$switch{'TempoMultiply'}=$$option{'mt'}+.0;
+		}else{
+			$switch{'TempoMultiply'}=1.0;
+		}
 		if(defined $$option{'ip'}){
 			$switch{'IgnorePan'}=$$option{'ip'};
 		}else{
@@ -150,6 +155,10 @@ sub main{
 			while(defined($line=$img_destination->GetLINE())){
 				BASE::Print("$line\n");
 			}
+		}elsif(defined $$option{'dr'}){
+			my($smf)=new SMF::($source);
+
+			BASE::Print($smf);
 		}else{
 			$img_destination->Save("$destination.sh");
 		}
@@ -168,7 +177,7 @@ sub USR_stShowHelp{
   「.mid」SMF形式ファイルを「M68K_MAKESEQUENCE」演奏テキストに変換します。
 
 <書式>
-$BASE::Self (入力).mid [-v] [-h] [-o (演奏テキスト).sh] [-u (音符長分母)] [-a (追加制御文)[,(追加制御文)...]] [-c (演奏データ)] [-op (プログラム番号オフセット)] [-ov (音量オフセット)] [-ip] [-ar (ポルタメント精度)] [-m (ピッチモジュレーション固定値)] [-z (初期フレーム数)] [-f (チャンネル)[,(チャンネル)...]] [-n (チャンネル)[,(チャンネル)...]] [-r (置換文字列定義)] [-d]
+$BASE::Self (入力).mid [-v] [-h] [-o (演奏テキスト).sh] [-u (音符長分母)] [-a (追加制御文)[,(追加制御文)...]] [-c (演奏データ)] [-op (プログラム番号オフセット)] [-ov (音量オフセット)] [-mt (テンポ倍率)] [-ip] [-ar (ポルタメント精度)] [-m (ピッチモジュレーション固定値)] [-z (初期フレーム数)] [-f (チャンネル)[,(チャンネル)...]] [-n (チャンネル)[,(チャンネル)...]] [-r (置換文字列定義)] [-d|-dr]
 
 <オプション>
 -v: バージョンを表示します。
@@ -181,6 +190,8 @@ $BASE::Self (入力).mid [-v] [-h] [-o (演奏テキスト).sh] [-u (音符長�
 -ov:チャンネル音量(「VM=n」)にオフセット「(音量オフセット)」を与えます。
   「(音量オフセット)」は数値で指定しますが、「_数値」と表記するとマイナス値として扱います。
   デフォルト値は「0」です。
+-mt:演奏速度(テンポ)に倍率を与えます。デフォルト値は「1.0」です。
+  「.mid」出力プログラムによっては、テンポが早いと(特にピッチベンド値に)誤差が入る場合があるので、「.mid」としてはテンポを半分にしておき、「-mr」で「2.0」と指定する事で精度を改善できます。
 -ip:パン値を読み飛ばし、「PN=0」が出力されないようにします。
   アプリケーションによるパン指定がそのまま演奏に反映されます。
 -ar:ピッチベンド値からポルタメント指示に変換する精度を指定します。値が小さいほど精度は高くなります。
@@ -222,6 +233,7 @@ $BASE::Self (入力).mid [-v] [-h] [-o (演奏テキスト).sh] [-u (音符長�
 
   「変換元=>変換先」列挙による「ハッシュ参照」として定義します。
 -d: ファイルでなく標準出力に出力します。
+-dr:「.mid」ファイルの内部データを標準出力に出力します。
 
 <「(入力).mid」について>
   「KeyOff」は音符に重なりが無い場合にのみ置かれ、重なりがある場合は「継続的(アタック無し)KeyOn」とされます。
@@ -276,6 +288,7 @@ sub USR_stSMF2SEQ{
 	);
 
 	$smf=new SMF::($source);
+	$$smf{'Division'}*=$$ref_switch{'TempoMultiply'};
 	$nchannel=0;
 	$nmarker=0;
 	undef @array_ref_line;

@@ -77,4 +77,3 @@ VOID					CANVASBG_::stCopy(
 	}
 	return;
 }
-

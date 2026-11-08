@@ -67,9 +67,9 @@ public:
 	static constexpr UINT8	BG_stcui8nBit=			FIXEDL_stcui8nBit+3;
 	static constexpr INT16	BG_stci16nSize=			1<<BG_stcui8nBit;
 	static constexpr INT16	BG_stci16cMask=			BG_stci16nSize-1;
-	//	CANVASBG_ROM			MAZE_stccvsBG
+	//	CANVASBG_ROM			stccvsMaze
 	//		地形データ兼BGアトリビュート初期値です。
-	static constexpr AUTO	stccvsMaze=			__O68K_CANVASBG_ROM("(Resource)/ニッタマン - 迷路(旧).tmx");
+	static constexpr AUTO	stccvsMaze=				__O68K_CANVASBG_ROM("(Resource)/lesson13.tmx");
 	static constexpr AUTO&	MAZE_stcv2nSize=		stccvsMaze.stcv2nSize;
 	static constexpr UINT8	BG_stcui8cSpace=		0x20;
 	static constexpr UINT8	BG_stcui8cDotNormal=	0x1c;

@@ -81,8 +81,8 @@ public:
 	static constexpr INT16	FIXEDL_stci16cMask=		FIXEDL_stci16nSize-1;
 	static constexpr INT16	FIXED_stci16cMask_Lower=	FIXEDL_stci16nSize-1;
 	static constexpr INT16	FIXED_stci16cMask_Upper=	~FIXED_stci16cMask_Lower;
-	static constexpr INT16	FIXED_stci16iXMinimum=	(  0-8)<<FIXEDL_stcui8nBit;
-	static constexpr INT16	FIXED_stci16iXMaximum=	(224+8)<<FIXEDL_stcui8nBit;
+	static constexpr INT16	FIXED_stci16iPositionMinimum=	(  0-8)<<FIXEDL_stcui8nBit;
+	static constexpr INT16	FIXED_stci16iPosisionXMaximum=	(224+8)<<FIXEDL_stcui8nBit;
 	static constexpr INT16	FIXED_stci16iXCenter=	(112-4)<<FIXEDL_stcui8nBit;
 	static constexpr UINT8	PALETTE_SPRITE_stcui8iPlayer=	0;
 	static constexpr UINT8	PALETTE_SPRITE_stcui8iEnemy_Normal_Oikake=	1;
@@ -624,7 +624,7 @@ public:
 					CAUTO					ceboundary=eMove_Boundary8_One(FIXED_v2iPosition.i16iX(),fixed_i16doffset);
 
 					if(ceboundary){
-						if(FIXED_v2iPosition.i16iX()==FIXED_stci16iXMaximum)FIXED_v2iPosition.i16iX()=FIXED_stci16iXMinimum;
+						if(FIXED_v2iPosition.i16iX()==FIXED_stci16iPosisionXMaximum)FIXED_v2iPosition.i16iX()=FIXED_stci16iPositionMinimum;
 					}
 					return ceboundary;
 				}
@@ -637,7 +637,7 @@ public:
 
 					fixed_i16doffset=-fixed_i16doffset_negative;
 					if(ceboundary){
-						if(FIXED_v2iPosition.i16iX()==FIXED_stci16iXMinimum)FIXED_v2iPosition.i16iX()=FIXED_stci16iXMaximum;
+						if(FIXED_v2iPosition.i16iX()==FIXED_stci16iPositionMinimum)FIXED_v2iPosition.i16iX()=FIXED_stci16iPosisionXMaximum;
 					}
 					return ceboundary;
 				}
@@ -1003,10 +1003,10 @@ public:
 		VOID					Show_Score(const PGAME cpgameowner)noexcept{
 			switch(ui8iNumber){
 			case 0:
-				cpgameowner->BG_ShowScore({1,1},ui32nScore);
+				cpgameowner->BG_ShowNumber5({1,1},ui32nScore);
 				break;
 			case 1:
-				cpgameowner->BG_ShowScore({21,1},ui32nScore);
+				cpgameowner->BG_ShowNumber5({21,1},ui32nScore);
 				break;
 			}
 			return;
@@ -1684,7 +1684,7 @@ public:
 				cv2iplayerposition.i16iX(),
 				cv2iplayerposition.i16iY()
 			})||Move_eIsHit({
-				INT16(cv2iplayerposition.i16iX()+(FIXED_stci16iXMaximum-FIXED_stci16iXMinimum)),
+				INT16(cv2iplayerposition.i16iX()+(FIXED_stci16iPosisionXMaximum-FIXED_stci16iPositionMinimum)),
 				cv2iplayerposition.i16iY()
 			});
 		}
@@ -1753,13 +1753,13 @@ private:
 public:
 	VOID					New(VOID)noexcept{
 		FB::PALETTE_stWriteSet(0,1);
-		FB::PALETTE_SPRITE_stWrite(PALETTE_SPRITE_stcui8iPlayer,					48, 2,39);	//	ぬたぬた
+		FB::PALETTE_SPRITE_stWrite(PALETTE_SPRITE_stcui8iPlayer,				48, 2,39);	//	ぬたぬた
 		FB::PALETTE_SPRITE_stWrite(PALETTE_SPRITE_stcui8iEnemy_Normal_Oikake,	48,38,21);	//	AKABEI
-		FB::PALETTE_SPRITE_stWrite(PALETTE_SPRITE_stcui8iEnemy_Normal_Machibuse,	48,38,36);	//	PINKY
+		FB::PALETTE_SPRITE_stWrite(PALETTE_SPRITE_stcui8iEnemy_Normal_Machibuse,48,38,36);	//	PINKY
 		FB::PALETTE_SPRITE_stWrite(PALETTE_SPRITE_stcui8iEnemy_Normal_Kimagure,	48,38, 1);	//	AOSUKE
 		FB::PALETTE_SPRITE_stWrite(PALETTE_SPRITE_stcui8iEnemy_Normal_Otoboke,	48,38,23);	//	GUZUTA
 		FB::PALETTE_SPRITE_stWrite(PALETTE_SPRITE_stcui8iEnemy_Eaten,			33,17,29);	//	食われた
-		FB::PALETTE_BG_stWrite(PALETTE_BG_stcui8iDotNormal,				48,13,38);
+		FB::PALETTE_BG_stWrite(PALETTE_BG_stcui8iDotNormal,						48,13,38);
 		FB::SPRITE_stSetSize(FB::IDSIZE::n1024,FB::IDSIZE::n1024);
 		FB::BG1_stSetSize(FB::IDSIZE::n1024,FB::IDSIZE::n1024);
 		//	隠しアトリビュート初期化
@@ -2101,7 +2101,7 @@ private:
 	}
 	_INLINE_ VOID			ShowHighScore(VOID)noexcept{
 		if(eUpdateHighScore){
-			BG_ShowScore({11,1},ui32nHighScore);
+			BG_ShowNumber5({11,1},ui32nHighScore);
 			eUpdateHighScore=FALSE;
 		}
 		return;
@@ -2172,7 +2172,7 @@ private:
 	//		点数表示処理です。最大「99999(+固定0)」まで表示できます。
 	//		通常「cui32nscore%10000」等と書くところですが、
 	//		割り算は遅いので引き算の繰り返しを行っています。
-	VOID					BG_ShowScore(CVECTOR2& bg_cv2iposition,CUINT32 cui32nscore)const noexcept{
+	VOID					BG_ShowNumber5(CVECTOR2& bg_cv2iposition,CUINT32 cui32nscore)const noexcept{
 		USTR					austrscore[]="00000";
 		AUTO					ui32nscore=cui32nscore;
 		USTR					ustrzero=' ';

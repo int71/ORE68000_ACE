@@ -52,6 +52,9 @@ namespace m68k::i71::sub{
 		static constexpr AUTO	JOYSTICK_stcui8cMaskButtonUp=					m68k::hid::JOYSTICK::stcui8cMaskButtonUp;
 		static constexpr AUTO	JOYSTICK_stcui8cMaskButtonA=					m68k::hid::JOYSTICK::stcui8cMaskButtonA;
 		static constexpr AUTO	JOYSTICK_stcui8cMaskButtonB=					m68k::hid::JOYSTICK::stcui8cMaskButtonB;
+		static constexpr AUTO	MOUSE_stcui8cMaskButtonLeft=					m68k::hid::MOUSE::stcui8cMaskButtonLeft;
+		static constexpr AUTO	MOUSE_stcui8cMaskButtonRight=					m68k::hid::MOUSE::stcui8cMaskButtonRight;
+
 		enum class IDRESOLUTION{
 			n256x212,
 			n320x240,
@@ -129,6 +132,11 @@ namespace m68k::i71::sub{
 		using					CCANVASBG_DEVICE=const CANVASBG_DEVICE;
 		using					PCANVASBG_DEVICE=CANVASBG_DEVICE*;
 		using					PCCANVASBG_DEVICE=CCANVASBG_DEVICE*;
+		//	MOUSESTATE
+		using					MOUSESTATE=OS::MOUSESTATE;
+		using					CMOUSESTATE=OS::CMOUSESTATE;
+		using					PMOUSESTATE=OS::PMOUSESTATE;
+		using					PCMOUSESTATE=OS::PCMOUSESTATE;
 		//	ST
 		class ST;
 		using					CST=const ST;
@@ -578,6 +586,9 @@ namespace m68k::i71::sub{
 		static OFWBOOL			KEY_steIsDown(const KEYBOARD_IDKEY cidkey)noexcept{
 			return OS::DEVICE_KEYBOARD_stui16Read(cidkey>>4)&(1<<(cidkey&0xf));
 		}
+		static _INLINE_ MOUSESTATE	MOUSE_ststatRead(VOID)noexcept{
+			return OS::DEVICE_MOUSE_ststatRead();
+		}
 		static UINT8			CONTROLLER_stui8cRead(CUINT8 cui8ibank)noexcept{
 			return OS::DEVICE_JOYSTICK_stui8Read(cui8ibank);
 		}
@@ -664,7 +675,7 @@ namespace m68k::i71::sub{
 			CANVASBG_DEVICE::stTrimReceiving(shpsource,v2iposition);
 			BG_stWriteRect_Body(
 				cui32doffset+UINT32(CANVASBG_DEVICE::stui16iGetPosition(v2iposition)),
-				ccvssource.pcui16cGetThis()+SCLASS::stui16iGetPosition(shpsource.v2iPosition),
+				PCUINT16(PCUINT8(ccvssource.pcui16cGetThis())+SCLASS::stui16iGetPosition(shpsource.v2iPosition)),
 				SCLASS::stcui16nPitch,
 				shpsource.v2nSize
 			);

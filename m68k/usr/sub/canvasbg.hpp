@@ -234,6 +234,11 @@ namespace m68k::i71::sub{
 			SUPER::stTrimReceiving(shpsource,v2iposition,cv2nSize);
 			return;
 		}
+		//	UINT16					ui16cGetThis(CVECTOR2& cv2iposition)
+		//		2次元座標「cv2iposition」のアトリビュート値を返します。
+		constexpr UINT16		ui16cGetThis(CVECTOR2& cv2iposition)const noexcept{
+			return pcui16cThis[stui16iGetPosition(cv2iposition)>>1];
+		}
 	protected:
 		//	VOID					stFill(const PUINT16 cpui16cdestinationbase,CUINT16 cui16csource,CSHAPE& cshpshape)
 		//		BG「cpui8cdestinationbase」に対し、「cui16csource」での塗りつぶしを実行します。
