@@ -7,9 +7,9 @@
  ****************************************************************************/
 
 //	カメ救い
-//		貴方は「カメの神様」です。
+//		申し訳無いですが、貴方は「カメの神様」です。
 //		「一般ガメ」が漠然と地表におりますので、水場に移動させてください。
-//		なぜなら「X虫」が「一般ガメ」をゲットして持ち去ろうとするからです。
+//		なぜなら「X虫」が「一般ガメ」をゲットして持ち去るからです。
 //		貴方は「一般ガメ」を救う事が出来るでしょうか。
 //
 //		<ルール>
@@ -33,10 +33,13 @@
 //		・「一般ガメ」にも「ハジキ」は当たり、くたばりはしないがピヨる。
 //		・「X虫」は退治すれば「つかみ」が出来る
 //		・退治した「X虫」は水場に放り込むとエサになり、「一般ガメ」が「X虫」を食うと点になる
-//		<その他>
+//		<設定等>
 //		・「ハジキ」は核融合
 //		・通常移動時の「X虫」はワ──プしている(ので地形無視)
 //		・そのため実は羽無しで飛べるが、羽があった方がカッコヨイと思っている
+//		<その他メモ>
+//		・ステージ序盤は「一般ガメ」お食事で稼げるが、程なく「X虫」出現ペースに追いつけなくなる
+//		・「(Resource)/カメ救い.tmx」を変更するとそのままゲームに反映される
 
 //
 //		include
@@ -669,11 +672,19 @@ public:
 	//		const
 	//
 
+	//	CCANVASBG_ROM&			TERRAIN_stccvsGetPattern(VOID)
+	//		「TERRAIN_stctrinGetPattern」と様子を合わせるため関数の姿をしておりますが、
+	//		実体は「CANVASBG_ROM」テンプレートクラスのコンパイル時定数です。
+	//		「一般ガメ」出現位置等をハードコーディングしていないため、
+	//		「(Resource)/カメ救い.tmx」を変更するとそのままゲームに反映されます。
 	static constexpr AUTO&	TERRAIN_stccvsGetPattern(VOID)noexcept{
 		static constexpr AUTO	stccvsthis=__O68K_CANVASBG_ROM("(Resource)/カメ救い.tmx");
 
 		return stccvsthis;
 	}
+	//	CTERRAIN&				TERRAIN_stctrinGetPattern(VOID)
+	//		C++都合により関数の姿をしておりますが、
+	//		実体は「TERRAIN」クラスのコンパイル時定数です。
 	static constexpr AUTO&	TERRAIN_stctrinGetPattern(VOID)noexcept{
 		static constexpr AUTO	stctrinthis=TERRAIN(TERRAIN_stccvsGetPattern());
 
